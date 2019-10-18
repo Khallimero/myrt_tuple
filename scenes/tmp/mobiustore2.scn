@@ -1,0 +1,115 @@
+#include "BasicTexture.h"
+#include "MobiusTore.h"
+#include "ShapeBuilder.h"
+#include "Plan.h"
+#include "SphericLight.h"
+#include "StraightShapeBuilder.h"
+#include "TorusKnot.h"
+#include "TextureBumpMap.h"
+#include "CloudPattern.h"
+#include "CustomPerlinPattern.h"
+#include "ParametricIsoSurface.h"
+
+/*
+#define EPSILON (0.01)
+#define PLAN_TAN (M_PI/1000.)
+#define MAX_REC (250)
+#define ISO_STEP (.01)
+#define ISO_TH (0.00000001)
+#define NB_REF 5
+#define MAX_REF_SS 1
+#define PHOTON_EQ_DST 0.01
+#define PHOTON_EQ_ANG (M_PI/10.)
+#define PHOTON_BOX_FCT 8.
+#define PHOTON_RAD 5.
+#define PHOTON_REF 3
+#define NB_PHOTON_IT (500*500)
+#define NB_PHOTON_LIGHT (5*5)
+#define PHOTON_EXP 1.
+#define CAUSTIC_PHOTON_EXP 1.
+#define RADIANCE_PHOTON_EXP 0.
+*/
+
+#define KHAKI Color("9F9F5F")
+#define ORANGE Color("FFCC99")
+#define BROWN Color("F4A460")
+
+const double size=180;
+const double Rmajor=3.0;
+const double Rminor=0.1;
+
+void buildScene(Scene& world){
+  Point ct(0,0,3000);
+
+  ParametricPrimitive<2>* mtp=new MobiusTore(2,1,2);
+  ShapeBuilder<2> sbm(size,1,Tuple<int,2>::Unit*36);
+  Shape* mt=sbm.getInstance(Mark(ct,Rotation(0,0,M_PI/2.0)),mtp);
+  mt->setTexture(new BasicTexture(ORANGE));
+  mt->setDiffCoeff(.8);
+  mt->setSpecCoeff(.5);
+  mt->setGlareCoeff(100);
+  mt->setReflectCoeff(.1);
+  world.addShape(mt);
+
+  /*ParametricPrimitive<1>* pp=new TorusKnot(1,2,2);
+  //StraightShapeBuilder sb(300,1,360,60);
+  //ShapeBuilder<2> sb(300,1,Pair<int>(360*4,360));
+  for(int i=0;i<2;i++){
+    //Shape* tk=sb.getInstance(Mark(ct,Rotation(M_PI/2.0,0,M_PI/4.0*(double)(2*i-1))),pp,Cylindrical);
+    //Shape* tk=sb.getInstance(Mark(ct,Rotation(M_PI/2.0,0,M_PI/4.0*(double)(2*i-1))),pp,true,0.2);
+    Shape* tk=new ParametricIsoSurface(pp,300,1,180,60,
+				       Mark(ct,Rotation(M_PI/2.0,M_PI/4.0*(double)(2*i-1),0)));
+    tk->setTexture(new BasicTexture(BROWN));
+    tk->setDiffCoeff(.05);
+    tk->setSpecCoeff(.8);
+    tk->setGlareCoeff(100);
+    tk->setReflectCoeff(.2);
+    tk->setRefractCoeff(.95);
+    tk->setDensity(1.76);
+    tk->setBeer(100,2,BROWN);
+    
+    world.addShape(tk);
+    }*/
+
+  /*Shape* plan=new Plan(3000+(Rmajor+Rminor)*size*1.3,Point(0,0,0),
+		       Mark(Point(0.5,-0.2,1),Rotation::random()));
+  plan->setTexture(new CloudPattern(new BasicTexture(KHAKI*.8),
+				    new BasicTexture(KHAKI*.85),
+				    new BasicTexture(KHAKI*.8),80),
+				    Planar);
+  plan->setBumpMap(new TextureBumpMap(new CustomPerlinPattern(new BasicTexture(Color::White),
+							      new BasicTexture(Color::Black),6,3,5,60.),1.5),
+		   Planar);
+  plan->setDiffCoeff(.9);
+  world.addShape(plan);*/
+  
+  world.addLight(new SphericLight(500,Point(0,0,3000)+Vector(.25,-.6,.3).norm()*-3500.,Color::White*0.8));
+  world.setAmbiant(Color::White*.2);
+  
+  //world.setFog(Fog(Color::White,50000,2.0));
+
+  //world.setPhotonBoxIn(new Sphere(1000,Mark(ct)));
+  //world.setPhotonBoxOut(new Sphere(1000,Mark(ct)));
+}
+
+void setCamera(Camera& cam){
+  Point sc=Point(-100,-400,3000);
+  Point cp=Point(-5000,3200,-1200);
+  //Point sc=Point(0,0,3000);
+  //Point cp=Point(0,3000,3000);
+  Vector cv=cp.getVectorTo(sc).norm()*100;
+  
+  Vector v1=Vector(1,1,0).projOrthoTo(cv).norm();
+  Vector v2=cv.prodVect(v1).norm();
+  
+  cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
+  //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
+  //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+
+  //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.05),Enumeration<Vector>(768,v2*.05));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality){
+  //rendererQuality.setAliasing(2);
+  //rendererQuality.setShadow(25);
+}

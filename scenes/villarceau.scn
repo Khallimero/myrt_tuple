@@ -1,0 +1,129 @@
+#define EPSILON (0.01)
+#define PLAN_TAN (M_PI/1000.)
+#define MAX_REC (250)
+#define ISO_STEP (10.)
+#define ISO_THRESHOLD (0.00000001)
+#define NB_REF 5
+#define MAX_REF_SS 5
+#define PHOTON_EQ_DST .5
+#define PHOTON_EQ_ANG (M_PI/10.)
+#define PHOTON_BOX_FCT 20.
+#define PHOTON_RAD 5.
+#define PHOTON_REF 5
+#define NB_PHOTON_IT 2000000
+#define NB_PHOTON_LIGHT (15*15)
+#define PHOTON_EXP 4.
+#define CAUSTIC_PHOTON_EXP 1.
+#define RADIANCE_PHOTON_EXP .2
+
+#ifdef SCENE
+#include "SmartPointer.h"
+#include "SubShape.h"
+#include "InterShape.h"
+#include "Tore.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "CustomPerlinPattern.h"
+#include "SphericLight.h"
+
+#define ORANGE (Color("FFA200")*.9)
+#define ARGENT Color("C0C0C0")
+#define LIGHTCOL Color::White
+
+#define VIL_MAT(s,col)					\
+  s->setTexture(new BasicTexture(col),Undefined);	\
+  s->setDiffCoeff(.65);					\
+  s->setSpecCoeff(.1);					\
+  s->setGlareCoeff(500);				\
+  s->setReflectCoeff(.02)
+
+#define TOR_MAT(s)						\
+  s->setTexture(new BasicTexture(Color::White),Undefined);	\
+  s->setDiffCoeff(.02);						\
+  s->setSpecCoeff(1);						\
+  s->setGlareCoeff(1000);					\
+  s->setReflectCoeff(.15);					\
+  s->setRefractCoeff(.95);					\
+  s->setDensity(1.8);						\
+  s->setBeer(7,2,ORANGE)
+
+void buildScene(Scene& world)
+{
+    double r1=600,r2=200;
+
+    for(int i=0; i<2; i++)
+    {
+        double a=(double)i*25.;
+        Shape* s1=new Tore(r1,r2-a,Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)));
+        VIL_MAT(s1,ARGENT*(i==0?1:.5));
+        Shape* s2=new Tore(r1,r2-10-a,Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)));
+        VIL_MAT(s2,ARGENT*(i==0?.5:1));
+        SmartPointer<const Shape> s3=new SubShape(s1,s2,false);
+
+        Shape* s4=new Tore(r1,40,Mark(Point(-(r2-5-a),0,3000),Rotation(-M_PI/2.0-asin((r2-5-a)/r1),0,0)));
+        VIL_MAT(s4,ARGENT);
+        world.addShape(new InterShape(s3,s4,false));
+
+        Shape* s5=new Tore(r1,40,Mark(Point(r2-5-a,0,3000),Rotation(-M_PI/2.0+asin((r2-5-a)/r1),0,0)));
+        VIL_MAT(s5,ARGENT);
+        world.addShape(new InterShape(s3,s5,false));
+
+        Shape* s6=new Tore(r1,40,Mark(Point(0,-(r2-5-a),3000),Rotation(-M_PI/2.0,0,-asin((r2-5-a)/r1))));
+        VIL_MAT(s6,ARGENT);
+        world.addShape(new InterShape(s3,s6,false));
+
+        Shape* s7=new Tore(r1,40,Mark(Point(0,r2-5-a,3000),Rotation(-M_PI/2.0,0,asin((r2-5-a)/r1))));
+        VIL_MAT(s7,ARGENT);
+        world.addShape(new InterShape(s3,s7,false));
+    }
+
+    SmartPointer<const Shape> s10=new Tore(r1,r2-10-EPSILON*2.,Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)));
+    SmartPointer<const Shape> s11=new Tore(r1,r2-25+EPSILON*2.,Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)));
+    SmartPointer<const Shape> s12=new SubShape(s10,s11);
+
+    for(int i=15; i<360; i+=60)
+    {
+        double a=((double)i/360.)*(2.*M_PI);
+        SmartPointer<const Shape> s50=new Plan(0,Point(0,0,0),Mark(Point(cos(a),sin(a),0)));
+        a=((double)(i+30)/360.)*(2.*M_PI);
+        SmartPointer<const Shape> s51=new Plan(0,Point(0,0,0),Mark(Point(-cos(a),-sin(a),0)));
+        SmartPointer<const Shape> s52=new SubShape(s12,s50);
+        SmartPointer<Shape> s53=new SubShape(s52,s51);
+        TOR_MAT(s53);
+        world.addShape(s53);
+    }
+
+    SmartPointer<Shape> s99=new Plan(3000+r2,Point(0,0,0),
+                                     Mark(Point(0.,0.,1.0),Rotation::random()));
+    s99->setTexture(new BasicTexture(Color::White),Undefined);
+    s99->setDiffCoeff(.85);
+    s99->setReflectCoeff(.05);
+    world.addShape(s99);
+
+    world.addLight(new SphericLight(500,Point(0,0,3000)+Vector(.35,-.8,0.3).norm()*-10000,LIGHTCOL));
+    world.setAmbiant(LIGHTCOL*.6);
+
+    world.setPhotonBoxIn(new Sphere(r1+r2+10.,Mark(Point(0,0,3000))));
+    world.setPhotonBoxOut(new Sphere(10000,Mark(Point(0,0,3000))));
+}
+
+void setCamera(Camera& cam)
+{
+    Point sc=Point(0,-200,3000);
+    Point cp=Point(-5000,3200,-1200);
+    Vector cv=cp.getVectorTo(sc).norm()*100;
+
+    Vector v1=Vector(1,1,0).projOrthoTo(cv).norm();
+    Vector v2=cv.prodVect(v1).norm();
+
+    //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
+    //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
+    cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality)
+{
+    //rendererQuality.setAliasing(3);
+    //rendererQuality.setShadow(25);
+}
+#endif

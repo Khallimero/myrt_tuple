@@ -1,0 +1,67 @@
+#include "SubShape.h"
+#include "InterShape.h"
+#include "Sphere.h"
+#include "Riemann.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "CloudPattern.h"
+#include "MarblePattern.h"
+#include "TextureBumpMap.h"
+#include "CustomPerlinPattern.h"
+#include "InfiniteLight.h"
+
+#define RUBY (Color(224./255.,17./255.,95./255.)*.7)
+#define VERT Color(103./255.,158./255.,103./255.)
+#define BRUN Color(238,207,161)*(1./255.)*.9
+
+#define S_MAT(col) new CloudPattern(new BasicTexture(col*.98),new BasicTexture(col),new BasicTexture(col*.95),80),Undefined,0.6,.2,1000,0,0,1,true,1,Color::white
+
+void buildScene(Scene& world){
+  double size=800;
+  double thk=30;
+  int nb_band=4;
+  Point pt=Point(400,150,3000);
+  int nb_step=180;
+  
+  TextureBumpMap* bm=new TextureBumpMap(new MarblePattern(new BasicTexture(Color::white),
+							  new BasicTexture(Color::black),150),
+					2.5);
+  
+  Shape* s1=new Sphere(size,Mark(pt),
+		       S_MAT(Color::white),bm,Volumic,Vector(1,1,1)*(1./1.));
+  Shape* s2=new Sphere(size-thk,Mark(pt),
+		       S_MAT(BRUN),bm,Volumic,Vector(1,1,1)*(1./1.));
+  Shape* s3=new SubShape(s1,s2);
+  
+  for(int i=0;i<nb_band;i++){
+    Shape* r=new Riemann((thk/2.)*1.+EPSILON,150,-2,3,2./3.,size-(thk/2.),nb_step,
+			 Mark(pt,Rotation(.5,M_PI-.05,-.75+((M_PI*2.)/(double)nb_band)*(double)i)),
+			 S_MAT(Color::white),
+			 bm,Volumic,Vector(1,1,1)*(1./1.));
+    
+    //world.addShape(r);
+    world.addShape(new InterShape(s3,r));
+  }
+  
+  //world.addShape(s1);
+  
+  world.addShape(new Plan(4000,Point::null,
+			  Mark(Point(0.,0.,1.0),Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)),
+			  new CustomPerlinPattern(new BasicTexture(Color::black),
+						  new BasicTexture(Color::white),2,4,3,1000)
+			  ,Planar,.7,0,1000,0,0));
+  
+  world.addLight(new InfiniteLight(Vector(-2,-1,2),Color::white*0.9));
+  world.addLight(new InfinteLight(Vector(1,0.5,0.1),Color::white*0.2));
+  world.setAmbiant(Color::white*.4);
+  
+  //world.setFog(Fog(Color::white,50000,2.0));
+}
+  
+void setCamera(Camera& cam){
+  cam=Camera(Point::null,Vector(0,0,100),
+	     //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+	     Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+  //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}

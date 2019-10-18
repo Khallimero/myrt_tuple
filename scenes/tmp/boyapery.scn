@@ -1,0 +1,72 @@
+#include "BasicTexture.h"
+#include "BoyApery.h"
+#include "ShapeBuilder.h"
+#include "Plan.h"
+#include "SphericLight.h"
+#include "CustomParametricPrimitive.h"
+#include "StraightShapeBuilder.h"
+
+/*
+#define EPSILON (0.001)
+#define PLAN_TAN (M_PI/1000.)
+#define MAX_REC (250)
+#define ISO_STEP (10.)
+#define ISO_TH (0.00000001)
+#define NB_REF 5
+#define MAX_REF_SS 1
+#define PHOTON_EQ_DST 1.
+#define PHOTON_EQ_ANG (M_PI/10.)
+#define PHOTON_BOX_FCT 8.
+#define PHOTON_RAD 5.
+#define PHOTON_REF 5
+#define NB_PHOTON_IT 0
+#define NB_PHOTON_LIGHT 0
+#define PHOTON_EXP 1.
+#define CAUSTIC_PHOTON_EXP 1.
+#define RADIANCE_PHOTON_EXP .1
+*/
+
+#define ARGENT Color("C0C0C0")
+#define VERT Color("37B57B")
+#define ORANGE Color("FFCC99")
+
+void buildScene(Scene& world){
+  Point ct=Point(-300,-100,3000);
+  
+  ParametricPrimitive<2>* bp=new BoyApery(2./3.,sqrt(2));
+  ShapeBuilder<2> sb(300,1,Tuple<int,2>::Unit*360);
+  Shape* b=sb.getInstance(Mark(ct,Rotation(-M_PI/2.0,0,0)),bp);
+  b->setTexture(new BasicTexture(ORANGE));
+  b->setDiffCoeff(.8);
+  b->setSpecCoeff(.5);
+  b->setGlareCoeff(100);
+  b->setReflectCoeff(.1);
+  world.addShape(b);
+
+  Shape* plan=new Plan(5000,Point(0,0,0),
+		       Mark(Point(0.2,0.5,1.0),Rotation::random()));
+  plan->setTexture(new BasicTexture(VERT));
+  plan->setDiffCoeff(.5);
+  world.addShape(plan);
+  
+  world.addLight(new SphericLight(500,ct+Vector(.7,.45,1)*-10000,Color::White*.8));
+  world.setAmbiant(Color::White*.2);
+  
+  //world.setFog(Fog(Color::White,50000,2.0));
+
+  //world.setPhotonBoxIn(new Sphere(800,Mark(ct)));
+  //world.setPhotonBoxOut(new Sphere(10000,Mark(ct)));
+}
+
+void setCamera(Camera& cam){
+  cam=Camera(Point::null,Vector(0,0,100),
+	     //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+	     //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+	     Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+	     //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality){
+  //rendererQuality.setAliasing(3);
+  //rendererQuality.setShadow(25);
+}

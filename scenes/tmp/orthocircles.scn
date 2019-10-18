@@ -1,0 +1,42 @@
+#include "OrthoCircles.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "CustomPerlinPattern.h"
+#include "InfiniteLight.h"
+
+#define EMERALD Color(115./255.,158./255.,115./255.)
+#define RUBY Color(224./255.,17./255.,95./255.)
+
+double size=800;
+double c1=.0375;
+double c2=3;
+
+void buildScene(Scene& world){
+  Rotation rot=Rotation::random();
+  Point ct=Point(0,0,3000);
+
+  Shape *c=new OrthoCircles(c1,c2,size,Mark(ct,rot));
+  c->setTexture(new BasicTexture(RUBY));
+  c->setDiffCoeff(.8);
+  world.addShape(c);
+
+
+  Shape* p=new Plan(5000,Point(0,0,0),Mark(Point(0.2,0.5,1.0),Rotation::random()));
+  p->setTexture(new BasicTexture(Color::White));
+  p->setDiffCoeff(.8);
+  world.addShape(p);
+
+  world.addLight(new InfiniteLight(Vector(1.,.35,1.),Color::White*.75));
+  world.setAmbiant(Color::White*.25);
+}  
+
+void setCamera(Camera& cam){
+  cam=Camera(Point::null,Vector(0,0,100),
+	     Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+  //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+  //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality){
+}

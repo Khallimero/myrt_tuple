@@ -1,0 +1,90 @@
+#define EPSILON (0.001)
+#define PLAN_TAN (M_PI/1000.)
+#define MAX_REC (250)
+#define ISO_STEP (1.)
+#define ISO_THRESHOLD (0.00000001)
+#define NB_REF 5
+#define MAX_REF_SS 1
+#define PHOTON_EQ_DST 0.001
+#define PHOTON_EQ_ANG (M_PI/100.)
+#define PHOTON_BOX_FCT 8.
+#define PHOTON_RAD 5.
+#define PHOTON_REF 9
+#define NB_PHOTON_IT 300000
+#define NB_PHOTON_LIGHT 9
+#define PHOTON_EXP 4.
+#define CAUSTIC_PHOTON_EXP 1.
+#define RADIANCE_PHOTON_EXP .2
+
+#ifdef SCENE
+#include "Tore.h"
+#include "BasicTexture.h"
+#include "PerlinBumpMap.h"
+#include "TextureBumpMap.h"
+#include "MarblePattern.h"
+#include "CustomPerlinPattern.h"
+#include "Plan.h"
+#include "InfiniteLight.h"
+
+#define EMERALD Color(115./255.,158./255.,115./255.)
+#define RUBY Color(224./255.,17./255.,95./255.)
+
+void buildScene(Scene& world)
+{
+    Shape* t1=new Tore(800,250,Mark(Point(-400,0,3500),Rotation(M_PI/4.,0,0)));
+    t1->setTexture(new BasicTexture(EMERALD),Undefined);
+    t1->setBumpMap(new PerlinBumpMap(.5),Volumic,Vector::Unit/18.);
+    t1->setDiffCoeff(.1);
+    t1->setSpecCoeff(.5);
+    t1->setGlareCoeff(1000);
+    t1->setReflectCoeff(.15);
+    t1->setRefractCoeff(.8);
+    t1->setDensity(1.58);
+    t1->setBeer(800,2,EMERALD);
+    world.addShape(t1);
+
+    Shape* t2=new Tore(800,250,Mark(Point(400,0,3500),Rotation(-M_PI/4.,0,0)));
+    t2->setTexture(new BasicTexture(RUBY),Undefined);
+    t2->setBumpMap(new TextureBumpMap(new MarblePattern(new BasicTexture(Color::White),
+                                      new BasicTexture(Color::Black),50),1.),
+                   Volumic);
+    t2->setDiffCoeff(.15);
+    t2->setSpecCoeff(.5);
+    t2->setGlareCoeff(600);
+    t2->setReflectCoeff(.2);
+    t2->setRefractCoeff(.65);
+    t2->setDensity(1.76);
+    t2->setBeer(1000,2,RUBY);
+    world.addShape(t2);
+
+    Shape* p=new Plan(5000,Point(0,0,0),
+                      Mark(Point(0.1,0.3,1.0),Rotation::random()));
+    p->setTexture(new CustomPerlinPattern(new BasicTexture(Color::Black),
+                                          new BasicTexture(Color::White),2,4,3,1000),Planar);
+    p->setDiffCoeff(.9);
+    world.addShape(p);
+
+    world.addLight(new InfiniteLight(Vector(.7,.5,1.1),Color::White*.7));
+    world.setAmbiant(Color::White*.3);
+
+    //world.setFog(Fog(Color::White,50000,2.0));
+
+    world.setPhotonBoxIn(new Sphere(1500,Mark(Point(0,0,3500))));
+    world.setPhotonBoxOut(new Sphere(10000,Mark(Point(0,0,3500))));
+}
+
+void setCamera(Camera& cam)
+{
+    cam=Camera(Point(0,100,0),Vector(0,0,100),
+               //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+               Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+    //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+    //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality)
+{
+    //rendererQuality.setAliasing(3);
+    //rendererQuality.setShadow(25);
+}
+#endif

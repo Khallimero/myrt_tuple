@@ -1,0 +1,118 @@
+#include "SubShape.h"
+#include "InterShape.h"
+#include "Sphere.h"
+#include "Cylinder.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "TextureBumpMap.h"
+#include "MarblePattern.h"
+#include "CustomPerlinPattern.h"
+#include "InfiniteLight.h"
+
+#include "ChequeredPattern.h"
+
+#define RUBY (Color(224./255.,17./255.,95./255.)*.7)
+#define VERT Color(103./255.,158./255.,103./255.)
+
+#define GOLDNUM ((1.+sqrt(5.))/2.)
+
+void buildScene(Scene& world){
+  double size=450;
+
+  Point pts[20];
+
+  for(int n=0,i=-1;i<=1;i+=2){
+    for(int j=-1;j<=1;j+=2){
+      for(int k=-1;k<=1;k+=2){
+	pts[n++]=Point(i,j,k)*size;
+      }
+    }
+  }
+
+  for(int i=0;i<4;i++){
+    pts[i+8]=pts[i]*Point(0,1./GOLDNUM,GOLDNUM);
+    pts[i+12]=pts[i*2]*Point(1./GOLDNUM,GOLDNUM,0);
+    pts[i+16]=pts[i<2?i:i+2]*Point(GOLDNUM,0,1./GOLDNUM);
+  }
+
+  Point ct=Point(0,0,3000);
+  Rotation rot=Rotation::random();
+  
+  for(int i=0;i<20;i++){
+    pts[i]=Mark(Point(0,0,0),rot).fromRef(pts[i]);
+    pts[i]=pts[i]+ct;
+  }
+
+  for(int i=0;i<20;i++){
+    Point a=pts[i];
+    Shape *s=new Sphere(100,Mark(a));
+    s->setTexture(new BasicTexture(RUBY),Undefined);
+    s->setBumpMap(new TextureBumpMap(new MarblePattern(new BasicTexture(Color::White),
+						       new BasicTexture(Color::Black),150),2.5),			    
+		  Volumic);
+    s->setDiffCoeff(.85);
+    s->setSpecCoeff(.5);
+    s->setGlareCoeff(250);
+    world.addShape(s);
+
+    for(int j=i+1;j<20;j++){
+      Point b=pts[j];
+
+      if(FCMP(a.dist(b),size*(sqrt(5.)-1.))){
+	Vector v=a.getVectorTo(b);
+	Vector v1=v.getOrtho().norm();
+	Vector v2=v.prodVect(v1).norm();
+	
+	Shape *p1=new Plan(v1,v2,Mark(a));
+	//p1->setTexture(new BasicTexture(VERT),Undefined);
+	//p1->setDiffCoeff(.85);
+	//p1->setSpecCoeff(.5);
+	//p1->setGlareCoeff(250);
+	Shape *p2=new Plan(v1,v2,Mark(b));
+	//p2->setTexture(new BasicTexture(VERT),Undefined);
+	//p2->setDiffCoeff(.85);
+	//p2->setSpecCoeff(.5);
+	//p2->setGlareCoeff(250);
+	Shape *cyl=new Cylinder(50,Mark(a,Rotation(v)));
+	//cyl->setTexture(new BasicTexture(VERT),Undefined);
+	//cyl->setDiffCoeff(.85);
+	//cyl->setSpecCoeff(.5);
+	//cyl->setGlareCoeff(250);
+	Shape *ssp=new SubShape(p1,p2);
+	Shape *ss=new InterShape(cyl,ssp);
+	ss->setTexture(new BasicTexture(VERT),Undefined);
+	ss->setDiffCoeff(.85);
+	ss->setSpecCoeff(.5);
+	ss->setGlareCoeff(250);
+	world.addShape(ss);
+      }
+    }
+  }
+
+  Shape *p=new Plan(5000,Point(0,0,0),
+		    Mark(Point(0.,0.,1.0),Rotation::random()));
+  p->setTexture(new CustomPerlinPattern(new BasicTexture(Color::Black),
+					new BasicTexture(Color::White),2,4,3,1000)
+		,Planar);
+  p->setDiffCoeff(.7);
+  world.addShape(p);
+
+  world.addLight(new InfiniteLight(Vector(1.,.35,1.),Color::White*1.));
+  world.addLight(new InfiniteLight(Vector(-1.,-.45,.2),Color::White*.4));
+  world.setAmbiant(Color::White*.25);
+
+  //world.setFog(Fog(Color(1,1,1),50000,2.0));
+}
+
+void setCamera(Camera& cam){
+  cam=Camera(Point(0,0,0),Vector(0,0,100),
+	     //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+	     Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+  //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality){
+  //rendererQuality.setAliasing(2);
+  //rendererQuality.setShadow(25);
+}

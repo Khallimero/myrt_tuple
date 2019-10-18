@@ -1,0 +1,168 @@
+#include "Knot.h"
+#include "Ray.h"
+#include "SubShape.h"
+#include "Sphere.h"
+#include "TextureCarveMap.h"
+#include "BasicTexture.h"
+#include "PerlinBumpMap.h"
+#include "Plan.h"
+#include "CustomPerlinPattern.h"
+#include "TextureBumpMap.h"
+#include "MarblePattern.h"
+#include "PointLight.h"
+#include "InfiniteLight.h"
+#include "ChequeredPattern.h"
+#include "ParametricPrimitive.h"
+#include "CoilingShapeBuilder.h"
+#include "StraightShapeBuilder.h"
+
+#define NB_SPH1 3600
+#define NB_SPH2 36
+
+#define RUBY (Color(224./255.,17./255.,95./255.)*.7)
+#define VERT Color(103./255.,158./255.,103./255.)
+
+void buildScene(Scene& world){
+  /*world.addShape(new Sphere(650,
+    Mark(Point(0,0,3000),Rotation(M_PI/2.-M_PI/12.,-M_PI/12,0)),
+    new BasicTexture(RUBY),Undefined,
+    .1,0.5,1000,0.0
+    ,.75,1.58,new PerlinBumpMap(.05),Volumic,10));*/
+
+  /*world.addShape(new Sphere(650,
+    Mark(Point(0,0,3000)),
+    new BasicTexture(RUBY),Undefined,
+    .6,0.5,1000,0.01
+    ,.3,1.58,new PerlinBumpMap(.3),Volumic,10
+    //,new TextureCarveMap(new StripedTexture(Color(),Vector(6,30,0))),Planar
+    ,new TextureCarveMap(new CustomPerlinPattern(new BasicTexture(Color(1,1,1)),
+    new BasicTexture(Color(0,0,0)),6,3,5,80)),Volumic
+    ));
+
+    world.addShape(new Knot(1,-2,1,2,2,3,
+    250,360,150,
+    Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)),
+    new CustomPerlinPattern(new BasicTexture(Color(1,1,1)),
+    new BasicTexture(VERT),2,1,4,50),Volumic,
+    .8,0.5,1000,0.1
+    //,0,1,new PerlinBumpMap(.2),Volumic,20
+    ));*/
+
+  ParametricPrimitive* pp=new Knot(1,-2,1,2,2,3);
+
+  CoilingShapeBuilder csb(.4,72,250,1,NB_SPH1,15);
+  Shape* k1=csb.getInstance(Mark(Point(0,0,3000),Rotation(-M_PI/2.0,.2,0)),
+			    pp,Spherical);
+  k1->setTexture(new CustomPerlinPattern(new BasicTexture(Color(1,1,1)),
+					 new BasicTexture(VERT),2,1,4,50),
+		 Volumic);
+  k1->setDiffCoeff(.8);
+  k1->setSpecCoeff(.5);
+  k1->setGlareCoeff(1000);
+  k1->setReflectCoeff(.1);
+  world.addShape(k1);
+
+  StraightShapeBuilder ssb(250,1,NB_SPH2,50);
+  Shape* k2=ssb.getInstance(Mark(Point(0,0,3000),Rotation(-M_PI/2.0,.2,0)),
+			    pp,Cylindrical);
+  k2->setTexture(new BasicTexture(RUBY));
+  //k2->setBumpMap(new PerlinBumpMap(.2),Volumic,Vector::unit*(1./20.));
+  k2->setDiffCoeff(.1);
+  k2->setSpecCoeff(.5);
+  k2->setGlareCoeff(200);
+  k2->setReflectCoeff(.1);
+  k2->setRefractCoeff(.9);
+  k2->setDensity(1.6);
+  world.addShape(k2);
+
+
+  //world.addShape(//new SubShape(
+  //new Knot(1,-2,1,2,2,3,
+  //250,360,150,
+  //Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)),
+  //new CustomPerlinPattern(new BasicTexture(Color(1,1,1)),
+  //new BasicTexture(VERT),2,1,4,50),Volumic,
+  //.8,0.5,1000,0.1
+  ////,0,1,new PerlinBumpMap(.2),Volumic,20
+  //)/*,
+  //
+  //new Sphere(700,
+  //Mark(Point(0,0,3000)),
+  //					 new BasicTexture(RUBY*.5),Undefined,
+  //.6,0.5,1000,0.01,.3,1.58,
+  //true,1,Color::white,
+  //new PerlinBumpMap(.3),Volumic,Vector(1,1,1)*10
+  ////,new TextureCarveMap(new StripedTexture(Color(),Vector(6,30,0))),Planar
+  //,new TextureCarveMap(new CustomPerlinPattern(new BasicTexture(Color(1,1,1)),
+  //new BasicTexture(Color(0,0,0)),6,3,5,80)),Volumic
+  //))*/);
+  
+  //  world.addShape(new Sphere(550,
+  //			    Mark(Point(0,0,3000)),
+  //			    new BasicTexture(RUBY),Undefined,
+  //			    .05,0.5,1000,0.1
+  //			    ,.95,1.58,
+  //			    true,1,Color::white,
+  //			    new TextureBumpMap(new MarblePattern(new BasicTexture(Color::white),
+  //								 new BasicTexture(Color::black),50),2.)
+  //			    ,Volumic,Vector(1,1,1)
+  //			    //,new TextureCarveMap(new StripedTexture(Color(),Vector(6,30,0))),Planar
+  //			    ,/*new TextureCarveMap(new CustomPerlinPattern(new BasicTexture(Color(1,1,1)),
+  //			       new BasicTexture(Color(0,0,0)),6,3,5,80))*/NULL,Volumic,
+  //			    Both
+  //			    ));
+
+  //world.addLight(new PointLight(Point(0,0,3000),Color(1,1,1)*.5));
+
+  /*world.addShape(new Knot(1,-2,1,2,2,3,
+			  250,360,200,
+			  Mark(Point(0,-100,3000),Rotation(-M_PI/2.0,0,0)),
+			  new BasicTexture(RUBY),Volumic,
+			  .1,0.5,1000,.1
+			  ,.8,1.58,
+			  false,1000,Color::white,
+			  new PerlinBumpMap(.2),Volumic,Vector(1,1,1)*(1./20.)));*/
+
+  /*Knot* k=new Knot(1,-2,1,2,2,3,
+		    250,360,200,
+		    Mark(Point(0,-100,3000),Rotation(-M_PI/2.0,0,0)));
+  k->setTexture(new ChequeredPattern(new BasicTexture(RUBY),
+				     new BasicTexture(VERT),Vector(10,20,0)),Planar);
+  k->setDiffCoeff(.8);
+  k->buildShape(Spherical);
+  world.addShape(k);*/
+
+
+  /*world.addShape(new Knot(1,-2,1,2,2,3,
+    250,360,185,
+    Mark(Point(0,-100,3000),Rotation(-M_PI/2.0,0,0)),
+    new BasicTexture(RUBY),Volumic,
+    .8,0.5,1000,0.1
+    ,.0,1.58,new PerlinBumpMap(.3),Volumic,1
+    ));*/
+
+  Shape* p=new Plan(4500,Point(0,0,0),
+		    Mark(Point(0.,0.3,1.0),
+			 Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)));
+  p->setTexture(new CustomPerlinPattern(new BasicTexture(Color(0,0,0)),
+					new BasicTexture(Color(1,1,1)),2,4,3,1000),
+		Planar);
+  p->setDiffCoeff(.9);
+  world.addShape(p);
+
+  world.addLight(new InfiniteLight(Vector(.7,.45,1),Color(1,1,1)*.7));
+  world.setAmbiant(Color(1,1,1)*.2);
+  
+  //world.setPhotonBoxIn(new Sphere(1200,Mark(Point(0,0,3000))));
+  //world.setPhotonBoxOut(new Sphere(20000,Mark(Point(0,0,3000))));
+
+  //world.setFog(Fog(Color(1,1,1),50000,2.0));
+}
+
+void setCamera(Camera& cam){
+  cam=Camera(Point(300,150,0),Vector(0,0,100),
+	     //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+	     //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+	     Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}

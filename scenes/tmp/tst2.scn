@@ -1,0 +1,100 @@
+#include "SubShape.h"
+#include "AddShape.h"
+#include "InterShape.h"
+#include "CustomIsoSurface.h"
+#include "Gyroid.h"
+#include "Sphere.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "CustomPerlinPattern.h"
+#include "ChequeredPattern.h"
+#include "MarblePattern.h"
+#include "PerlinBumpMap.h"
+#include "TextureBumpMap.h"
+#include "InfiniteLight.h"
+#include "PointLight.h"
+#include "PictureTexture.h"
+#include "PerlinNoise.h"
+
+#define EMERALD Color(115./255.,158./255.,115./255.)
+#define RUBY Color(224./255.,17./255.,95./255.)
+#define LIGHTCOL (Color(1,1,1))
+#define BRUN Color(238,207,161)*(1./255.)*.9
+#define COBALT Color(61,89,171)*(1./255.)
+
+#define TEX new BasicTexture(Color::white*.95),Undefined,.01,0.5,1000,0.05,0.95,1.58,false,1200,COBALT*1.2
+
+static PerlinNoise pn;
+
+double size=600;
+double size_int=size*.2;
+double gyrsize=100;
+
+double sphere(const Point& p){
+  return pn.noise(p*(10.))/5.
+    +sqrt(SQ(p.getX())+SQ(p.getY())+SQ(p.getZ()))
+    -1;
+}
+
+void buildScene(Scene& world){
+
+  //world.setPhotonBoxIn(new Sphere(size+1.,Mark(Point(0,0,3000))));
+  //world.setPhotonBoxOut(new Sphere(size*10.,Mark(Point(0,0,3000))));
+
+  world.addShape(new CustomIsoSurface(sphere,
+				      //gyrsize,
+				      size,
+				      new Sphere(size+100.,Mark(Point(0,0,3000))),
+				      Mark(Point(0,0,3000)),
+				      new BasicTexture(Color::white),Undefined,
+				      .75,0.,1,0,0,1,true,1,Color::black,
+				      /*new TextureBumpMap(new MarblePattern(new BasicTexture(Color::white),
+					new BasicTexture(Color::black),50),2.),*/
+				      NULL,
+				      Volumic,Vector(1,1,1),
+				      NULL,Undefined));
+
+  
+  world.addShape(new Plan(8000,Point(0,0,0),
+			  Mark(Point(0.,0.,1.0),
+			       Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)),
+			  //new ChequeredTexture(Color(0.8,0.8,0.8),Vector(1.0/1000.,1.0/1000.,0)),
+			  new CustomPerlinPattern(new BasicTexture(Color(0,0,0)),
+						  new BasicTexture(Color(1,1,1)),2,4,3,1000),Planar,
+			  .85,0,1000,0.05,0
+			  //,new RandomBumpMap(100,100,0.05),2500
+			  ));
+
+  
+
+  /*world.addLight(new PointLight(Point(0,0,3000),LIGHTCOL*10.));
+  world.addShape(new Sphere(size_int/2.,Mark(Point(0,0,3000)),
+			    new BasicTexture(Color::white),Undefined,
+			    .8,0,1000,0,.8));*/
+  
+
+  //world.addLight(new PointLight(Point(0,0,3000),LIGHTCOL*.4,50));
+  world.addLight(new InfiniteLight(Vector(.35,-.8,.3),LIGHTCOL*.6,50));
+  //world.addLight(new InfiniteLight(Vector(1,0,1),LIGHTCOL*.2));
+  world.setAmbiant(LIGHTCOL*.6);
+
+}  
+
+void setCamera(Camera& cam){
+  Point sc=Point(0,0,3000);
+  Point cp=Point(-5000,3200,-1200);
+  Vector cv=cp.getVectorTo(sc).norm()*100;
+  
+  Vector v1=Vector(1,1,0).projOrthoTo(cv).norm();
+  Vector v2=cv.prodVect(v1).norm();
+  
+  //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
+  cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
+  //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+
+  //cam=Camera(Point(0,0,0),Vector(0,0,100),
+  //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+  //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+  //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}

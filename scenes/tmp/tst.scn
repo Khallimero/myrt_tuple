@@ -1,0 +1,53 @@
+#include "HyperCube.h"
+#include "Sphere.h"
+#include "BasicTexture.h"
+#include "TextureBumpMap.h"
+#include "MarblePattern.h"
+#include "TextureCarveMap.h"
+#include "PerlinBumpMap.h"
+#include "CustomPerlinPattern.h"
+#include "Plan.h"
+#include "InfiniteLight.h"
+#include "PointLight.h"
+
+#define EMERALD Color(115./255.,158./255.,115./255.)
+#define RUBY Color(224./255.,17./255.,95./255.)
+
+void buildScene(Scene& world){
+  world.addShape(new Sphere(500,
+			    Mark(Point(0,0,3000)),
+			    new BasicTexture(RUBY),Undefined,
+			    .2,0.,1000,0.
+			    ,.95,1.4,true,1000,RUBY,
+			    new PerlinBumpMap(.05),Volumic,Vector(1,1,1)*100,
+			    NULL,Undefined,Both));
+  
+  /*world.addShape(new Sphere(200,
+			    Mark(Point(0,0,2000)),
+			    new BasicTexture(RUBY),Undefined,
+			    .2,0.,1000,0.
+			    ,.0,1.4,true,1000,EMERALD,
+			    new PerlinBumpMap(.05),Volumic,Vector(1,1,1)*100,
+			    NULL,Undefined,External));*/
+
+  world.addShape(new Plan(5000,Point(0,0,0),
+			  Mark(Point(0.2,0.5,1.0),Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)),
+			  new CustomPerlinPattern(new BasicTexture(Color::black),
+						  new BasicTexture(Color::white),2,4,3,1000),Planar,
+			  .9,0,1000));
+  
+  //world.addLight(new InfiniteLight(Vector(1.,.35,1.),Color::white*.75));
+  //world.addLight(new PointLight(Point(0,-100,3000)+Vector(1.,.35,1.)*-10000,Color::white*.75));
+  world.addLight(new PointLight(Point(0,0,3000),Color::white*.75,50));
+  world.setAmbiant(Color::white*.25);
+
+  world.setPhotonBox(new Sphere(510,Mark(Point(0,0,3000))));
+}
+
+void setCamera(Camera& cam){
+  cam=Camera(Point(0,0,0),Vector(0,0,100),
+	     Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+  //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+  //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}

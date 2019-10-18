@@ -1,0 +1,148 @@
+#define EPSILON (0.01)
+#define PLAN_TAN (M_PI/1000.)
+#define MAX_REC (250)
+#define ISO_STEP (.01)
+#define ISO_THRESHOLD (0.00000001)
+#define NB_REF 5
+#define MAX_REF_SS 5
+#define PHOTON_EQ_DST .5
+#define PHOTON_EQ_ANG (M_PI/10.)
+#define PHOTON_BOX_FCT 10.
+#define PHOTON_RAD 15.
+#define PHOTON_REF 5
+#define NB_PHOTON_IT (15000)
+#define NB_PHOTON_LIGHT (15000)
+#define PHOTON_EXP 6.
+#define CAUSTIC_PHOTON_EXP 1.
+#define RADIANCE_PHOTON_EXP 0.
+
+#ifdef SCENE
+#include "SubShape.h"
+#include "CustomIsoSurface.h"
+#include "Sphere.h"
+#include "Plan.h"
+#include "Cylinder.h"
+#include "BasicTexture.h"
+#include "SphericLight.h"
+#include "PerlinNoise.h"
+
+//#define RSEED 1400465025
+
+#define ORANGE (Color("FFA200")*.9)
+#define LIGHTCOL Color::White
+
+double getValue(const Point& p)
+{
+    return -1.0
+           +pow(p.getX(),20)
+           +pow(p.getY(),20)
+           +pow(p.getZ(),20);
+}
+
+class Bubble:public IsoSurface
+{
+public:
+    Bubble(double size,
+           const Shape* box,
+           const Mark& mk=Mark::Ref)
+        :IsoSurface(size,box,mk)
+    {
+        rnd=RND;
+    }
+    ~Bubble() {}
+
+public:
+    virtual double getValue(const Point& p)const
+    {
+        return sqrt(p)-1.0+pn.noise(p*0.8)*rnd;
+    }
+
+protected:
+    PerlinNoise pn;
+    double rnd;
+};
+
+const double size=300;
+
+void buildScene(Scene& world)
+{
+    Point ct=Point(0,0,0);
+    Vector vct(5000,1500,-3500);
+
+    Shape *s=new CustomIsoSurface(getValue,
+                                  size,
+                                  new Sphere(sqrt(3)+EPSILON),
+                                  Mark(ct));
+    s->setTexture(new BasicTexture(Color::White),Undefined);
+    s->setDiffCoeff(.05);
+    s->setSpecCoeff(.8);
+    s->setGlareCoeff(100);
+    s->setReflectCoeff(.07);
+    s->setRefractCoeff(.9);
+
+    for(int i=0; i<80; i++)
+    {
+        static struct vector_unary_idx_op:public unary_idx_op<double,TREBLE_SIZE>
+        {
+            virtual double operator()(const tuple_idx<TREBLE_SIZE>&)const
+            {
+                double r=0.0;
+                while(fabs(r)<0.2)
+                    r=(RND-0.5)*2.0;
+                return r;
+            }
+        } _unary_idx_op;
+        Mark m(ct+Vector(_unary_idx_op)*(size*RND*.9));
+        double r=(i<20?10.0+RND*15.0:3.0+RND*5.0);
+        Shape *s1=new Bubble(r,new Sphere(2.0),m);
+        s1->setTexture(new BasicTexture(Color::White),Undefined);
+        s1->setDiffCoeff(.05);
+        s1->setSpecCoeff(.5);
+        s1->setGlareCoeff(10);
+        s1->setReflectCoeff(.2);
+        s1->setRefractCoeff(.95);
+        s=new SubShape(s,s1,false);
+    }
+    s->setDensity(1.546);
+    s->setBeer(size/2.,2,ORANGE);
+    world.addShape(s);
+
+    Shape *p=new Plan(size+1,Point::null,
+                      Mark(Point(0.,0.,1.0)));
+    p->setTexture(new BasicTexture(Color("E0FFFB")*.9),Undefined);
+    p->setDiffCoeff(.6);
+    world.addShape(p);
+
+    world.setAmbiant(LIGHTCOL*0.2);
+    world.addLight(new SphericLight(800,ct+vct*.8,LIGHTCOL*1.0));
+
+    Shape *lc=new Cylinder(850,Mark(ct+vct*.8,Rotation(vct)));
+    Shape *lp=new Plan(Vector::UnitZ,Mark(ct+vct*.2));
+    CSGShape *ls=new SubShape(lc,lp,true);
+    ls->setHitShape(CSGShape::second,false);
+    world.addShape(ls);
+
+    //world.setPhotonBoxIn(new Sphere(size*sqrt(3),Mark(ct)));
+    //world.setPhotonBoxOut(new Sphere(size*20.,Mark(ct)));
+}
+
+void setCamera(Camera& cam)
+{
+    Point sc=Point(-500,0,0);
+    Point cp=Point(-1200,5000,-1500);
+    Vector cv=cp.getVectorTo(sc).norm()*100;
+
+    Vector v1=Vector(1,.2,0).projOrthoTo(cv).norm();
+    Vector v2=cv.prodVect(v1).norm();
+
+    //cam=Camera(cp,cv,Enumeration<Vector>(640,v1*.056),Enumeration<Vector>(360,v2*.056));
+    cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.028),Enumeration<Vector>(720,v2*.028));
+    //cam=Camera(cp,cv,Enumeration<Vector>(1920,v1*(.028/1.5)),Enumeration<Vector>(1080,v2*(.028/1.5)));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality)
+{
+    //rendererQuality.setAliasing(2);
+    //rendererQuality.setShadow(50);
+}
+#endif

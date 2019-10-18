@@ -1,0 +1,70 @@
+#include "PLYShape.h"
+#include "BasicTexture.h"
+#include "Plan.h"
+#include "PointLight.h"
+#include "CustomPerlinPattern.h"
+#include "Sphere.h"
+#include "Point.h"
+#include "Vector.h"
+
+/*
+#define PHOTON_BOX_FCT 2.
+#define CAUSTIC_PHOTON_REF 1
+#define CAUSTIC_PHOTON_NB (50*1000*1000)
+#define CAUSTIC_PHOTON_RAD .5
+#define CAUSTIC_PHOTON_EXP 20.
+#define RADIANCE_PHOTON_REF 1
+#define RADIANCE_PHOTON_NB (10*1000*1000)
+#define RADIANCE_PHOTON_RAD .5
+#define RADIANCE_PHOTON_EXP 4.
+*/
+
+#define ORANGE Color(223,175,123)*(1./255.)
+#define JADE Color("B6D4B4")
+#define MARBRE (Color::White)
+
+void buildScene(Scene& world){
+  PLYShape* s=new PLYShape(//"/home/kortex/ply/dragon.ply",100,
+			   //"/home/kortex/ply/bun_zipper_res4.ply",100,
+			   "/home/kortex/ply/marianne.ply",0.05,
+			Mark(Point(0,0,1000),Rotation(0,0,-M_PI/12.)));
+  //s->setTexture(new BasicTexture(Color::White));
+  s->setTexture(new CustomPerlinPattern(new BasicTexture(MARBRE*.85),
+					new BasicTexture(MARBRE),
+					4,3,2,2),Volumic);
+  s->setDiffCoeff(.7);
+  s->setSpecCoeff(.4);
+  s->setGlareCoeff(100);
+  s->setRadianceCoeff(.1);
+  s->setReflectCoeff(.08);
+  //s->setSmoothNormal(false);
+  world.addShape(s);
+
+  Shape* plan=new Plan(-5.272950+EPSILON,Point(0,0,0),
+		       Mark(Point(0.,1.,0.)));
+  plan->setTexture(new BasicTexture(ORANGE));
+  plan->setDiffCoeff(.9);
+  plan->setRadianceCoeff(.2);
+  //world.addShape(plan);
+
+  //world.setRadianceBoxIn(new Sphere(20,Mark(Point(0,0,1000))));
+  //world.setCausticBoxIn(new Sphere(30,Mark(Point(0,0,1000))));
+
+  //world.addLight(new PointLight(Point(-500.,-2000.,-500.),Color::White*.8));
+
+  world.addLight(new PointLight(Point(-500.,-2000.,-500.),Color::White*.8));
+  //world.addLight(new PointLight(Point(0.,0.,0.),Color::White*.4));
+
+  world.setAmbiant(Color::White*.2);
+}
+
+void setCamera(Camera& cam){
+  Point c(-2,-300,0);
+  Point s(0,-12,1000);
+  Vector z=c.getVectorTo(s).norm()*100;
+  Vector x=Vector(1,0,0).projOrthoTo(z).norm();
+  Vector y=Vector(0,1,0).projOrthoTo(z).norm();
+  //cam=Camera(c,z,Enumeration<Vector>(512,x*.006),Enumeration<Vector>(384,y*.006));
+  cam=Camera(c,z,Enumeration<Vector>(1024,x*.003),Enumeration<Vector>(768,y*.003));
+  //cam=Camera(c,z,Enumeration<Vector>(1280,x*.0024),Enumeration<Vector>(1024,y*.0024));
+}

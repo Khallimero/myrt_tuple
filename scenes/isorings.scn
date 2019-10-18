@@ -1,0 +1,138 @@
+#define EPSILON (0.001)
+#define PLAN_TAN (M_PI/1000.)
+#define MAX_REC (250)
+#define ISO_STEP (1./500.)
+#define ISO_THRESHOLD (0.000000001)
+#define NB_REF 9
+#define MAX_REF_SS 1
+#define PHOTON_EQ_DST .5
+#define PHOTON_EQ_ANG (M_PI/10.)
+#define PHOTON_BOX_FCT 8.
+#define PHOTON_RAD 5.
+#define PHOTON_REF 5
+#define NB_PHOTON_IT 2500000
+#define NB_PHOTON_LIGHT 9
+#define PHOTON_EXP 3.
+#define CAUSTIC_PHOTON_EXP 1.
+#define RADIANCE_PHOTON_EXP .1
+
+#ifdef SCENE
+#include "CustomIsoSurface.h"
+#include "Tore.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "ChequeredPattern.h"
+#include "CustomPerlinPattern.h"
+#include "TextureBumpMap.h"
+#include "PerlinBumpMap.h"
+#include "MarblePattern.h"
+#include "InfiniteLight.h"
+#include "SphericLight.h"
+#include "PointLight.h"
+#include "Sphere.h"
+
+#define COBALT Color("3D59AB")
+#define LIGHTCOL (Color::White)
+
+static const double pi=16.*M_PI/3.;
+static const double a=cos(M_PI*4./6.)/4.;
+static const double b=sin(M_PI*4./6.)/4.;
+static const double c=1./4.;
+static const double pp=1./64.;
+
+double getValue(const Point& p)
+{
+    const double r=(atan2(p.getZ(),p.getX())/(2.*M_PI))+.5;
+    const double rp=r*pi;
+    const double n=sin(r*10.*M_PI);
+    const double x=sqrt(SQ(p.getX())+SQ(p.getZ()))-1.5;
+    const double y=p.getY();
+    const double cs=cos(rp);
+    const double sn=sin(rp);
+    const double t=1-n*.2;
+    const double px=(x*sn+y*cs)*t;
+    const double py=(x*cs-y*sn)*t;
+
+    return n*0.01-0.945
+           +(pow(SQ(px+c)+SQ(py),pp)
+             +pow(SQ(px+a)+SQ(py+b),pp)
+             +pow(SQ(px+a)+SQ(py-b),pp))
+           *(n/800.+.33);
+}
+
+//#define RSEED 0L
+
+const double size=400;
+
+void buildScene(Scene& world)
+{
+    Point ct(0,0,3000);
+
+    Shape* r1=new CustomIsoSurface(getValue,size,
+                                   new Tore(1.5,.5),
+                                   Mark(ct,Rotation(-M_PI/2.,0,0)));
+    r1->setTexture(new BasicTexture(Color::White*.9),Undefined);
+    r1->setBumpMap(new TextureBumpMap(new MarblePattern(new BasicTexture(Color::White),
+                                      new BasicTexture(Color::Black),50),2.),
+                   Volumic);
+    r1->setDiffCoeff(.5);
+    world.addShape(r1);
+
+    Shape* r2=new CustomIsoSurface(getValue,size,
+                                   new Tore(1.5,.5),
+                                   Mark(ct,Rotation(M_PI/2.,0,0)));
+    r2->setTexture(new BasicTexture(Color::White),Undefined);
+    r2->setDiffCoeff(.05);
+    r2->setSpecCoeff(.4);
+    r2->setGlareCoeff(1000);
+    r2->setReflectCoeff(.1);
+    r2->setRefractCoeff(.9);
+    r2->setDensity(1.3);
+    r2->setBeer(180,2,COBALT*1.1);
+    world.addShape(r2);
+
+    Shape* p=new Plan(3000+size*.3,Point(0,0,0),
+                      Mark(Point(0.,0.,1.0),Rotation::random()));
+    p->setTexture(new ChequeredPattern(new CustomPerlinPattern(new BasicTexture(Color::White),
+                                       new BasicTexture(Color::Black),2,4,3,600),
+                                       new BasicTexture(Color::White),Vector::Unit/200.),
+                  Planar);
+    p->setDiffCoeff(.75);
+    p->setReflectCoeff(.1);
+    world.addShape(p);
+
+    //world.addLight(new InfiniteLight(Vector(.35,-.8,0.3),LIGHTCOL*.4));
+    //world.addLight(new InfiniteLight(Vector(0,0,1),LIGHTCOL*.2));
+    //world.addLight(new PointLight(Point(0,0,0),LIGHTCOL*.8));
+
+    world.addLight(new SphericLight(200,ct+Vector(.35,-.8,.3).norm()*-5000.,LIGHTCOL*1.6));
+    //world.addLight(new PointLight(ct+Vector(.35,-.8,.3).norm()*-50000.,LIGHTCOL*1.6));
+    world.addLight(new InfiniteLight(Vector(1,0,1),LIGHTCOL*.2));
+    world.setAmbiant(LIGHTCOL*.2);
+
+    //world.setFog(Fog(Color::White,50000,2.0));
+
+    world.setPhotonBoxIn(new Sphere(size*2.,Mark(ct)));
+    world.setPhotonBoxOut(new Sphere(size*20.,Mark(ct)));
+}
+
+void setCamera(Camera& cam)
+{
+    Point sc=Point(0,-100,3000);
+    Point cp=Point(-5000,3200,-1200);
+    Vector cv=cp.getVectorTo(sc).norm()*100;
+
+    Vector v1=Vector(1,1,0).projOrthoTo(cv).norm();
+    Vector v2=cv.prodVect(v1).norm();
+
+    //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
+    cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
+    //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality)
+{
+    //rendererQuality.setAliasing(3);
+    //rendererQuality.setShadow(25);
+}
+#endif

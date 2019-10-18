@@ -1,0 +1,119 @@
+#include "Kluchikov.h"
+#include "SubShape.h"
+#include "InterShape.h"
+#include "CustomIsoSurface.h"
+#include "Gyroid.h"
+#include "Sphere.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "CustomPerlinPattern.h"
+#include "ChequeredPattern.h"
+#include "MarblePattern.h"
+#include "PerlinBumpMap.h"
+#include "TextureBumpMap.h"
+#include "InfiniteLight.h"
+#include "PointLight.h"
+#include "PictureTexture.h"
+
+#define EMERALD Color(115./255.,158./255.,115./255.)
+#define RUBY Color(224./255.,17./255.,95./255.)
+#define LIGHTCOL (Color::white)
+#define BRUN Color(238,207,161)*(1./255.)*.9
+
+double size=500;
+
+void buildScene(Scene& world){
+  /*world.addShape(new Kluchikov(size,
+			       Mark(Point(-300,0,3000),Rotation(M_PI/2.,.5,-.3)),
+			       new MarblePattern(new BasicTexture(Color::white*.9),
+						 new BasicTexture(RUBY*.8),50),Volumic,
+			       .95,0.3,1000,0,0,1,true,1,Color::white,
+			       new TextureBumpMap(new MarblePattern(new BasicTexture(Color::white),
+								    new BasicTexture(Color::black),50),2.),
+			       Volumic,Vector(1,1,1)
+			       ));*/
+
+  //Texture *earth=new PictureTexture("../Pictures/earth.ppm");
+
+  world.addShape(
+		 new InterShape(new Gyroid(0.5,65,
+					   new Sphere(600+1,Mark(Point(0,0,3000))),
+					   Mark(Point(0,0,3000)),
+					   new BasicTexture(BRUN),Undefined,
+					   .45,0.3,1000,0,0,1,true,1,Color::black,
+					   new TextureBumpMap(new MarblePattern(new BasicTexture(Color::white),
+										new BasicTexture(Color::black),50),2.),
+					   Volumic,Vector(1,1,1),
+					   NULL,Undefined,External),
+				new SubShape(		
+					     new Sphere(600,Mark(Point(0,0,3000),Rotation(M_PI*2.*RND,M_PI*2.*RND,M_PI*2.*RND)),
+							new BasicTexture(Color::white),Undefined,
+							//earth,Planar,
+							.42,0.3,1000,0,0,1,true,1,Color::black,
+							new TextureBumpMap(new MarblePattern(new BasicTexture(Color::white),
+											     new BasicTexture(Color::black),50),2.),
+							Volumic,Vector(1,1,1),
+							NULL,Undefined,External
+							)
+				,
+				
+				new Sphere(500,Mark(Point(0,0,3000)),
+					   new BasicTexture(Color::white),Undefined,
+					   .42,0.3,1000,0,0,1,true,1,Color::black,
+					   new TextureBumpMap(new MarblePattern(new BasicTexture(Color::white),
+										new BasicTexture(Color::black),50),2.),
+					   Volumic,Vector(1,1,1),
+					   NULL,Undefined,External
+					   )))
+		 );
+
+
+  /*world.addShape(new Tore(size*1.5,size*.33,
+			  Mark(Point(-300,0,3000),Rotation(M_PI/2.,.5,-.3)),
+			  new BasicTexture(RUBY),Undefined,
+			  .01,0.,1000,0,.8));*/
+
+  /*world.addShape(new Plan(5000,Point::null,
+			  Mark(Point(0.2,0.5,1.0),Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)),
+			  new CustomPerlinPattern(new BasicTexture(Color::black),
+						  new BasicTexture(Color::white),2,4,3,1000),Planar,
+						  .9,0,1000));*/
+  
+  world.addShape(new Plan(8000,Point::null,
+			  Mark(Point(0.,0.,1.0),
+			       Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)),
+			  //new ChequeredTexture(Color(0.8,0.8,0.8),Vector(1.0/1000.,1.0/1000.,0)),
+			  new CustomPerlinPattern(new BasicTexture(Color::black),
+						  new BasicTexture(Color::white),2,4,3,1000),Planar,
+			  .85,0,1000,0.05,0
+			  //,new RandomBumpMap(100,100,0.05),2500
+			  ));
+
+  
+  //world.addLight(new InfiniteLight(Vector(1.,.35,1.),Color::white*.75));
+  //world.setAmbiant(Color::white*.25);
+
+  world.addLight(new PointLight(Point(0,0,3000)+Vector(.35,-.8,.3).norm()*-50000.,LIGHTCOL*1.6));
+  world.addLight(new InfiniteLight(Vector(1,0,1),LIGHTCOL*.2));
+  world.setAmbiant(LIGHTCOL*.2);
+
+}  
+
+void setCamera(Camera& cam){
+  Point sc=Point(0,0,3000);
+  Point cp=Point(-5000,3200,-1200);
+  Vector cv=cp.getVectorTo(sc).norm()*100;
+  
+  Vector v1=Vector(1,1,0).projOrthoTo(cv).norm();
+  Vector v2=cv.prodVect(v1).norm();
+  
+  //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
+  cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
+  //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+
+  //cam=Camera(Point::null,Vector(0,0,100),
+  //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+  //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+  //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}

@@ -1,0 +1,135 @@
+####### Compiler, tools and options
+
+#CXX           = ~/intel/bin/icc
+#CXXFLAGS      = -O3 -xHost
+#LFLAGS        = 
+#LINK          = ~/intel/bin/icc
+#INCPATH       = -I. -I~/intel/include -I~/intel/include/intel64
+#LIBS          = -L~/intel/lib/intel64 -lm -lpthread 
+
+CSTD	      = 
+CXX           = g++
+#DEFINES       = -std=gnu++0x -pthread
+DEFINES       = -O3 -Wall -ffast-math -pthread $(CSTD)
+#CXXFLAGS      = -O3 -Wall
+CXXFLAGS      = -m64 -mtune=native -march=native $(DEFINES)
+#CXXFLAGS      = -m64 -mtune=bdver2 -march=bdver2 $(DEFINES)
+#CXXFLAGS      = -m64 -mtune=amdfam10 -march=amdfam10 $(DEFINES)
+#CXXFLAGS      = -m64 -mtune=k8 -march=k8 $(DEFINES)
+#CXXFLAGS      = -m32 -mtune=athlon-xp -march=athlon-xp -malign-double $(DEFINES)
+#CXXFLAGS      = -m32 -mtune=native -march=native -malign-double $(DEFINES)
+#CXXFLAGS      = -m32 -mtune=pentium2 -march=pentium2 -malign-double $(DEFINES)
+#CXXFLAGS      = -m64 -mptr64 -mcpu=ultrasparc -mtune=ultrasparc $(DEFINES)
+#INCPATH       = -I. -I/usr/local/include/c++/8.4.2
+INCPATH       = -I.
+LINK          = g++
+#LINK          = g++
+LFLAGS        = -m64
+#LFLAGS        = -m32 -pthread
+LIBS          = -L/usr/local/lib64 -lm -lpthread -Wl,-rpath -Wl,/usr/local/lib64
+#LIBS          = -lm -lpthread
+AR            = ar rcs
+RANLIB        = 
+TAR           = tar -cf
+COMPRESS      = gzip -9f
+COPY          = cp -f
+SED           = sed
+COPY_FILE     = $(COPY)
+COPY_DIR      = $(COPY) -r
+STRIP         = strip
+INSTALL_FILE  = install -m 644 -p
+INSTALL_DIR   = $(COPY_DIR)
+INSTALL_PROGRAM = install -m 755 -p
+DEL_FILE      = rm -f
+SYMLINK       = ln -f -s
+DEL_DIR       = rm -rf
+MOVE          = mv -f
+CHK_DIR_EXISTS= test -d
+MKDIR         = mkdir -p
+FORMAT        = astyle -A1
+
+####### Output directory
+
+OBJECTS_DIR   = obj
+BIN_DIR       = bin
+
+####### Files
+
+SOURCES       =	Arithmetic.cpp \
+		AutoLock.cpp \
+		Color.cpp \
+		Complex.cpp \
+		Geometric.cpp \
+		Lockable.cpp \
+		Map.cpp \
+		Mark.cpp \
+		NestedIterator.cpp \
+		Pair.cpp \
+		Picture.cpp \
+		PlanarSphericIterator.cpp \
+		Point.cpp \
+		Poly.cpp \
+		PolyRoot.cpp \
+		Ray.cpp \
+		Rotation.cpp \
+		RoundedIterator.cpp \
+		SphericIterator.cpp \
+		Thread.cpp \
+		Treble.cpp \
+		Tuple.cpp \
+		Vector.cpp \
+		VolumicSphericIterator.cpp
+
+OBJECTS       =	Arithmetic.o \
+		AutoLock.o \
+		Color.o \
+		Complex.o \
+		Geometric.o \
+		Lockable.o \
+		Map.o \
+		Mark.o \
+		NestedIterator.o \
+		Pair.o \
+		Picture.o \
+		PlanarSphericIterator.o \
+		Point.o \
+		Poly.o \
+		PolyRoot.o \
+		Ray.o \
+		Rotation.o \
+		RoundedIterator.o \
+		SphericIterator.o \
+		Thread.o \
+		Treble.o \
+		Tuple.o \
+		Vector.o \
+		VolumicSphericIterator.o
+
+TARGET        = core.a
+
+first:
+	$(MKDIR) $(OBJECTS_DIR)
+
+####### Implicit rules
+
+.SUFFIXES: .o .cpp .a
+
+.cpp.o:
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJECTS_DIR)/"$@" "$<"
+
+.o.a:
+	$(AR) $(BIN_DIR)/"$@" "$<"
+
+####### Build rules
+
+clean:
+	-$(DEL_FILE) *~ $(OBJECTS_DIR)/*.o $(TARGET) *.orig
+	-$(DEL_DIR) $(OBJECTS_DIR) $(BIN_DIR)
+
+format:
+	-$(FORMAT) *.h *.cpp
+
+all: Makefile $(TARGET)
+
+$(TARGET): $(OBJECTS)  
+	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)

@@ -1,0 +1,76 @@
+#include "PLYShape.h"
+#include "BasicTexture.h"
+#include "Plan.h"
+#include "PointLight.h"
+#include "SphericLight.h"
+#include "CustomPerlinPattern.h"
+#include "Sphere.h"
+#include "Point.h"
+#include "Vector.h"
+
+/*
+#define EPSILON (0.001)
+#define PLAN_TAN (M_PI/1000.)
+#define MAX_REC (250)
+#define ISO_STEP (.01)
+#define ISO_TH (0.00000001)
+#define NB_REF 5
+#define MAX_REF_SS 1
+#define PHOTON_EQ_DST 0.001
+#define PHOTON_EQ_ANG (M_PI/100.)
+#define PHOTON_BOX_FCT 2.
+#define PHOTON_RAD 5.
+#define PHOTON_REF 1
+#define NB_PHOTON_IT 0
+#define NB_PHOTON_LIGHT 0
+#define PHOTON_EXP 1.
+#define CAUSTIC_PHOTON_EXP 1.
+#define RADIANCE_PHOTON_EXP .1
+*/
+
+#define ORANGE Color("DFAF7B")
+#define JADE Color("B6D4B4")
+
+void buildScene(Scene& world){
+  Shape* hand=new PLYShape("/home/kortex/ply/hand.ply",
+			    100,Mark(Point(0,0,1000),Rotation(-M_PI/6.,-M_PI/6.,0)));
+  hand->setTexture(new BasicTexture(Color::White));
+  /*hand->setTexture(new CustomPerlinPattern(new BasicTexture(JADE*1.3),
+					     new BasicTexture(JADE),
+					     4,3,2,2),Volumic);*/
+  hand->setDiffCoeff(.7);
+  hand->setSpecCoeff(.4);
+  hand->setGlareCoeff(100);
+  hand->setRadianceCoeff(.1);
+  hand->setReflectCoeff(.07);
+  world.addShape(hand);
+
+  Shape* plan=new Plan(0,Point(0,0,0),
+		       Mark(Point(0.,1.,0.)));
+  plan->setTexture(new BasicTexture(ORANGE));
+  plan->setDiffCoeff(1.);
+  plan->setRadianceCoeff(.2);
+  world.addShape(plan);
+
+  //world.setPhotonBoxIn(new Sphere(20,Mark(Point(0,0,1000))));
+
+  //world.addLight(new PointLight(Point(-500.,-2000.,-1500.),Color::White*.8));
+  world.addLight(new SphericLight(200,Point(-500.,-2000.,-1500.),Color::White*.8));
+  world.setAmbiant(Color::White*.2);
+}
+
+void setCamera(Camera& cam){
+  Point c(300,-400,00);
+  Point s(300,-300,1000);
+  Vector z=c.getVectorTo(s).norm()*100;
+  Vector x=Vector(1,0,0).projOrthoTo(z).norm();
+  Vector y=Vector(0,1,0).projOrthoTo(z).norm();
+  //cam=Camera(c,z,Enumeration<Vector>(512,x*.006),Enumeration<Vector>(384,y*.006));
+  //cam=Camera(c,z,Enumeration<Vector>(1024,x*.003),Enumeration<Vector>(768,y*.003));
+  cam=Camera(c,z,Enumeration<Vector>(1280,x*.1),Enumeration<Vector>(1024,y*.1));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality){
+  //rendererQuality.setAliasing(3);
+  //rendererQuality.setShadow(25);
+}

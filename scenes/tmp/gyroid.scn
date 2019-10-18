@@ -1,0 +1,150 @@
+#include "SubShape.h"
+#include "AddShape.h"
+#include "InterShape.h"
+#include "CustomIsoSurface.h"
+#include "Gyroid.h"
+#include "Sphere.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "CustomPerlinPattern.h"
+#include "ChequeredPattern.h"
+#include "MarblePattern.h"
+#include "PerlinBumpMap.h"
+#include "TextureBumpMap.h"
+#include "InfiniteLight.h"
+#include "PointLight.h"
+#include "PictureTexture.h"
+#include "PerlinNoise.h"
+
+#define EMERALD Color(115./255.,158./255.,115./255.)
+#define RUBY Color(224./255.,17./255.,95./255.)
+#define LIGHTCOL (Color(1,1,1))
+#define BRUN Color(238,207,161)*(1./255.)*.9
+#define COBALT Color(61,89,171)*(1./255.)
+
+#define TEX(s) \
+  s->setTexture(new BasicTexture(COBALT*.8));\
+  s->setDiffCoeff(.1);\
+  s->setSpecCoeff(.5);\
+  s->setGlareCoeff(1000);\
+  s->setReflectCoeff(0.05);\
+  s->setRefractCoeff(0.9);\
+  s->setDensity(1.58);\
+  s->setBeer(200,COBALT*1.2);
+
+static PerlinNoise pn;
+
+double gyroid1(const Point& p){
+  double d=p.dist(Point::null)*10000.;
+  double c=1.+log(1.+d);
+  Vector v=Point::null.getVectorTo(p).norm();
+  Point q=Point::null+(v*c);
+
+  return pn.noise(p*(2./1.))/4.
+    -.2
+    +cos(q.getX())*sin(q.getY())
+    +cos(q.getY())*sin(q.getZ())
+    +cos(q.getZ())*sin(q.getX());
+
+  /*return pn.noise(q*(2./1.))/2.-.5
+    +sin(2.*q.getX())*cos(q.getY())*sin(q.getZ())
+    +sin(2.*q.getY())*cos(q.getZ())*sin(q.getX())
+    +sin(2.*q.getZ())*cos(q.getX())*sin(q.getY())
+    +cos(2.*q.getX())*sin(q.getY())*cos(q.getZ())
+    +cos(2.*q.getY())*sin(q.getZ())*cos(q.getX())
+    +cos(2.*q.getZ())*sin(q.getX())*cos(q.getY());*/
+}
+
+double gyroid2(const Point& p){
+  return .8+gyroid1(p);
+}
+
+double gyroid3(const Point& p){
+  return 1.+gyroid1(p);
+}
+
+double size=3000;
+double gyrsize=size*.2;
+
+void buildScene(Scene& world){
+
+  world.setCausticBoxIn(new Sphere(size+1.,Mark(Point(0,0,3000))));
+  world.setCausticBoxOut(new Sphere(size*10.,Mark(Point(0,0,3000))));
+
+  world.setRadianceBoxIn(new Sphere(size+1.,Mark(Point(0,0,3000))));
+  world.setRadianceBoxOut(new Sphere(size*10.,Mark(Point(0,0,3000))));
+
+  Shape *s1=new CustomIsoSurface(gyroid1,
+				 gyrsize,
+				 //new SubShape(
+				 new Sphere(.99),
+				 //new Sphere(size_int,Mark(Point(0,0,3000)))),
+				 Mark(Point(0,0,3000)));
+  s1->setTexture(new BasicTexture(Color::White));
+  s1->setDiffCoeff(.75);
+  world.addShape(s1);
+
+  Shape *s2=new CustomIsoSurface(gyroid2,
+				 gyrsize,
+				 new Sphere(1.01),
+				 Mark(Point(0,0,3000)));
+  TEX(s2);
+  
+  Shape *s3=new Sphere(gyrsize,
+		       Mark(Point(0,0,3000)));
+  TEX(s3);
+
+  Shape *s4=new InterShape(s2,s3);
+  world.addShape(s4);
+  
+/*world.addShape(new Plan(8000,Point::null,
+			  Mark(Point(0.,0.,1.0),
+			       Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)),
+			  //new ChequeredTexture(Color(0.8,0.8,0.8),Vector(1.0/1000.,1.0/1000.,0)),
+			  new CustomPerlinPattern(new BasicTexture(Color::balck),
+						  new BasicTexture(Color::white),2,4,3,1000),Planar,
+			  .85,0,1000,0.05,0
+			  //,new RandomBumpMap(100,100,0.05),2500
+			  ));*/
+
+  
+
+  /*world.addLight(new PointLight(Point(0,0,3000),LIGHTCOL*10.));
+  world.addShape(new Sphere(size_int/2.,Mark(Point(0,0,3000)),
+			    new BasicTexture(Color::white),Undefined,
+			    .8,0,1000,0,.8));*/
+  
+
+  //world.addLight(new PointLight(Point(0,0,3000),LIGHTCOL*.4,50));
+  world.addLight(new InfiniteLight(Vector(.35,-.8,.3),LIGHTCOL*.8,50));
+  //world.addLight(new InfiniteLight(Vector(1,0,1),LIGHTCOL*.2));
+  world.addLight(new PointLight(Point(0,0,-10000),LIGHTCOL*.4,50));
+  world.addLight(new PointLight(Point(-10000,10000,0),LIGHTCOL*.4,50));
+  world.addLight(new PointLight(Point(-5000,3200,-1200),LIGHTCOL*.2));
+  world.setAmbiant(LIGHTCOL*.2);
+
+}  
+
+void setCamera(Camera& cam){
+  Point sc=Point(0,0,3000);
+  Point cp=Point(-5000,3200,-1200);
+  Vector cv=cp.getVectorTo(sc).norm()*100;
+  
+  Vector v1=Vector(1,1,0).projOrthoTo(cv).norm();
+  Vector v2=cv.prodVect(v1).norm();
+  
+  //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
+  cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
+  //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+
+  //cam=Camera(Point::null,Vector(0,0,100),
+  //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+  //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+  //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality){
+  //rendererQuality.setAliasing(3);
+  //rendererQuality.setShadow(25);
+}

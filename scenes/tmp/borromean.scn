@@ -1,0 +1,67 @@
+#include "Knot.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "CustomPerlinPattern.h"
+#include "InfiniteLight.h"
+
+#define EMERALD Color(115./255.,158./255.,115./255.)
+#define RUBY Color(224./255.,17./255.,95./255.)
+#define SAPHIR Color(0./255.,48./255.,180./255.)
+#define WHITE Color(1,1,1)
+
+void buildScene(Scene& world){
+  double csize=600;
+  //double x1=0,y1=-sqrtl(3.)/9.;
+  //double x2=-sqrtl(3.)/6.,y2=1./2.;
+  //double x3=sqrtl(3.)/6.,y3=1./2.;
+  double x1=0,y1=-0.3;
+  double x2=-0.4,y2=0.3;
+  double x3=0.4,y3=0.3;
+  double ssize=csize/3.;
+  int step=180;
+  double rad=80;
+
+  world.addShape(new Knot(1,1,1,1,1,3,
+			  ssize,step,rad,
+			  Mark(Point(-250+x1*csize,-100+y1*csize,3000),Rotation(-M_PI/2.0,M_PI/6.,0)),
+			  new BasicTexture(WHITE),Undefined,
+			  .01,0.5,250,0.2
+			  ,0.9,1.8,false,100,EMERALD/*,
+						      new PerlinBumpMap(.01),Volumic,Vector(1,1,1)*10*/));
+
+  world.addShape(new Knot(1,1,1,1,1,3,
+			  ssize,step,rad,
+			  Mark(Point(-250+x2*csize,-100+y2*csize,3000),Rotation(-M_PI/2.0,M_PI/6.,0)),
+			  new BasicTexture(WHITE),Undefined,
+			  .01,0.5,250,0.2
+			  ,0.9,1.8,false,100,RUBY/*,
+						   new PerlinBumpMap(.25),Volumic,Vector(1,1,1)*150*/));
+
+  world.addShape(new Knot(1,1,1,1,1,3,
+			  ssize,step,rad,
+			  Mark(Point(-250+x3*csize,-100+y3*csize,3000),Rotation(-M_PI/2.0,M_PI/6.,0)),
+			  new BasicTexture(WHITE),Undefined,
+			  .01,0.5,250,0.2
+			  ,0.9,1.8,false,100,SAPHIR/*,
+						     new PerlinBumpMap(.25),Volumic,Vector(1,1,1)*150*/));
+
+  world.addShape(new Plan(4000,Point::null,
+			  Mark(Point(0.1,0.3,1.0),
+			       Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)),
+			  //new BasicTexture(Color(.8,.8,.8)),
+			  new CustomPerlinPattern(new BasicTexture(Color::black),
+						  new BasicTexture(Color::white),2,4,3,1000),Planar,
+			  .9,0,1000));
+
+
+  world.addLight(new InfiniteLight(Vector(1.,.45,1.),Color(1,1,1)*.75));
+  world.setAmbiant(Color(1,1,1)*.25);
+}
+
+void setCamera(Camera& cam){
+  cam=Camera(Point::null,Vector(0,0,100),
+	     Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+  //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+  //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}

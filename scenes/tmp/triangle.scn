@@ -1,0 +1,57 @@
+#include "HyperTriangle.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "MarblePattern.h"
+#include "CustomPerlinPattern.h"
+#include "PerlinBumpMap.h"
+#include "TextureBumpMap.h"
+#include "TextureCarveMap.h"
+#include "InfiniteLight.h"
+
+#define EMERALD Color(115./255.,158./255.,115./255.)
+#define RUBY Color(224./255.,17./255.,95./255.)
+
+void buildScene(Scene& world){
+  srand(0);
+  
+  Rotation rot=Rotation(M_PI*2.*RND,M_PI*2.*RND,M_PI*2.*RND);
+  Point ct=Point(-300,0,3000);
+  
+  world.addShape(new HyperTriangle(.95,.8,4.5,200,
+				   Mark(ct,rot),
+				   new BasicTexture(EMERALD),Undefined,
+				   .85,0.5,250,0.01
+				   ,0,1,true,1,EMERALD,
+				   new TextureBumpMap(new MarblePattern(new BasicTexture(Color::white),
+									new BasicTexture(Color::black),50),2.),
+				   Volumic,Vector(1,1,1)*100.,
+				   new TextureCarveMap(new CustomPerlinPattern(new BasicTexture(Color::white),
+									       new BasicTexture(Color::black),6,3,5,.2),.35),Volumic));
+  
+  world.addShape(new HyperTriangle(.95,.7,4.3,200,
+				   Mark(ct,rot),
+				   new BasicTexture(RUBY),Undefined,
+				   .2,0.,1000,0.
+				   ,.65,1.4,false,1000,RUBY,
+				   new PerlinBumpMap(.05),Volumic,Vector(1,1,1)*100
+				   ));
+  
+  world.addShape(new Plan(5000,Point(0,0,0),
+			  Mark(Point(0.2,0.5,1.0),Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)),
+			  new CustomPerlinPattern(new BasicTexture(Color::black),
+						  new BasicTexture(Color::white),2,4,3,1000),Planar,
+			  .9,0,1000));
+  
+  
+  world.addLight(new InfiniteLight(Vector(1.,.35,1.),Color::white*.75));
+  world.addLight(new InfiniteLight(Vector(-2.,0,1.),Color::white*.25));
+  world.setAmbiant(Color::white*.1);
+}
+  
+void setCamera(Camera& cam){
+  cam=Camera(Point(0,0,0),Vector(0,0,100),
+	     //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+	     Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+  //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+}

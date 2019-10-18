@@ -1,0 +1,82 @@
+#include "DecoSphere.h"
+#include "Sphere.h"
+#include "Plan.h"
+#include "BasicTexture.h"
+#include "CustomPerlinPattern.h"
+#include "ChequeredPattern.h"
+#include "MarblePattern.h"
+#include "PerlinBumpMap.h"
+#include "TextureBumpMap.h"
+#include "InfiniteLight.h"
+#include "PointLight.h"
+#include "SubShape.h"
+
+/*
+  #define NB_REF 5
+  #define PHOTON_REF 2
+  #define NB_PHOTON 50000000
+  #define PHOTON_RAD 5.
+  #define PHOTON_BOX_FCT 8.
+  #define PHOTON_EXP 2.
+*/
+
+#define EMERALD Color(115./255.,158./255.,115./255.)
+#define RUBY Color(224./255.,17./255.,95./255.)
+
+double size=150;
+
+void buildScene(Scene& world){
+  Shape* decosphere=new DecoSphere(size,
+				   Mark(Point(-300,0,3000),Rotation(RND*2.*M_PI,RND*2.*M_PI,RND*2.*M_PI)));
+  decosphere->setTexture(new MarblePattern(new BasicTexture(Color::White*.9),new BasicTexture(RUBY*.8),50),
+			 Volumic);
+  decosphere->setBumpMap(new TextureBumpMap(new MarblePattern(new BasicTexture(Color::White),
+							      new BasicTexture(Color::Black),50),2.),
+			 Volumic);
+  decosphere->setDiffCoeff(.95);
+  world.addShape(decosphere);
+  
+  Shape* sphere=new Sphere(size*4.,Mark(Point(-300,0,3000)));
+  sphere->setTexture(new BasicTexture(EMERALD));
+  sphere->setBumpMap(new PerlinBumpMap(.1),Volumic,Vector::Unit*(1./18.));
+  sphere->setDiffCoeff(.1);
+  sphere->setSpecCoeff(.5);
+  sphere->setGlareCoeff(1000);
+  sphere->setReflectCoeff(.05);
+  sphere->setRefractCoeff(.95);
+  sphere->setDensity(1.5);
+  //world.addShape(sphere);
+
+  Shape* plan=new Plan(5000,Point(0,0,0),
+		       Mark(Point(0.2,0.5,1.0),Rotation(RND*2.0*M_PI,RND*2.0*M_PI,RND*2.0*M_PI)));
+  plan->setTexture(new ChequeredPattern(new CustomPerlinPattern(new BasicTexture(Color::White),
+								new BasicTexture(Color::Black),2,4,3,600),
+					new BasicTexture(Color::White),Vector::Unit*(1./500.)),
+		   Planar);
+  plan->setDiffCoeff(.9);
+  plan->setSpecCoeff(.2);
+  plan->setGlareCoeff(1000);
+  world.addShape(plan);
+  
+  world.addLight(new PointLight(Point(-300,0,3000)+Vector(1.,.35,1.).norm()*-15000.,Color::White*.65));
+  world.setAmbiant(Color::White*.35);
+
+  //world.setPhotonBoxIn(new Sphere(size*5,Mark(Point(-300,0,3000))));
+  //world.setPhotonBoxOut(new Sphere(size*50,Mark(Point(-300,0,3000))));
+}  
+
+void setCamera(Camera& cam){
+  cam=Camera(Point(0,0,0),Vector(0,0,100),
+	     //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
+	     Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
+	     //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
+  //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+
+  //cam=Camera(Point(500,300,0),Vector(0,0,100),
+  //Enumeration<Vector>(1024,Vector(.04,0,0)),Enumeration<Vector>(768,Vector(0,.04,0)));
+  //Enumeration<Vector>(2048,Vector(.02,0,0)),Enumeration<Vector>(1536,Vector(0,.02,0)));
+
+  //cam.setFocus(Focus(2250,25,10));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality){}
