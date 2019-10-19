@@ -1,3 +1,5 @@
+#define NB_THREAD (8)
+
 //#include "scenes/chess.scn" ok
 //#include "scenes/cube.scn"
 //#include "scenes/decocube.scn" ok

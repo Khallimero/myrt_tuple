@@ -1,6 +1,6 @@
 #include "Tore.h"
 
-const Vector Tore::Unit=Vector::UnitX+Vector::UnitZ;
+const Vector Tore::Unit=Vector(1,0,1);
 
 Tore::Tore(double r1,double r2,
            const Mark& mk)

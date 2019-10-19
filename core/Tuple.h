@@ -144,10 +144,10 @@ template <typename T,int S> struct tuple_idx_fct:public tuple_fct<T>
 {
     virtual void operator()(const tuple_idx<S>&)=0;
 
-    T tamper()
+    T& tamper()
     {
         TUPLE_IDX(i,S)(*this)(i);
-        return *this;
+        return (T&)(*this);
     }
 };
 
