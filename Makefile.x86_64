@@ -8,5 +8,5 @@ AR            = ar rcs
 DEL           = rm -rf
 MKDIR         = mkdir -p
 FORMAT        = astyle -A1
-TAR           = tar -cf
+TAR           = tar
 COMPRESS      = gzip -9f
