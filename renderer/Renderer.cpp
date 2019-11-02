@@ -216,7 +216,7 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
                                PhotonBox::getInd(h.getPoint().get(i)+PHOTON_RAD)),i>=2);
         while(pbIt.next())
         {
-            const Collection<PhotonHit>* phc=photonMap.getPhotonHitCollection(h.getShape()->getId(),PhotonBox(pbIt.getTuple()));
+            const ObjCollection<PhotonHit>* phc=photonMap.getPhotonHitCollection(h.getShape()->getId(),PhotonBox(pbIt.getTuple()));
             if(phc!=NULL)
             {
                 for(int ph=0; ph<phc->_count(); ph++)

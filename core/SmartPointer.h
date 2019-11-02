@@ -59,6 +59,11 @@ public:
         return t;
     }
 
+    bool operator==(const SmartPointer<T>& that)const
+    {
+        return this->getPointer()==that.getPointer();
+    }
+
 public:
     operator T*()
     {

@@ -6,6 +6,7 @@ public:
     IteratorElement()
     {
         id=-1;
+        val=T();
     }
     IteratorElement(int i,const T& v)
     {

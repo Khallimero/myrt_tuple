@@ -1,7 +1,7 @@
 #include "ShapeCollection.h"
 
 ShapeCollection::ShapeCollection(SmartPointer<Shape> b)
-    :Collection< SmartPointer<Shape> >(true)
+    :ObjCollection< SmartPointer<Shape> >()
 {
     setBox(b);
 }

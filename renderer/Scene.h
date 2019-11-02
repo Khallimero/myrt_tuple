@@ -79,7 +79,7 @@ public:
 
 protected:
     ShapeCollection shapes;
-    Collection< SmartPointer<const Light> > lights;
+    ObjCollection< SmartPointer<const Light> > lights;
     Color ambiant;
     Fog fog;
     SmartPointer<const Sphere> photonBoxIn,photonBoxOut;

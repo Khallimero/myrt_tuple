@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-Scene::Scene():lights(true)
+Scene::Scene()
 {
     photonBoxIn=NULL,photonBoxOut=NULL;
 }

@@ -7,47 +7,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-template <typename T> class Collection:public Lockable
+template <typename T> class ICollection:public Lockable
 {
-public:
-    Collection(bool obj=false):Lockable()
+protected:
+    ICollection():Lockable()
     {
         this->nb=0;
         this->nb_alloc=0;
-        tab=NULL;
-        this->obj=obj;
-    }
-    Collection(const Collection& that)
-    {
         this->tab=NULL;
-        *this=that;
     }
 
-    Collection& operator=(const Collection& that)
-    {
-        _free();
-        this->nb_alloc=0;
-        this->tab=NULL;
-        this->obj=that.obj;
-        _reserve(that.nb,false);
-        if(this->obj)
-        {
-            for(int i=0; i<this->nb; i++)
-                this->tab[i]=that.tab[i];
-        }
-        else
-        {
-            memcpy(this->tab,that.tab,that.nb*sizeof(T));
-        }
-        this->nb=that.nb;
-
-        return *this;
-    }
-
-    virtual ~Collection()
-    {
-        _free();
-    }
+    virtual ~ICollection() {}
 
 public:
     void add(const T& t)
@@ -97,27 +67,7 @@ public:
         }
     }
 
-    void del(const T& t)
-    {
-        AutoLock autolock(this);
-        for(int i=0; i<nb; i++)
-        {
-            if(tab[i]==t)
-            {
-                if(obj)
-                {
-                    nb--;
-                    for(int j=i; j<nb; j++)
-                        tab[j]=tab[j+1];
-                }
-                else
-                {
-                    memmove(&tab[i],&tab[i+1],((--nb)-i)*sizeof(T));
-                }
-                return;
-            }
-        }
-    }
+    virtual void del(const T& t)=0;
 
     bool delLast(T& t)
     {
@@ -198,42 +148,137 @@ public:
     }
 
 private:
-    void _free()
-    {
-        if(tab)
-        {
-            if(obj)
-                delete[] tab;
-            else
-                free(tab);
-        }
-    }
-
-    void _resize(int s,bool f=true)
-    {
-        nb=MIN(nb,s);
-        if(obj)
-        {
-            T* t=new T[s];
-            if(tab)
-            {
-                for(int i=0; i<nb; i++)
-                    t[i]=tab[i];
-                delete[] tab;
-            }
-            tab=t;
-        }
-        else
-        {
-            tab=(T*)realloc(tab,s*sizeof(T));
-            if(f&&s>nb)memset(&tab[nb],0,(s-nb)*sizeof(T));
-        }
-        nb_alloc=s;
-    }
+    virtual void _free()=0;
+    virtual void _resize(int s,bool f=true)=0;
 
 protected:
     volatile int nb;
     mutable int nb_alloc;
     T* tab;
-    bool obj;
+};
+
+template <typename T> class Collection:public ICollection<T>
+{
+public:
+    Collection() {}
+
+    Collection(const Collection& that)
+    {
+        *this=that;
+    }
+
+    Collection& operator=(const Collection& that)
+    {
+        _free();
+        this->_reserve(that.nb,false);
+        memcpy(this->tab,that.tab,that.nb*sizeof(T));
+        this->nb=that.nb;
+
+        return *this;
+    }
+
+    virtual ~Collection()
+    {
+        _free();
+    }
+
+public:
+    virtual void del(const T& t)
+    {
+        AutoLock autolock(this);
+        for(int i=0; i<this->nb; i++)
+        {
+            if(this->tab[i]==t)
+            {
+                memmove(&this->tab[i],&this->tab[i+1],((--this->nb)-i)*sizeof(T));
+                return;
+            }
+        }
+    }
+
+private:
+    virtual void _free()
+    {
+        if(this->tab)
+        {
+            free(this->tab);
+            this->tab=NULL;
+        }
+        this->nb_alloc=0;
+    }
+
+    virtual void _resize(int s,bool f=true)
+    {
+        this->nb=MIN(this->nb,s);
+        this->tab=(T*)realloc(this->tab,s*sizeof(T));
+        if(f&&s>this->nb)memset(&this->tab[this->nb],0,(s-this->nb)*sizeof(T));
+        this->nb_alloc=s;
+    }
+};
+
+template <typename T> class ObjCollection:public ICollection<T>
+{
+public:
+    ObjCollection() {}
+    ObjCollection(const ObjCollection& that)
+    {
+        *this=that;
+    }
+
+    ObjCollection& operator=(const ObjCollection& that)
+    {
+        _free();
+        this->_reserve(that.nb,false);
+        for(int i=0; i<this->nb; i++)
+            this->tab[i]=that.tab[i];
+        this->nb=that.nb;
+
+        return *this;
+    }
+
+    virtual ~ObjCollection()
+    {
+        _free();
+    }
+
+public:
+    virtual void del(const T& t)
+    {
+        AutoLock autolock(this);
+        for(int i=0; i<this->nb; i++)
+        {
+            if(this->tab[i]==t)
+            {
+                this->nb--;
+                for(int j=i; j<this->nb; j++)
+                    this->tab[j]=this->tab[j+1];
+                return;
+            }
+        }
+    }
+
+private:
+    virtual void _free()
+    {
+        if(this->tab)
+        {
+            delete[] this->tab;
+            this->tab=NULL;
+        }
+        this->nb_alloc=0;
+    }
+
+    virtual void _resize(int s,bool f=true)
+    {
+        this->nb=MIN(this->nb,s);
+        T* t=new T[s];
+        if(this->tab)
+        {
+            for(int i=0; i<this->nb; i++)
+                t[i]=this->tab[i];
+            delete[] this->tab;
+        }
+        this->tab=t;
+        this->nb_alloc=s;
+    }
 };

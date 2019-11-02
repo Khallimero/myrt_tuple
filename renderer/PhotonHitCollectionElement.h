@@ -15,7 +15,7 @@ public:
     {
         return pBox;
     }
-    Collection<PhotonHit>* getPhotonHits()
+    ObjCollection<PhotonHit>* getPhotonHits()
     {
         return &pHits;
     }
@@ -27,5 +27,5 @@ public:
 
 protected:
     PhotonBox pBox;
-    Collection<PhotonHit> pHits;
+    ObjCollection<PhotonHit> pHits;
 };

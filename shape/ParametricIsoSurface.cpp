@@ -6,7 +6,7 @@
 ParametricIsoSurface::ParametricIsoSurface(const ParametricPrimitive<1> *prim,
         double size,double spin,int steps,double rad,
         const Mark& mk)
-    :StraightShapeBuilder(1.0,spin,steps,rad/size),IsoSurface(size,NULL,mk),points(true)
+    :StraightShapeBuilder(1.0,spin,steps,rad/size),IsoSurface(size,NULL,mk)
 {
     this->prim=prim;
 

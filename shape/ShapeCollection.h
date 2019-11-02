@@ -4,7 +4,7 @@
 #include "Shape.h"
 #include "SmartPointer.h"
 
-class ShapeCollection:public Collection< SmartPointer<Shape> >
+class ShapeCollection:public ObjCollection< SmartPointer<Shape> >
 {
 public:
     ShapeCollection(SmartPointer<Shape> b=SmartPointer<Shape>(NULL));

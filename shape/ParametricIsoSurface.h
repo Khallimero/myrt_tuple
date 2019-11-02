@@ -18,5 +18,5 @@ protected:
 
 protected:
     const ParametricPrimitive<1> *prim;
-    Collection<Point> points;
+    ObjCollection<Point> points;
 };

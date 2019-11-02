@@ -30,6 +30,10 @@ protected:
         Point pt[3];
         Point b;
         Vector n;
+        bool operator==(const PLYPrimitive& that)
+        {
+            return false;
+        }
     };
 
     struct PLYBox
@@ -37,6 +41,10 @@ protected:
         const Sphere* s;
         Collection<const PLYPrimitive*> prm;
         Collection<const PLYPrimitive*> ht;
+        bool operator==(const PLYBox& that)
+        {
+            return this->s==that.s;
+        }
     };
 
     struct PLYLargeBox
@@ -77,8 +85,8 @@ protected:
     bool smoothNormal;
     Treble<double> size;
     const Shape* box;
-    Collection<PLYPrimitive> shapes;
-    Collection<PLYBox> boxes;
+    ObjCollection<PLYPrimitive> shapes;
+    ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;
     int nb_box;
 };

@@ -15,8 +15,8 @@ public:
 
 public:
     void addPhotonHit(int shapeId,const PhotonHit& ph);
-    Collection<PhotonHit>* addPhotonBox(int shapeId,const PhotonBox& pBox);
-    const Collection<PhotonHit>* getPhotonHitCollection(int shapeId,const PhotonBox& pBox);
+    ObjCollection<PhotonHit>* addPhotonBox(int shapeId,const PhotonBox& pBox);
+    const ObjCollection<PhotonHit>* getPhotonHitCollection(int shapeId,const PhotonBox& pBox);
     int getNbPhotonHitCollection();
 
 protected:

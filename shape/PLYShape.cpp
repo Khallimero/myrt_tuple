@@ -350,7 +350,7 @@ void PLYShape::buildFromFile(const char* filename)
                             }
                             while(strncmp(buf,"property",strlen("property"))==0);
 
-                            Collection<Point> vtx;
+                            ObjCollection<Point> vtx;
 
                             if(strcmp(fmt,"ascii")!=0)
                             {

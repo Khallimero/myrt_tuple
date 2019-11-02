@@ -12,8 +12,8 @@ public:
 
 public:
     void addPhotonHit(const PhotonHit& ph);
-    Collection<PhotonHit>* addPhotonBox(const PhotonBox& pBox);
-    const Collection<PhotonHit>* getPhotonHitCollection(const PhotonBox& pBox);
+    ObjCollection<PhotonHit>* addPhotonBox(const PhotonBox& pBox);
+    const ObjCollection<PhotonHit>* getPhotonHitCollection(const PhotonBox& pBox);
     int getNbPhotonHits()const
     {
         return count();

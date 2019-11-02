@@ -15,7 +15,7 @@ void PhotonHitCollection::addPhotonHit(const PhotonHit& ph)
     c->addPhotonHit(ph);
 }
 
-Collection<PhotonHit>* PhotonHitCollection::addPhotonBox(const PhotonBox& pBox)
+ObjCollection<PhotonHit>* PhotonHitCollection::addPhotonBox(const PhotonBox& pBox)
 {
     return addElement(new PhotonHitCollectionElement(pBox))->getPhotonHits();
 }
@@ -29,7 +29,7 @@ PhotonHitCollectionElement* PhotonHitCollection::addElement(PhotonHitCollectionE
     return c;
 }
 
-const Collection<PhotonHit>* PhotonHitCollection::getPhotonHitCollection(const PhotonBox& pBox)
+const ObjCollection<PhotonHit>* PhotonHitCollection::getPhotonHitCollection(const PhotonBox& pBox)
 {
     PhotonHitCollectionElement e(pBox);
     AutoLock autolock(this);

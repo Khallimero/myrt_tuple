@@ -20,7 +20,7 @@ void PhotonMap::addPhotonHit(int shapeId,const PhotonHit& ph)
     c->getCollection().addPhotonHit(ph);
 }
 
-Collection<PhotonHit>* PhotonMap::addPhotonBox(int shapeId,const PhotonBox& pBox)
+ObjCollection<PhotonHit>* PhotonMap::addPhotonBox(int shapeId,const PhotonBox& pBox)
 {
     PhotonMapElement* c=insertShapeId(shapeId);
     return c->getCollection().addPhotonBox(pBox);
@@ -36,7 +36,7 @@ PhotonMapElement* PhotonMap::insertShapeId(int shapeId)
     return c;
 }
 
-const Collection<PhotonHit>* PhotonMap::getPhotonHitCollection(int shapeId,const PhotonBox& pBox)
+const ObjCollection<PhotonHit>* PhotonMap::getPhotonHitCollection(int shapeId,const PhotonBox& pBox)
 {
     PhotonMapElement e(shapeId);
     AutoLock autolock(this);
