@@ -10,8 +10,8 @@
 #define PHOTON_BOX_FCT 20.
 #define PHOTON_RAD 5.
 #define PHOTON_REF 5
-#define NB_PHOTON_IT 2000000
-#define NB_PHOTON_LIGHT (15*15)
+#define NB_PHOTON_IT 50000
+#define NB_PHOTON_LIGHT (25*25)
 #define PHOTON_EXP 4.
 #define CAUSTIC_PHOTON_EXP 1.
 #define RADIANCE_PHOTON_EXP .2
@@ -27,6 +27,7 @@
 #include "SphericLight.h"
 
 #define ORANGE (Color("FFA200")*.9)
+#define YELLOW Color("FFFFC0")
 #define ARGENT Color("C0C0C0")
 #define LIGHTCOL Color::White
 
@@ -38,12 +39,12 @@
   s->setReflectCoeff(.02)
 
 #define TOR_MAT(s)						\
-  s->setTexture(new BasicTexture(Color::White),Undefined);	\
+  s->setTexture(new BasicTexture(YELLOW),Undefined);		\
   s->setDiffCoeff(.02);						\
   s->setSpecCoeff(1);						\
   s->setGlareCoeff(1000);					\
   s->setReflectCoeff(.15);					\
-  s->setRefractCoeff(.95);					\
+  s->setRefractCoeff(.85);					\
   s->setDensity(1.8);						\
   s->setBeer(7,2,ORANGE)
 
