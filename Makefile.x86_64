@@ -2,7 +2,7 @@ CXX           = g++
 DEFINES       = -O3 -Wall -ffast-math -pthread
 CXXFLAGS      = -m64 -mtune=native -march=native $(DEFINES)
 INCPATH       = -I.
-LINKLIBS      = -L/usr/lib/x86_64-linux-gnu -lm -lpthread -Wl,-rpath -Wl,/usr/lib/x86_64-linux-gnu
+LINKLIBS      = -lm -lpthread
 STRIP         = strip
 AR            = ar rcs
 DEL           = rm -rf
