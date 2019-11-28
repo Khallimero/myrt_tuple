@@ -51,6 +51,7 @@ Hit Tore::_getHit(const Ray& r)const
     {
         static const struct unit_unary_op:public unary_op<double,double>
         {
+            unit_unary_op() {}
             virtual double operator()(const volatile double& d)const
             {
                 return d>0?1:-1;

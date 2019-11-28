@@ -42,7 +42,7 @@ TPoly<HYPERCUBE_POLY_ORDER> HyperCube::_getPoly(const Point& p,const Vector& v)c
         virtual void operator()(const double& d1,const double& d2)
         {
             TPoly<1> p1;
-            TPoly<1>::initFromCoeffList(p1,d1,d2);
+            TPoly<1>::initFromCoeffList(&p1,d1,d2);
             TPoly<2> p2=p1.sq();
             (**this)-=p2*5;
             (**this)+=p2.sq();

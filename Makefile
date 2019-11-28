@@ -25,7 +25,7 @@ tar: clean
 $(TARGET): libs
 	@$(MKDIR) $(dir $@)
 	$(eval $(REVERSELIB))
-	$(CXX) $(CXXFLAGS) $(INCPATH) $(addprefix -I./,$(LIBLIST)) $(SOURCE) -o $(TARGET) -L$(LIBDIR) $(LINKLIBS) -static $(addprefix -l,$(LIBORDER))
+	$(CXX) $(CXXFLAGS) $(INCPATH) $(addprefix -I./,$(LIBLIST)) $(SOURCE) -o $(TARGET) -L$(LIBDIR) $(LINKLIBS) $(addprefix -l,$(LIBORDER))
 
 libs: $(LIB)
 

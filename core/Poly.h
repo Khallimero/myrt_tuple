@@ -92,12 +92,12 @@ public:
         return coeffs;
     }
 
-    static void initFromCoeffList(Poly& p,...)
+    static void initFromCoeffList(Poly* p,...)
     {
         va_list vl;
         va_start(vl,p);
         for(int i=0; i<=ORDER; i++)
-            p[i]=va_arg(vl,double);
+            (*p)[i]=va_arg(vl,double);
         va_end(vl);
     }
 

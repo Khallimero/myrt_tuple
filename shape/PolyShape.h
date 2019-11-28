@@ -65,7 +65,7 @@ protected:
         }
         virtual void operator()(const double& d1,const double& d2)
         {
-            TPoly<1>::initFromCoeffList(poly[idx],d1,d2);
+            TPoly<1>::initFromCoeffList(&poly[idx],d1,d2);
             sqPoly[idx]=poly[idx].sq();
             (**this)+=sqPoly[idx];
             ++idx;

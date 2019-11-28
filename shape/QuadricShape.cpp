@@ -55,7 +55,7 @@ TPoly<QUADRICSHAPE_POLY_ORDER> QuadricShape::_getPoly(const Point& p,const Vecto
         virtual void operator()(const tuple_idx<TREBLE_SIZE>& i)
         {
             TPoly<1> poly;
-            TPoly<1>::initFromCoeffList(poly,p(i),v(i));
+            TPoly<1>::initFromCoeffList(&poly,p(i),v(i));
             (**this)+=poly.sq()*coeff(i);
         }
 
