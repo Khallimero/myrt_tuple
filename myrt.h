@@ -1,15 +1,15 @@
 #define NB_THREAD (8)
 
-//#include "scenes/chess.scn" ok
+//#include "scenes/chess.scn"
 //#include "scenes/cube.scn"
-//#include "scenes/decocube.scn" ok
+//#include "scenes/decocube.scn"
 //#include "scenes/dragon.scn"
-//#include "scenes/hypercube.scn" ok
+//#include "scenes/hypercube.scn"
 //#include "scenes/isoriemann.scn"
 //#include "scenes/isorings.scn"
 //#include "scenes/mandelbulb.scn"
 //#include "scenes/marianne.scn"
-//#include "scenes/mobiustore.scn" ok
+//#include "scenes/mobiustore.scn"
 //#include "scenes/rings.scn"
 //#include "scenes/torusknot.scn"
 #include "scenes/villarceau.scn"

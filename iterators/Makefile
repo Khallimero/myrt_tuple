@@ -1,7 +1,7 @@
 include ../Makefile.$(shell uname -m)
 include ../myrt.mk
 
-TARGET        = ../$(LIBDIR)/libiterator.a
+TARGET        = ../$(LIBDIR)/libiterators.a
 
 SOURCES       =	NestedIterator.cpp \
 		PlanarSphericIterator.cpp \

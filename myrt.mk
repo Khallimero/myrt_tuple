@@ -2,7 +2,7 @@ SHELL:=/bin/bash
 
 OBJDIR        = .obj
 LIBDIR        = lib
-LIBLIST       = system core iterator textures primitives CSG builders shapes renderer
+LIBLIST       = system core iterators textures primitives CSG builders shapes renderer
 
 INCPATH       = $(addprefix -I../,$(LIBLIST))
 LIB           = $(addsuffix .a,$(addprefix $(LIBDIR)/lib,$(LIBLIST)))
