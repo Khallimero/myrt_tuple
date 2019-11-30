@@ -1,7 +1,7 @@
 include ../Makefile.$(shell uname -m)
 include ../myrt.mk
 
-TARGET        = ../$(LIBDIR)/libtexture.a
+TARGET        = ../$(LIBDIR)/libtextures.a
 
 SOURCES       = BasicTexture.cpp \
 		BumpMap.cpp \

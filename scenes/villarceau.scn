@@ -11,7 +11,8 @@
 #define PHOTON_RAD 5.
 #define PHOTON_REF 5
 #define NB_PHOTON_IT 50000
-#define NB_PHOTON_LIGHT (25*25)
+#define NB_PHOTON_LIGHT (1)
+//#define NB_PHOTON_LIGHT (25*25)
 #define PHOTON_EXP 4.
 #define CAUSTIC_PHOTON_EXP 1.
 #define RADIANCE_PHOTON_EXP .2
@@ -117,9 +118,9 @@ void setCamera(Camera& cam)
     Vector v1=Vector(1,1,0).projOrthoTo(cv).norm();
     Vector v2=cv.prodVect(v1).norm();
 
-    //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
+    cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
     //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
-    cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+    //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)

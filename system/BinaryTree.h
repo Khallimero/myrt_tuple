@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core.h"
+#include "system.h"
 #include "Lockable.h"
 
 #include <stdlib.h>
