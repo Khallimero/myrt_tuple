@@ -1,9 +1,5 @@
 #include "Lockable.h"
 
-#define MTX_LOCK(mtx) pthread_mutex_lock(&mtx)
-#define MTX_TRYLOCK(mtx) pthread_mutex_trylock(&mtx)
-#define MTX_UNLOCK(mtx) pthread_mutex_unlock(&mtx)
-
 Lockable::Lockable(bool s)
 {
     pthread_mutex_init(&mtx,NULL);
@@ -40,15 +36,15 @@ int Lockable::unlock()const
 
 int Lockable::_lock()const
 {
-    return MTX_LOCK(mtx);
+    return pthread_mutex_lock(&mtx);
 }
 
 int Lockable::_trylock()const
 {
-    return MTX_TRYLOCK(mtx);
+    return pthread_mutex_trylock(&mtx);
 }
 
 int Lockable::_unlock()const
 {
-    return MTX_UNLOCK(mtx);
+    return pthread_mutex_unlock(&mtx);
 }

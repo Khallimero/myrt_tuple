@@ -5,11 +5,10 @@
 template <typename T> class SmartPointer
 {
 public:
-    SmartPointer(T* t=NULL,bool tab=false)
+    SmartPointer(T* t=NULL)
     {
         this->t=t;
         this->nb_ref=(t==NULL?NULL:new unsigned int(1));
-        this->tab=tab;
     }
     SmartPointer(const SmartPointer<T> &that)
     {
@@ -24,11 +23,7 @@ public:
             if(--(*nb_ref)==0)
             {
                 delete nb_ref;
-                if(t!=NULL)
-                {
-                    if(tab)delete[] t;
-                    else delete t;
-                }
+                if(t!=NULL)delete t;
             }
         }
     }
@@ -40,7 +35,6 @@ public:
 
         this->t=that.t;
         this->nb_ref=that.nb_ref;
-        this->tab=that.tab;
 
         if(nb_ref!=NULL)
             (*nb_ref)++;
@@ -97,5 +91,4 @@ public:
 protected:
     T* t;
     unsigned int* nb_ref;
-    bool tab;
 };
