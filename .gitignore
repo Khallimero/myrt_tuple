@@ -1,4 +1,13 @@
 bin/*
 lib/*
+CSG/.obj/*
+builders/.obj/*
+core/.obj/*
+iterators/.obj/*
+primitives/.obj/*
+renderer/.obj/*
+shapes/.obj/*
+system/.obj/*
+textures/.obj/*
 .kdev4/*
 myrt_tuple.kdev4

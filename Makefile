@@ -20,7 +20,7 @@ libformat: format
 	$(foreach lib,$(LIBLIST) scenes,pushd $(lib);$(MAKE) format;popd;)
 
 tar: clean
-	wd=`basename $$PWD`;ver=`cat version.txt`;cd ..;$(TAR) -cf $${wd}_$${ver}.tar $${wd};$(TAR) --delete -f $${wd}_$${ver}.tar $${wd}/.git $${wd}/.kdev4 $${wd}/myrt_tuple.kdev4;$(COMPRESS) $${wd}_$${ver}.tar
+	wd=`basename $$PWD`;ver=`cat version.txt`;cd ..;$(TAR) -cf $${wd}_$${ver}.tar $${wd};$(TAR) --delete -f $${wd}_$${ver}.tar $${wd}/.git $${wd}/.gitignore $${wd}/.kdev4 $${wd}/myrt_tuple.kdev4;$(COMPRESS) $${wd}_$${ver}.tar
 
 $(TARGET): libs
 	@$(MKDIR) $(dir $@)
