@@ -8,8 +8,7 @@
 class Tore:public PolyShape<TORE_POLY_ORDER>
 {
 public:
-    Tore(double r1,double r2,
-         const Mark& mk=Mark::Ref);
+    Tore(double r1, double r2, const Mark& mk = Mark::Ref);
     virtual ~Tore();
 
 public:

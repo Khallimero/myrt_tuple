@@ -135,7 +135,7 @@ void setAlarm(int timer)
 #define RSEED (unsigned int)(time(NULL))
 #endif
 
-int main(int argc,char **argv)
+int main(void)
 {
     rseed=RSEED;
     printf("Seeding %u\n",rseed);

@@ -1,0 +1,4 @@
+bin/*
+lib/*
+.kdev4/*
+myrt_tuple.kdev4
