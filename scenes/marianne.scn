@@ -18,14 +18,13 @@
 
 #ifdef SCENE
 #include "PLYShape.h"
-#include "CustomIsoSurface.h"
 #include "BasicTexture.h"
 #include "Plan.h"
 #include "PointLight.h"
 #include "SphericLight.h"
+#include "Cylinder.h"
+#include "SubShape.h"
 #include "CustomPerlinPattern.h"
-#include "ChequeredPattern.h"
-#include "Sphere.h"
 #include "Point.h"
 #include "Vector.h"
 
@@ -51,15 +50,6 @@ void buildScene(Scene& world)
     s->setGlareCoeff(100);
     world.addShape(s);
 
-    /*Shape *c=new CustomIsoSurface(cube,3.5,
-    			new Sphere(3.5*sqrt(3)+EPSILON,Mark(Point(-2.5,11.7,1036))),
-    			Mark(Point(-2.5,11.7,1036),Rotation(0,-M_PI/16.,-M_PI/180.)));
-    c->setTexture(s->getTexture());
-    c->setDiffCoeff(.75);
-    c->setSpecCoeff(.4);
-    c->setGlareCoeff(100);
-    world.addShape(c);*/
-
     Shape* plan=new Plan(6.9+3.,Point(0,0,0),
                          Mark(Point(0,1,0)));
     plan->setTexture(new BasicTexture(Color("37B57B")));
@@ -69,11 +59,19 @@ void buildScene(Scene& world)
     plan->setRadianceCoeff(.1);
     world.addShape(plan);
 
+    Point lc(-500,-1000,-500);
+    Point sc(-20,-30,1000);
+    Vector vct=sc.getVectorTo(lc);
+    
     //world.addLight(new PointLight(Point(-500.,-1000.,-500.),Color::White*.8));
-    world.addLight(new SphericLight(100,Point(-500.,-1000.,-500.),Color::White*.8));
+    world.addLight(new SphericLight(10,sc+vct*0.5,Color::White*.8));
     world.setAmbiant(Color::White*.2);
-
-    //world.setPhotonBoxIn(new Sphere(20,Mark(Point(0,0,1000))));
+    
+    Shape *cyl=new Cylinder(12,Mark(sc,Rotation(vct.norm())));
+    Shape *lp=new Plan(vct.norm()*-1,Mark(sc+vct*0.2));
+    CSGShape *ls=new SubShape(cyl,lp,true);
+    ls->setHitShape(CSGShape::second,false);
+    world.addShape(ls);
 }
 
 void setCamera(Camera& cam)
@@ -91,6 +89,6 @@ void setCamera(Camera& cam)
 void setRendererQuality(RendererQuality& rendererQuality)
 {
     //rendererQuality.setAliasing(3);
-    //rendererQuality.setShadow(25);
+    //rendererQuality.setShadow(50);
 }
 #endif
