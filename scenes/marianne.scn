@@ -18,6 +18,8 @@
 
 #ifdef SCENE
 #include "PLYShape.h"
+#include "CustomIsoSurface.h"
+#include "Sphere.h"
 #include "BasicTexture.h"
 #include "Plan.h"
 #include "PointLight.h"
@@ -50,6 +52,15 @@ void buildScene(Scene& world)
     s->setGlareCoeff(100);
     world.addShape(s);
 
+    /*Shape *c=new CustomIsoSurface(cube,3.5,
+                new Sphere(3.5*sqrt(3)+EPSILON,Mark(Point(-2.5,11.7,1036))),
+                Mark(Point(-2.5,11.7,1036),Rotation(0,-M_PI/16.,-M_PI/180.)));
+    c->setTexture(s->getTexture());
+    c->setDiffCoeff(.75);
+    c->setSpecCoeff(.4);
+    c->setGlareCoeff(100);
+    world.addShape(c);*/
+    
     Shape* plan=new Plan(6.9+3.,Point(0,0,0),
                          Mark(Point(0,1,0)));
     plan->setTexture(new BasicTexture(Color("37B57B")));
@@ -89,6 +100,6 @@ void setCamera(Camera& cam)
 void setRendererQuality(RendererQuality& rendererQuality)
 {
     //rendererQuality.setAliasing(3);
-    //rendererQuality.setShadow(50);
+    rendererQuality.setShadow(50);
 }
 #endif
