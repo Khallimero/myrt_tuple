@@ -22,6 +22,9 @@ libformat: format
 tar: clean
 	wd=`basename $$PWD`;ver=`cat version.txt`;cd ..;$(TAR) -cf $${wd}_$${ver}.tar $${wd};$(TAR) --delete -f $${wd}_$${ver}.tar $${wd}/.git $${wd}/.gitignore $${wd}/.kdev4 $${wd}/myrt_tuple.kdev4;$(COMPRESS) $${wd}_$${ver}.tar
 
+tar_kdev: clean
+	wd=`basename $$PWD`;ver=`cat version.txt`;cd ..;$(TAR) -cf $${wd}_$${ver}_kdev.tar $${wd};$(COMPRESS) $${wd}_$${ver}_kdev.tar
+	
 $(TARGET): libs
 	@$(MKDIR) $(dir $@)
 	$(eval $(REVERSELIB))

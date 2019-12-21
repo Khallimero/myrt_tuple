@@ -94,12 +94,8 @@ void Picture::buildFromFile(FILE* f)
         fscanf(f,"%d %d %d\n",&(Map<Color>::w),&(Map<Color>::h),&d);
         Map<Color>::alloc();
         for(int y=0; y<height(); y++)
-        {
             for(int x=0; x<width(); x++)
-            {
                 (*this)[x][y]=Color(f,fmt,d);
-            }
-        }
     }
     else
     {
