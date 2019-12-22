@@ -20,6 +20,7 @@
 #include "PLYShape.h"
 #include "CustomIsoSurface.h"
 #include "Sphere.h"
+#include "Texture.h"
 #include "BasicTexture.h"
 #include "Plan.h"
 #include "PointLight.h"
@@ -34,7 +35,7 @@
 
 double cube(const Point& p)
 {
-    return -1.
+    return -1.0
            +pow(p.getX(),20)
            +pow(p.getY(),20)
            +pow(p.getZ(),20);
@@ -42,25 +43,27 @@ double cube(const Point& p)
 
 void buildScene(Scene& world)
 {
+    SmartPointer<const Texture> tex=new CustomPerlinPattern(new BasicTexture(MARBRE),
+            new BasicTexture(MARBRE*.9),
+            4,3,2,2);
+
     PLYShape* s=new PLYShape("../ply/marianne.ply",0.05,
                              Mark(Point(-3,3,1000),Rotation(M_PI/36.,0,-M_PI/13.)));
-    s->setTexture(new CustomPerlinPattern(new BasicTexture(MARBRE),
-                                          new BasicTexture(MARBRE*.9),
-                                          4,3,2,2),Volumic);
+    s->setTexture(tex,Volumic);
     s->setDiffCoeff(.75);
     s->setSpecCoeff(.4);
     s->setGlareCoeff(100);
     world.addShape(s);
 
-    /*Shape *c=new CustomIsoSurface(cube,3.5,
-                new Sphere(3.5*sqrt(3)+EPSILON,Mark(Point(-2.5,11.7,1036))),
-                Mark(Point(-2.5,11.7,1036),Rotation(0,-M_PI/16.,-M_PI/180.)));
-    c->setTexture(s->getTexture());
+    Shape *c=new CustomIsoSurface(cube,3.5,
+                                  new Sphere(3.5*sqrt(3)+EPSILON),
+                                  Mark(Point(-1.7,11.5,1035.5),Rotation(0,-M_PI/16.,M_PI/90.)));
+    c->setTexture(tex,Volumic);
     c->setDiffCoeff(.75);
     c->setSpecCoeff(.4);
     c->setGlareCoeff(100);
-    world.addShape(c);*/
-    
+    world.addShape(c);
+
     Shape* plan=new Plan(6.9+3.,Point(0,0,0),
                          Mark(Point(0,1,0)));
     plan->setTexture(new BasicTexture(Color("37B57B")));
@@ -73,11 +76,11 @@ void buildScene(Scene& world)
     Point lc(-500,-1000,-500);
     Point sc(-20,-30,1000);
     Vector vct=sc.getVectorTo(lc);
-    
+
     //world.addLight(new PointLight(Point(-500.,-1000.,-500.),Color::White*.8));
     world.addLight(new SphericLight(10,sc+vct*0.5,Color::White*.8));
     world.setAmbiant(Color::White*.2);
-    
+
     Shape *cyl=new Cylinder(12,Mark(sc,Rotation(vct.norm())));
     Shape *lp=new Plan(vct.norm()*-1,Mark(sc+vct*0.2));
     CSGShape *ls=new SubShape(cyl,lp,true);
@@ -100,6 +103,6 @@ void setCamera(Camera& cam)
 void setRendererQuality(RendererQuality& rendererQuality)
 {
     //rendererQuality.setAliasing(3);
-    rendererQuality.setShadow(50);
+    //rendererQuality.setShadow(50);
 }
 #endif
