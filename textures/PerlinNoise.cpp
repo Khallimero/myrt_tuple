@@ -13,13 +13,13 @@ PerlinNoise::PerlinNoise()
     {
         p[i]=i;
         TUPLE_IDX(j,TREBLE_SIZE)
-        g3[i][j]=(double)((rand()%(B+B))-B)/B;
+        g3[i][j]=(double)(IRND(B+B)-B)/B;
         g3[i]=g3[i].norm();
     }
 
     for(int i=B-1; i>0; i--)
     {
-        int j=rand()%B;
+        int j=IRND(B);
         SWAP(p[i],p[j]);
     }
 
