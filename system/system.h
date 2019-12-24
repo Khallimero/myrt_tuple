@@ -37,7 +37,7 @@ template<typename T> T CB(T x)
     return _x*_x*_x;
 }
 
-template<typename T> void SWAP(T a,T b)
+template<typename T> void SWAP(T& a,T& b)
 {
     T _a=a;
     T _b=b;
