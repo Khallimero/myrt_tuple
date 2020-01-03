@@ -57,18 +57,16 @@ void Thread::kill()
 
 void Thread::run(void*(*fct)(void*),void* arg,int nb_thread)
 {
-    if(nb_thread==0)
+    if(nb_thread==-1)
+    {
+        cpu_set_t set;
+        nb_thread=pthread_getaffinity_np(pthread_self(),sizeof(set),&set)==0?CPU_COUNT(&set):NB_THREAD;
+    }    
+    
+    if(nb_thread<=1)
     {
         fct(arg);
         return;
-    }
-    else if(nb_thread==-1)
-    {
-        cpu_set_t set;
-        if(pthread_getaffinity_np (pthread_self (), sizeof (set), &set)==0)
-            nb_thread=CPU_COUNT(&set);
-        else
-            nb_thread=NB_THREAD;
     }
 
     Thread **thTab=(Thread**)malloc(nb_thread*sizeof(Thread*));
