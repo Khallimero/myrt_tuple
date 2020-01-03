@@ -4,6 +4,8 @@
 
 #include <pthread.h>
 
+#define NB_THREAD 8
+
 void* runThread(void*);
 
 class Thread
@@ -21,7 +23,7 @@ public:
     void setCancelable(bool c=true);
 
 public:
-    static void run(void*(*fct)(void*),void* arg,int nb_thread=NB_THREAD);
+    static void run(void*(*fct)(void*),void* arg,int nb_thread=-1);
 
 protected:
     pthread_t pthread;
