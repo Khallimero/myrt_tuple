@@ -18,8 +18,6 @@
 
 #ifdef SCENE
 #include "PLYShape.h"
-#include "CustomIsoSurface.h"
-#include "Sphere.h"
 #include "Texture.h"
 #include "BasicTexture.h"
 #include "Plan.h"
@@ -32,14 +30,6 @@
 #include "Vector.h"
 
 #define MARBRE (Color::White)
-
-double cube(const Point& p)
-{
-    return -1.0
-           +pow(p.getX(),20)
-           +pow(p.getY(),20)
-           +pow(p.getZ(),20);
-}
 
 void buildScene(Scene& world)
 {
@@ -54,15 +44,6 @@ void buildScene(Scene& world)
     s->setSpecCoeff(.4);
     s->setGlareCoeff(100);
     world.addShape(s);
-
-    /*Shape *c=new CustomIsoSurface(cube,3.5,
-                                  new Sphere(3.5*sqrt(3)+EPSILON),
-                                  Mark(Point(-1.7,11.5,1035.5),Rotation(0,-M_PI/16.,M_PI/90.)));
-    c->setTexture(tex,Volumic);
-    c->setDiffCoeff(.75);
-    c->setSpecCoeff(.4);
-    c->setGlareCoeff(100);
-    world.addShape(c);*/
 
     Shape* plan=new Plan(10,Point(0,0,0),
                          Mark(Point(0,1,0)));
