@@ -55,12 +55,12 @@ void buildScene(Scene& world)
 
     Point lc(-500.,-2000.,-1500.);
     Point sc(0,-25,1000);
-    Vector vct=sc.getVectorTo(lc);    
-    
+    Vector vct=sc.getVectorTo(lc);
+
     //world.addLight(new PointLight(lc,Color::White*.8));
     world.addLight(new SphericLight(20,lc+vct*0.5,Color::White*.8));
     world.setAmbiant(Color::White*.2);
-    
+
     Shape *cyl=new Cylinder(20,Mark(sc,Rotation(vct.norm())));
     Shape *lp=new Plan(vct.norm()*-1,Mark(sc+vct*0.2));
     CSGShape *ls=new SubShape(cyl,lp,true);

@@ -499,7 +499,7 @@ void buildScene(Scene& world)
     {
         Point lc=Point(-500.,-450.,-500.);
         world.addLight(new SphericLight(20,lc,Color::White*0.45));
-        
+
         Vector vct=Point(ct+Treble<double>(1*8,0,0)).getVectorTo(lc);
         Shape *cyl=new Cylinder(20,Mark(ct,Rotation(vct.norm())));
         Shape *lp=new Plan(vct.norm()*-1,Mark(ct+vct*0.7));
@@ -511,7 +511,7 @@ void buildScene(Scene& world)
     {
         Point lc=Point(-500.,-750.,800.);
         world.addLight(new SphericLight(25,lc,Color::White*0.35));
-        
+
         Vector vct=ct.getVectorTo(lc);
         Shape *cyl=new Cylinder(25,Mark(ct,Rotation(vct.norm())));
         Shape *lp=new Plan(vct.norm()*-1,Mark(ct+vct*0.8));
@@ -519,7 +519,7 @@ void buildScene(Scene& world)
         ls->setHitShape(CSGShape::second,false);
         world.addShape(ls);
     }
-    
+
     //world.addLight(new SphericLight(20,Point(-500.,-450.,-500.),Color::White*0.5));
     //world.addLight(new SphericLight(25,Point(-500.,-750.,800.),Color::White*0.3));
     world.setAmbiant(Color::White*.5);

@@ -61,8 +61,8 @@ void Thread::run(void*(*fct)(void*),void* arg,int nb_thread)
     {
         cpu_set_t set;
         nb_thread=pthread_getaffinity_np(pthread_self(),sizeof(set),&set)==0?CPU_COUNT(&set):NB_THREAD;
-    }    
-    
+    }
+
     if(nb_thread<=1)
     {
         fct(arg);

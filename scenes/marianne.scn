@@ -43,9 +43,10 @@ double cube(const Point& p)
 
 void buildScene(Scene& world)
 {
-    SmartPointer<const Texture> tex=new CustomPerlinPattern(new BasicTexture(MARBRE),
-            new BasicTexture(MARBRE*.9),
-            4,3,2,2);
+    SmartPointer<const Texture> tex=new CustomPerlinPattern(
+        new BasicTexture(MARBRE),
+        new BasicTexture(MARBRE*.9),
+        4,3,2,2);
 
     PLYShape* s=new PLYShape("../ply/marianne.ply",0.05,
                              Mark(Point(-3,3,1000),Rotation(M_PI/36.,0,-M_PI/13.)));
