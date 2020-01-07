@@ -126,11 +126,7 @@ Color Renderer::computeRay(const Ray& r,int nbRef)const
 
         col=computeBeerCoeff(col,hr);
     }
-    else
-    {
-        //if(sc->getFog().getDist()>0)
-        //col+=sc->getAmbiant()*sc->getFog().getColor();
-    }
+
     return col;
 }
 
@@ -204,7 +200,6 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
         }
     }
 
-    //ltSum+=sc->getAmbiant()*sc->getFog().getColor();
     ltSum+=sc->getAmbiant()*(.5+fabs(h.getNormal().cosAngle(h.getThNormal()))/2.)*(.5+fabs(h.getNormal().cosAngle(h.getIncident().getVector()))/2.);
 
     if(sc->getPhotonBoxIn()!=NULL)
@@ -242,11 +237,6 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
     ltSum*=h.getShape()->getDiffCoeff();
     glSum*=h.getShape()->getSpecCoeff();
     Color cl=(h.getShape()->getColor(h)*(ltSum+phSum))+glSum+dlSum;
-
-    /*if(sc->getFog().getDist()>0){
-      double r=pow(min(1.0,dst/sc->getFog().getDist()),sc->getFog().getPow());
-      cl=(cl*(1.0-r))+(sc->getAmbiant()*sc->getFog().getColor()*r);
-      }*/
 
     return cl;
 }

@@ -5,7 +5,6 @@
 #include "Shape.h"
 #include "Light.h"
 #include "Color.h"
-#include "Fog.h"
 #include "Hit.h"
 #include "Ray.h"
 #include "Point.h"
@@ -33,15 +32,6 @@ public:
     const Color& getAmbiant()const
     {
         return ambiant;
-    }
-
-    void setFog(const Fog& f)
-    {
-        this->fog=f;
-    }
-    Fog getFog()const
-    {
-        return fog;
     }
 
 public:
@@ -81,7 +71,6 @@ protected:
     ShapeCollection shapes;
     ObjCollection< SmartPointer<const Light> > lights;
     Color ambiant;
-    Fog fog;
     SmartPointer<const Sphere> photonBoxIn,photonBoxOut;
 
 protected:

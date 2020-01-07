@@ -4,7 +4,6 @@ include ../myrt.mk
 TARGET        = ../$(LIBDIR)/librenderer.a
 
 SOURCES       = Camera.cpp \
-		Fog.cpp \
 		InfiniteLight.cpp \
 		Light.cpp \
 		PhotonBox.cpp \
