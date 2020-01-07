@@ -1,0 +1,150 @@
+#define EPSILON (0.001)
+#define PLAN_TAN (M_PI/1000.)
+#define MAX_REC (250)
+#define ISO_STEP (.01)
+#define ISO_THRESHOLD (0.00000001)
+#define NB_REF 5
+#define MAX_REF_SS 5
+#define PHOTON_EQ_DST 0.01
+#define PHOTON_EQ_ANG (M_PI/10.)
+#define PHOTON_BOX_FCT 1.
+#define PHOTON_RAD 0.1
+#define PHOTON_REF 10
+#define NB_PHOTON_IT 500000
+#define NB_PHOTON_LIGHT (3*3)
+#define PHOTON_EXP 2.
+#define CAUSTIC_PHOTON_EXP 1.
+#define RADIANCE_PHOTON_EXP .2
+
+#ifdef SCENE
+#include "PLYShape.h"
+#include "Texture.h"
+#include "BasicTexture.h"
+#include "Plan.h"
+#include "PointLight.h"
+#include "SphericLight.h"
+#include "Cylinder.h"
+#include "SubShape.h"
+#include "InterShape.h"
+#include "AddShape.h"
+#include "CustomPerlinPattern.h"
+#include "WoodPattern.h"
+#include "Ellipse.h"
+#include "Point.h"
+#include "Vector.h"
+
+//#define RSEED 1578292148L
+
+#define MARBRE (Color::White)
+#define WOOD (Color("432616"))
+
+Shape* bell_shell(double base_height,double base_size,double size=1.0)
+{
+    double bell_size=base_size-1.0;
+    double bell_height=12;
+
+    Shape* ccyl=new Cylinder(bell_size*size,Mark(Point(-2,base_height,1042)));
+    Shape* ccylp=new Plan(Vector(0,1,0),Mark(Point(0,base_height-bell_height*size,0)));
+    CSGShape* ccyls=new InterShape(ccyl,ccylp,true);
+    ccyls->setHitShape(CSGShape::second,false);
+    Shape* csph=new Sphere(bell_size*size,Mark(Point(-2,base_height-bell_height*size,1042)));
+    Shape* csphp=new Plan(Vector(0,-1,0),Mark(Point(0,base_height-bell_height*size,0)));
+    CSGShape* csphs=new InterShape(csph,csphp,true);
+    csphs->setHitShape(CSGShape::second,false);
+    Shape* cl=new AddShape(ccyls,csphs,true);
+
+    return cl;
+}
+
+void buildScene(Scene& world)
+{
+    double floor_height=10.0;
+    double base_size=8.0;
+    double base_height=1.5;
+
+    SmartPointer<const Texture> tex=new CustomPerlinPattern(
+        new BasicTexture(MARBRE),
+        new BasicTexture(MARBRE*.9),
+        4,3,2,2);
+
+    PLYShape* s=new PLYShape("../ply/DragonArtec.ply",0.15,
+                             Mark(Point(-5,floor_height-1.5,1040),Rotation(-M_PI/2.,0,M_PI/16)));
+    s->setTexture(tex,Volumic);
+    s->setDiffCoeff(.75);
+    s->setSpecCoeff(.4);
+    s->setGlareCoeff(100);
+    world.addShape(s);
+
+    Shape* sph=new Ellipse(Vector(1,0.4,1),base_size,1,Mark(Point(-2,floor_height-base_height/2.0,1042)));
+    Shape* spl=new Plan(Vector(0,1,0),Mark(Point(0,floor_height-base_height,0)));
+    Shape* socle=new InterShape(sph,spl,true);
+    socle->setTexture(new WoodPattern(
+                          new BasicTexture(WOOD*0.75),
+                          new BasicTexture(WOOD*0.95),
+                          new BasicTexture(WOOD*1.2),
+                          15),
+                      Volumic);
+    socle->setDiffCoeff(.85);
+    socle->setSpecCoeff(.3);
+    socle->setGlareCoeff(500);
+    world.addShape(socle);
+
+    Shape* cl1=bell_shell(floor_height-base_height,base_size);
+    Shape* cl2=bell_shell(floor_height-base_height,base_size,0.95);
+    CSGShape* cl=new SubShape(cl1,cl2,true);
+    cl->setTexture(new BasicTexture(Color::White));
+    cl->setDiffCoeff(0.01);
+    cl->setSpecCoeff(0.5);
+    cl->setGlareCoeff(100);
+    cl->setReflectCoeff(.05);
+    cl->setRefractCoeff(.95);
+    cl->setDensity(1.2);
+    cl->setBeer(1,5,Color::White*0.8);
+    world.addShape(cl);
+
+    Shape* plan=new Plan(floor_height,Point(0,0,0),
+                         Mark(Point(0,1,0)));
+    plan->setTexture(new BasicTexture(Color("37B57B")));
+    plan->setDiffCoeff(.8);
+    plan->setSpecCoeff(.2);
+    plan->setGlareCoeff(1000);
+    plan->setRadianceCoeff(.1);
+    world.addShape(plan);
+
+    Point lc(-500,-1000,-500);
+    Point sc(-20,-30,1000);
+    Vector vct=sc.getVectorTo(lc);
+
+    //world.addLight(new PointLight(Point(-500.,-1000.,-500.),Color::White*.8));
+    world.addLight(new SphericLight(10,sc+vct*0.5,Color::White*.7));
+    world.setAmbiant(Color::White*.3);
+
+    Shape *cyl=new Cylinder(12,Mark(sc,Rotation(vct.norm())));
+    Shape *lp=new Plan(vct.norm()*-1,Mark(sc+vct*0.2));
+    CSGShape *ls=new SubShape(cyl,lp,true);
+    ls->setHitShape(CSGShape::second,false);
+    world.addShape(ls);
+
+    world.setPhotonBoxIn(new Sphere(20,Mark(Point(-2,floor_height,1042))));
+    world.setPhotonBoxOut(new Sphere(50,Mark(Point(-2,floor_height,1042))));
+}
+
+void setCamera(Camera& cam)
+{
+    Point c(-2,-150,0);
+    Point s(2,-5,1000);
+
+    Vector z=c.getVectorTo(s).norm()*100;
+    Vector x=Vector(1,0,0).projOrthoTo(z).norm();
+    Vector y=Vector(0,1,0).projOrthoTo(z).norm();
+    //cam=Camera(c,z,Enumeration<Vector>(512,x*.006),Enumeration<Vector>(384,y*.006));
+    //cam=Camera(c,z,Enumeration<Vector>(1024,x*.003),Enumeration<Vector>(768,y*.003));
+    cam=Camera(c,z,Enumeration<Vector>(1280,x*.0024),Enumeration<Vector>(1024,y*.0024));
+}
+
+void setRendererQuality(RendererQuality& rendererQuality)
+{
+    //rendererQuality.setAliasing(3);
+    //rendererQuality.setShadow(50);
+}
+#endif
