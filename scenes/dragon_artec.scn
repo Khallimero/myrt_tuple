@@ -11,7 +11,7 @@
 #define PHOTON_RAD 0.1
 #define PHOTON_REF 10
 #define NB_PHOTON_IT 500000
-#define NB_PHOTON_LIGHT (3*3)
+#define NB_PHOTON_LIGHT (1)
 #define PHOTON_EXP 2.
 #define CAUSTIC_PHOTON_EXP 1.
 #define RADIANCE_PHOTON_EXP .2
@@ -68,7 +68,7 @@ void buildScene(Scene& world)
         4,3,2,2);
 
     PLYShape* s=new PLYShape("../ply/DragonArtec.ply",0.15,
-                             Mark(Point(-5,floor_height-1.5,1040),Rotation(-M_PI/2.,0,M_PI/16)));
+                             Mark(Point(-5,floor_height-base_height,1040),Rotation(-M_PI/2.,0,M_PI/16)));
     s->setTexture(tex,Volumic);
     s->setDiffCoeff(.75);
     s->setSpecCoeff(.4);
@@ -105,19 +105,18 @@ void buildScene(Scene& world)
     Shape* plan=new Plan(floor_height,Point(0,0,0),
                          Mark(Point(0,1,0)));
     plan->setTexture(new BasicTexture(Color("37B57B")));
-    plan->setDiffCoeff(.8);
+    plan->setDiffCoeff(.7);
     plan->setSpecCoeff(.2);
     plan->setGlareCoeff(1000);
     plan->setRadianceCoeff(.1);
     world.addShape(plan);
 
-    Point lc(-500,-1000,-500);
-    Point sc(-20,-30,1000);
+    Point lc(-500,-850,500);
+    Point sc(10,floor_height,1050);
     Vector vct=sc.getVectorTo(lc);
 
-    //world.addLight(new PointLight(Point(-500.,-1000.,-500.),Color::White*.8));
-    world.addLight(new SphericLight(10,sc+vct*0.5,Color::White*.7));
-    world.setAmbiant(Color::White*.3);
+    world.addLight(new SphericLight(10,sc+vct*0.5,Color::White*.8));
+    world.setAmbiant(Color::White*.2);
 
     Shape *cyl=new Cylinder(12,Mark(sc,Rotation(vct.norm())));
     Shape *lp=new Plan(vct.norm()*-1,Mark(sc+vct*0.2));
@@ -125,14 +124,14 @@ void buildScene(Scene& world)
     ls->setHitShape(CSGShape::second,false);
     world.addShape(ls);
 
-    world.setPhotonBoxIn(new Sphere(20,Mark(Point(-2,floor_height,1042))));
-    world.setPhotonBoxOut(new Sphere(50,Mark(Point(-2,floor_height,1042))));
+    world.setPhotonBoxIn(new Sphere(base_size*2,Mark(Point(-2,floor_height,1042))));
+    world.setPhotonBoxOut(new Sphere(base_size*10,Mark(Point(-2,floor_height,1042))));
 }
 
 void setCamera(Camera& cam)
 {
-    Point c(-2,-150,0);
-    Point s(2,-5,1000);
+    Point c(-2,-200,0);
+    Point s(2,-8,1000);
 
     Vector z=c.getVectorTo(s).norm()*100;
     Vector x=Vector(1,0,0).projOrthoTo(z).norm();
