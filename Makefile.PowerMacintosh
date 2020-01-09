@@ -1,0 +1,12 @@
+CXX           = g++
+DEFINES       = -O3 -Wall -ffast-math -pthread
+CXXFLAGS      = -m64 -mtune=970 $(DEFINES)
+INCPATH       = -I.
+LINKLIBS      = -lstdc++ -lm -lpthread
+STRIP         = strip
+AR            = ar rcs
+DEL           = rm -rf
+MKDIR         = mkdir -p
+FORMAT        = astyle -A1
+TAR           = tar
+COMPRESS      = gzip -9f

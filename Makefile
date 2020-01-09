@@ -1,4 +1,4 @@
-include Makefile.$(shell uname -m)
+include Makefile.$(shell uname -m|tr -d ' ')
 include myrt.mk
 
 SOURCE        = myrt.cpp
