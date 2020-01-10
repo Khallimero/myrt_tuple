@@ -12,4 +12,4 @@ OBJ           = $(join $(addsuffix ./$(OBJDIR)/, $(dir $(SOURCES))), $(notdir $(
 
 ./$(OBJDIR)/%.o : %.cpp
 	@$(MKDIR) $(dir $@)
-	$(CXX) $(CXXFLAGS) $(INCPATH) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(INCDIR) $(INCPATH) -c $< -o $@

@@ -1,8 +1,8 @@
 CXX           = g++
 DEFINES       = -O3 -Wall -ffast-math -pthread
-CXXFLAGS      = -march=armv6 -mfloat-abi=hard $(DEFINES)
-INCDIR        = -I.
-LINKLIBS      = -lm -lpthread
+CXXFLAGS      = -m32 -mpowerpc64 $(DEFINES)
+INCDIR        = -I. -I/usr/include/powerpc-linux-gnu
+LINKLIBS      = -lstdc++ -lm -lpthread
 STRIP         = strip
 AR            = ar rcs
 DEL           = rm -rf
