@@ -1,7 +1,7 @@
 CXX           = g++
 DEFINES       = -O3 -Wall -ffast-math -pthread
 CXXFLAGS      = -m32 -mtune=native -march=native -malign-double $(DEFINES)
-INCPATH       = -I.
+INCDIR        = -I.
 LINKLIBS      = -lm -lpthread
 STRIP         = strip
 AR            = ar rcs
