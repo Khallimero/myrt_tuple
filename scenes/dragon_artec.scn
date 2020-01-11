@@ -71,7 +71,7 @@ void buildScene(Scene& world)
                              Mark(Point(-5,floor_height-base_height,1040),Rotation(-M_PI/2.,0,M_PI/16)));
     s->setTexture(tex,Volumic);
     s->setDiffCoeff(.75);
-    s->setSpecCoeff(.4);
+    s->setSpecCoeff(.6);
     s->setGlareCoeff(100);
     world.addShape(s);
 
@@ -96,7 +96,7 @@ void buildScene(Scene& world)
     cl->setDiffCoeff(0.01);
     cl->setSpecCoeff(0.5);
     cl->setGlareCoeff(100);
-    cl->setReflectCoeff(.05);
+    cl->setReflectCoeff(.1);
     cl->setRefractCoeff(.95);
     cl->setDensity(1.2);
     cl->setBeer(1,5,Color::White*0.8);
