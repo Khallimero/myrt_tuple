@@ -11,7 +11,6 @@ public:
     virtual ~PhotonBox();
 
 public:
-    void dump(int *t)const;
     int compareTo(const PhotonBox& that)const;
 
 public:

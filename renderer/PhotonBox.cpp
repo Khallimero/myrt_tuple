@@ -23,11 +23,6 @@ PhotonBox::PhotonBox(const Point& p)
 
 PhotonBox::~PhotonBox() {}
 
-void PhotonBox::dump(int* t)const
-{
-    memcpy(t,_getTab(),PCK_SIZE);
-}
-
 int PhotonBox::compareTo(const PhotonBox& that)const
 {
     TUPLE_IDX(i,TREBLE_SIZE)
