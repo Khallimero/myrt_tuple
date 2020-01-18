@@ -8,10 +8,10 @@
 #define PHOTON_EQ_DST 0.01
 #define PHOTON_EQ_ANG (M_PI/10.)
 #define PHOTON_BOX_FCT 1.
-#define PHOTON_RAD 0.1
+#define PHOTON_RAD 0.5
 #define PHOTON_REF 10
-#define NB_PHOTON_IT 500000
-#define NB_PHOTON_LIGHT (1)
+#define NB_PHOTON_IT 1000000
+#define NB_PHOTON_LIGHT (5*5)
 #define PHOTON_EXP 2.
 #define CAUSTIC_PHOTON_EXP 1.
 #define RADIANCE_PHOTON_EXP .2
@@ -33,9 +33,9 @@
 #include "Point.h"
 #include "Vector.h"
 
-//#define RSEED 1578292148L
+#define RSEED 1578292148L
 
-#define MARBRE (Color::White)
+#define PORCELAIN (Color::White)
 #define WOOD (Color("432616"))
 
 Shape* bell_shell(double base_height,double base_size,double size=1.0)
@@ -63,15 +63,15 @@ void buildScene(Scene& world)
     double base_height=1.5;
 
     SmartPointer<const Texture> tex=new CustomPerlinPattern(
-        new BasicTexture(MARBRE),
-        new BasicTexture(MARBRE*.9),
+        new BasicTexture(PORCELAIN),
+        new BasicTexture(PORCELAIN*.9),
         4,3,2,2);
 
     PLYShape* s=new PLYShape("../ply/DragonArtec.ply",0.15,
                              Mark(Point(-5,floor_height-base_height,1040),Rotation(-M_PI/2.,0,M_PI/16)));
     s->setTexture(tex,Volumic);
-    s->setDiffCoeff(.75);
-    s->setSpecCoeff(.6);
+    s->setDiffCoeff(.85);
+    s->setSpecCoeff(1.0);
     s->setGlareCoeff(100);
     world.addShape(s);
 
@@ -84,8 +84,8 @@ void buildScene(Scene& world)
                           new BasicTexture(WOOD*1.2),
                           15),
                       Volumic);
-    socle->setDiffCoeff(.85);
-    socle->setSpecCoeff(.3);
+    socle->setDiffCoeff(.75);
+    socle->setSpecCoeff(.25);
     socle->setGlareCoeff(500);
     world.addShape(socle);
 
@@ -105,7 +105,7 @@ void buildScene(Scene& world)
     Shape* plan=new Plan(floor_height,Point(0,0,0),
                          Mark(Point(0,1,0)));
     plan->setTexture(new BasicTexture(Color("37B57B")));
-    plan->setDiffCoeff(.7);
+    plan->setDiffCoeff(.6);
     plan->setSpecCoeff(.2);
     plan->setGlareCoeff(1000);
     plan->setRadianceCoeff(.1);
@@ -139,6 +139,7 @@ void setCamera(Camera& cam)
     //cam=Camera(c,z,Enumeration<Vector>(512,x*.006),Enumeration<Vector>(384,y*.006));
     //cam=Camera(c,z,Enumeration<Vector>(1024,x*.003),Enumeration<Vector>(768,y*.003));
     cam=Camera(c,z,Enumeration<Vector>(1280,x*.0024),Enumeration<Vector>(1024,y*.0024));
+    //cam=Camera(c,z,Enumeration<Vector>(1600,x*.00192),Enumeration<Vector>(1200,y*.00192));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)
