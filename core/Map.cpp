@@ -36,7 +36,7 @@ template <typename T> T bilinearFilter(T** tab,int w,int h,double x0,double y0)
         }
         virtual void operator()(const double& x,const double& y)
         {
-            (**this)+=T(tab[(int)x%w][(int)y%h])*(1.0-fabs(x0-x))*(1.0-fabs(y0-y));
+            (**this)+=T(tab[(int)x%w][(int)y%h])*((1.0-fabs(x0-x))*(1.0-fabs(y0-y)));
         }
         T** tab;
         int w,h;
