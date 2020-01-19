@@ -1,9 +1,8 @@
 #include "Scene.h"
 
 Scene::Scene()
-{
-    photonBoxIn=NULL,photonBoxOut=NULL;
-}
+    :photonBoxIn(NULL),photonBoxOut(NULL)
+{}
 
 Scene::~Scene() {}
 

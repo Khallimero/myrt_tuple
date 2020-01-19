@@ -3,10 +3,8 @@
 #include <math.h>
 
 ZebraPattern::ZebraPattern(SmartPointer<const Texture> t1,SmartPointer<const Texture> t2,double f)
-    :PerlinPattern(5,5,1,f)
-{
-    this->t1=t1,this->t2=t2;
-}
+    :PerlinPattern(5,5,1,f),t1(t1),t2(t2)
+{}
 
 ZebraPattern::~ZebraPattern() {}
 

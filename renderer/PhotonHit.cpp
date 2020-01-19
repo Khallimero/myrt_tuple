@@ -16,9 +16,8 @@ PhotonHit::PhotonHit()
 }
 
 PhotonHit::PhotonHit(const Point& p,const Vector& v,const Color& c)
-{
-    this->p=p,this->v=v,this->c=c;
-}
+    :p(p),v(v),c(c)
+{}
 
 PhotonHit::~PhotonHit() {}
 

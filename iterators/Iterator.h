@@ -6,13 +6,13 @@ template <typename T> class Iterator
 {
 public:
     Iterator()
+        :steps(1)
     {
-        steps=1;
         reset();
     }
     Iterator(int s,const T& d)
+        :steps(s),delta(d)
     {
-        this->steps=s,this->delta=d;
         reset();
     }
     ~Iterator() {}
@@ -54,8 +54,8 @@ public:
     }
 
 protected:
-    T delta;
     int steps;
+    T delta;
     volatile int id;
 };
 

@@ -7,9 +7,8 @@ Mark::Mark()
 }
 
 Mark::Mark(const Point& o,const Rotation& r)
-{
-    this->orig=o,this->rot=r;
-}
+    :orig(o),rot(r)
+{}
 
 Mark::~Mark() {}
 

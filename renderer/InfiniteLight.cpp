@@ -1,10 +1,9 @@
 #include "InfiniteLight.h"
 #include "Hit.h"
 
-InfiniteLight::InfiniteLight(const Vector& v,const Color& c,double gl):Light(c,gl)
-{
-    this->v=v;
-}
+InfiniteLight::InfiniteLight(const Vector& v,const Color& c,double gl)
+    :Light(c,gl),v(v)
+{}
 
 InfiniteLight::~InfiniteLight() {}
 

@@ -1,9 +1,8 @@
 #include "Light.h"
 
 Light::Light(const Color& c,double gl)
-{
-    this->c=c,this->glare=gl;
-}
+    :c(c),glare(gl)
+{}
 
 Light::~Light() {}
 

@@ -4,8 +4,8 @@ const int CSGShape::first=0;
 const int CSGShape::second=1;
 
 CSGShape::CSGShape(SmartPointer<const Shape> s1,SmartPointer<const Shape> s2,bool merge)
+    :box(NULL)
 {
-    this->box=NULL;
     this->mark=s1->getMark();
     shapes[CSGShape::first]=(CSGShapeEntity)
     {

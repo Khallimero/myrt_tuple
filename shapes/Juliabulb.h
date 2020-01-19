@@ -14,7 +14,7 @@ protected:
     virtual double getValue(const Point& p)const;
 
 protected:
+    Point c;
     int pwr;
     double bov;
-    Point c;
 };

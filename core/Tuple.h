@@ -290,15 +290,12 @@ public:
     {
         struct tuple_unary_op:public unary_op<T,T>
         {
-            tuple_unary_op(T f)
-            {
-                this->f=f;
-            }
+            tuple_unary_op(T f) : _f(f) {}
             virtual T operator()(const volatile T& t)const
             {
-                return t*f;
+                return _f*t;
             }
-            T f;
+            T _f;
         } _unary_op(f);
         return Tuple(*this,_unary_op);
     }
@@ -307,15 +304,12 @@ public:
     {
         struct tuple_inplace_unary_op:public inplace_unary_op<T>
         {
-            tuple_inplace_unary_op(T f)
-            {
-                this->f=f;
-            }
+            tuple_inplace_unary_op(T f) : _f(f) {}
             virtual void operator()(T& t)const
             {
-                t*=f;
+                t*=_f;
             }
-            T f;
+            T _f;
         } _inplace_unary_op(f);
         return tamper(_inplace_unary_op);
     }

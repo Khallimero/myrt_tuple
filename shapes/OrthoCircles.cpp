@@ -18,21 +18,20 @@ double OrthoCircles::getValue(const Point& p)const
 {
     struct point_tuple_idx_fct:public tuple_idx_fct<double,TREBLE_SIZE>
     {
-        point_tuple_idx_fct(const Point& _p)
+        point_tuple_idx_fct(const Point& p):_p(sq(p))
         {
-            this->p=sq(_p);
             (**this)=1;
         }
         virtual void operator()(const tuple_idx<TREBLE_SIZE>& i)
         {
             int i1=i+1,i2=i+2;
-            (**this)*=(SQ(p(i)+p(i1)-1)+p(i2));
+            (**this)*=(SQ(_p(i)+_p(i1)-1)+_p(i2));
         }
         const Point& getPoint()const
         {
-            return p;
+            return _p;
         }
-        Point p;
+        Point _p;
     } _tuple_idx_fct(p);
 
     return _tuple_idx_fct.tamper()-SQ(c1)*(1+c2*sum(_tuple_idx_fct.getPoint()));

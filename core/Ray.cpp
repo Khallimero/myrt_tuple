@@ -6,15 +6,12 @@ Ray::Ray()
 }
 
 Ray::Ray(const Point& p,const Vector& v)
-{
-    this->p=p,this->v=v;
-}
+    :p(p),v(v)
+{}
 
 Ray::Ray(const Point& p1,const Point& p2)
-{
-    this->p=p1;
-    this->v=p1.getVectorTo(p2);
-}
+    :p(p1),v(p1.getVectorTo(p2))
+{}
 
 Ray::~Ray() {}
 

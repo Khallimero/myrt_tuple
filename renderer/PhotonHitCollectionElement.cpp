@@ -2,9 +2,8 @@
 #include "AutoLock.h"
 
 PhotonHitCollectionElement::PhotonHitCollectionElement(const PhotonBox& b)
-{
-    this->pBox=b;
-}
+    :pBox(b)
+{}
 
 PhotonHitCollectionElement::~PhotonHitCollectionElement() {}
 

@@ -1,10 +1,8 @@
 #include "StripedPattern.h"
 
 StripedPattern::StripedPattern(SmartPointer<const Texture> t1,SmartPointer<const Texture> t2,const Vector& v,long n)
-    :Texture()
-{
-    this->t1=t1,this->t2=t2,this->v=v,this->n=n;
-}
+    :Texture(),t1(t1),t2(t2),v(v),n(n)
+{}
 
 StripedPattern::~StripedPattern() {}
 

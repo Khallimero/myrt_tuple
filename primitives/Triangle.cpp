@@ -1,17 +1,16 @@
 #include "Triangle.h"
 
 Triangle::Triangle(const Vector& v1,const Vector& v2,const Mark& mk)
-    :PlaneShape(mk)
+    :PlaneShape(mk),
+     v1(v1),v2(v2)
 {
-    this->v1=v1,this->v2=v2;
     orig=mk.getOrig();
 }
 
 Triangle::Triangle(const Point& p1,const Point& p2,const Point& p3)
-    :PlaneShape(Mark(p1))
+    :PlaneShape(Mark(p1)),
+     v1(p1.getVectorTo(p2)),v2(p1.getVectorTo(p3))
 {
-    this->v1=p1.getVectorTo(p2);
-    this->v2=p1.getVectorTo(p3);
     orig=p1;
 }
 

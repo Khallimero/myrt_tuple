@@ -4,29 +4,23 @@
 
 struct _unary_idx_op1:public unary_idx_op<double,TREBLE_SIZE>
 {
-    _unary_idx_op1(const Point& p,double c)
-    {
-        this->p=p,this->c=c;
-    }
+    _unary_idx_op1(const Point& p,double c) : _p(p),_c(c) {}
     virtual double operator()(const tuple_idx<TREBLE_SIZE>& i)const
     {
-        return p(i)+p(i+1)-c;
+        return _p(i)+_p(i+1)-_c;
     }
-    Point p;
-    double c;
+    Point _p;
+    double _c;
 };
 
 struct _unary_idx_op2:public unary_idx_op<double,TREBLE_SIZE>
 {
-    _unary_idx_op2(const Point& p)
-    {
-        this->p=p;
-    }
+    _unary_idx_op2(const Point& p):_p(p) {}
     virtual double operator()(const tuple_idx<TREBLE_SIZE>& i)const
     {
-        return p(i+2)-1.;
+        return _p(i+2)-1.;
     }
-    Point p;
+    Point _p;
 };
 
 struct _unary_idx_op:public unary_idx_op<double,TREBLE_SIZE>

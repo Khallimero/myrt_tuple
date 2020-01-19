@@ -2,11 +2,10 @@
 
 #include <math.h>
 
-CustomPerlinPattern::CustomPerlinPattern(SmartPointer<const Texture> t1,SmartPointer<const Texture> t2,double a,double b,int n,double f)
-    :PerlinPattern(a,b,n,f)
-{
-    this->t1=t1,this->t2=t2;
-}
+CustomPerlinPattern::CustomPerlinPattern(SmartPointer<const Texture> t1,SmartPointer<const Texture> t2,
+        double a,double b,int n,double f)
+    :PerlinPattern(a,b,n,f),t1(t1),t2(t2)
+{}
 
 CustomPerlinPattern::~CustomPerlinPattern() {}
 

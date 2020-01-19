@@ -17,12 +17,9 @@ __thread NestedIterator<double,2>** Renderer::nestedItTab;
 Collection <const Renderer*> Renderer::Monitored;
 
 Renderer::Renderer(const Scene* sc,const Camera& cam,const RendererQuality& quality)
-    :Lockable()
+    :Lockable(),
+     sc(sc),cam(cam),quality(quality)
 {
-    this->sc=sc;
-    this->cam=cam;
-    this->quality=quality;
-
     this->pIt=(sc->getPhotonBoxIn()==NULL?NULL:sc->getPhotonBoxIn()->getIterator(NB_PHOTON_IT));
 
     this->nIt.add(cam.getVaX().getIterator());

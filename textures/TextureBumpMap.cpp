@@ -1,9 +1,8 @@
 #include "TextureBumpMap.h"
 
-TextureBumpMap::TextureBumpMap(SmartPointer<const Texture> t,double f):BumpMap(f)
-{
-    this->t=t;
-}
+TextureBumpMap::TextureBumpMap(SmartPointer<const Texture> t,double f)
+    :BumpMap(f),t(t)
+{}
 
 TextureBumpMap::~TextureBumpMap() {}
 

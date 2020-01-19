@@ -1,10 +1,8 @@
 #include "ChequeredPattern.h"
 
 ChequeredPattern::ChequeredPattern(SmartPointer<const Texture> t1,SmartPointer<const Texture> t2,const Vector& v)
-    :Texture()
-{
-    this->t1=t1,this->t2=t2,this->v=v;
-}
+    :Texture(),t1(t1),t2(t2),v(v)
+{}
 
 ChequeredPattern::~ChequeredPattern() {}
 

@@ -4,10 +4,9 @@
 int Shape::_id=0;
 
 Shape::Shape(const Mark& mk)
+    :mark(mk)
 {
     this->id=Shape::_id++;
-
-    this->mark=mk;
 
     setTexture(NULL,Undefined);
     setBumpMap(NULL,Undefined);

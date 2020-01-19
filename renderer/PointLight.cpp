@@ -1,9 +1,8 @@
 #include "PointLight.h"
 
-PointLight::PointLight(const Point& p,const Color& c,double gl):Light(c,gl)
-{
-    this->p=p;
-}
+PointLight::PointLight(const Point& p,const Color& c,double gl)
+    :Light(c,gl),p(p)
+{}
 
 PointLight::~PointLight() {}
 

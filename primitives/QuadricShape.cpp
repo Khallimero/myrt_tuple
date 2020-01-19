@@ -2,11 +2,9 @@
 #include "Poly.h"
 
 QuadricShape::QuadricShape(const Treble<double>& c,double r,double size,const Mark& mk)
-    :PolyShape<QUADRICSHAPE_POLY_ORDER>(size,mk)
-{
-    this->coeff=c;
-    this->radius=r;
-}
+    :PolyShape<QUADRICSHAPE_POLY_ORDER>(size,mk),
+     coeff(c),radius(r)
+{}
 
 QuadricShape::~QuadricShape() {}
 

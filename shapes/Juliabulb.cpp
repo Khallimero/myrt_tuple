@@ -6,12 +6,9 @@
 Juliabulb::Juliabulb(const Point& c,
                      int pwr,double bov,int iter,
                      double size,const Mark& mk)
-    :FractalShape(iter,size,SmartPointer<const Shape>(new Sphere(1.2)),mk)
-{
-    this->c=c;
-    this->pwr=pwr;
-    this->bov=bov;
-}
+    :FractalShape(iter,size,SmartPointer<const Shape>(new Sphere(1.2)),mk),
+     c(c),pwr(pwr),bov(bov)
+{}
 
 Juliabulb::~Juliabulb() {}
 

@@ -82,8 +82,8 @@ public:
     }
 
 protected:
-    bool smoothNormal;
     Treble<double> size;
+    bool smoothNormal;
     const Shape* box;
     ObjCollection<PLYPrimitive> shapes;
     ObjCollection<PLYBox> boxes;

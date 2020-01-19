@@ -3,11 +3,8 @@
 #include <math.h>
 
 IsoSurface::IsoSurface(double size,SmartPointer<const Shape> box,const Mark& mk)
-    :Shape(mk)
-{
-    this->size=size;
-    this->box=box;
-}
+    :Shape(mk),size(size),box(box)
+{}
 
 IsoSurface::~IsoSurface() {}
 

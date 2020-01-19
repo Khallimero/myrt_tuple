@@ -10,19 +10,16 @@
 #define LARGEBOX_RADIUS_FCT 10.0
 
 PLYShape::PLYShape(const char* f,double size,const Mark& mk)
-    :Shape(mk),Lockable()
+    :Shape(mk),Lockable(),
+     size(Treble<double>(1,-1,-1)*size),smoothNormal(true)
 {
-    this->size=Treble<double>(1,-1,-1)*size;
-    this->smoothNormal=true;
     buildFromFile(f);
 }
 
 PLYShape::PLYShape(double size,const Mark& mk)
-    :Shape(mk),Lockable()
-{
-    this->size=Treble<double>(1,1,1)*size;
-    this->smoothNormal=true;
-}
+    :Shape(mk),Lockable(),
+     size(Treble<double>(1,1,1)*size),smoothNormal(true),box(NULL)
+{}
 
 PLYShape::~PLYShape()
 {

@@ -3,10 +3,8 @@
 #include <math.h>
 
 CloudPattern::CloudPattern(SmartPointer<const Texture> t1,SmartPointer<const Texture> t2,SmartPointer<const Texture> t3,double f)
-    :PerlinPattern(5,5,2,f)
-{
-    this->t1=t1,this->t2=t2,this->t3=t3;
-}
+    :PerlinPattern(5,5,2,f),t1(t1),t2(t2),t3(t3)
+{}
 
 CloudPattern::~CloudPattern() {}
 

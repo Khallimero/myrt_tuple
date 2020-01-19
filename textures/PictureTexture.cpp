@@ -1,14 +1,12 @@
 #include "PictureTexture.h"
 
-PictureTexture::PictureTexture(SmartPointer<const Picture> p):Texture()
-{
-    this->p=p;
-}
+PictureTexture::PictureTexture(SmartPointer<const Picture> p)
+    :Texture(),p(p)
+{}
 
-PictureTexture::PictureTexture(const char* fileName):Texture()
-{
-    this->p=new Picture(fileName);
-}
+PictureTexture::PictureTexture(const char* fileName)
+    :Texture(),p(new Picture(fileName))
+{}
 
 PictureTexture::~PictureTexture() {}
 

@@ -3,9 +3,8 @@
 Camera::Camera() {}
 
 Camera::Camera(const Point& o,const Vector& v,const Enumeration<Vector>& vaX,const Enumeration<Vector>& vaY)
+    :orig(o),dir(v),vaX(vaX),vaY(vaY)
 {
-    this->orig=o,this->dir=v,
-          this->vaX=vaX,this->vaY=vaY;
     setFocus(this->dir.length()*10.0);
 }
 
