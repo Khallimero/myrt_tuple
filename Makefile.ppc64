@@ -1,6 +1,6 @@
 CXX           = g++
 DEFINES       = -O3 -Wall -ffast-math -pthread
-CXXFLAGS      = -m32 -mpowerpc64 $(DEFINES)
+CXXFLAGS      = -m64 -mpowerpc64 $(DEFINES)
 INCDIR        = -I. -I/usr/include/powerpc-linux-gnu
 LINKLIBS      = -lstdc++ -lm -lpthread
 STRIP         = strip
