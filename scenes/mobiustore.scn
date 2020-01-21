@@ -83,8 +83,6 @@ void buildScene(Scene& world)
     world.addLight(new SphericLight(500,ct+Vector(.7,.45,1)*-10000,Color::White*.8));
     world.setAmbiant(Color::White*.2);
 
-    //world.setFog(Fog(Color::White,50000,2.0));
-
     //world.setPhotonBoxIn(new Sphere(1000,Mark(ct)));
     //world.setPhotonBoxOut(new Sphere(1000,Mark(ct)));
 }
