@@ -25,6 +25,9 @@ tar: clean
 tar_kdev: clean
 	wd=`basename $$PWD`;ver=`cat version.txt`;cd ..;$(TAR) -cf $${wd}_$${ver}_kdev.tar $${wd};$(COMPRESS) $${wd}_$${ver}_kdev.tar
 	
+strip: all
+	$(STRIP) $(TARGET)
+	
 $(TARGET): libs
 	@$(MKDIR) $(dir $@)
 	$(eval $(REVERSELIB))
