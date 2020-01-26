@@ -63,15 +63,15 @@ void buildScene(Scene& world)
     double base_height=1.5;
 
     SmartPointer<const Texture> tex=new CustomPerlinPattern(
-        new BasicTexture(PORCELAIN),
-        new BasicTexture(PORCELAIN*.9),
+        new BasicTexture(PORCELAIN*1.5),
+        new BasicTexture(PORCELAIN*1.3),
         4,3,2,2);
 
     PLYShape* s=new PLYShape("../ply/DragonArtec.ply",0.15,
                              Mark(Point(-5,floor_height-base_height,1040),Rotation(-M_PI/2.,0,M_PI/16)));
     s->setTexture(tex,Volumic);
-    s->setDiffCoeff(.85);
-    s->setSpecCoeff(1.0);
+    s->setDiffCoeff(1.0);
+    s->setSpecCoeff(2.0);
     s->setGlareCoeff(100);
     world.addShape(s);
 
