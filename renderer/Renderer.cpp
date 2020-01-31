@@ -162,10 +162,10 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
             if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
             {
                 double d=MAX(w.cosAngle(h.getNormal()),w.cosAngle(-h.getNormal()));
-                ltCol+=sc->getLight(k)->getColor()*d;
+                ltCol+=sc->getLight(k)->getColor(h.getPoint())*d;
 
                 double a=rf.cosAngle(w);
-                if(a>0)glCol+=sc->getLight(k)->getColor()*pow(a,h.getShape()->getGlareCoeff());
+                if(a>0)glCol+=sc->getLight(k)->getColor(h.getPoint())*pow(a,h.getShape()->getGlareCoeff());
             }
 
             if(h.getShape()->getRefractCoeff()>0&&
@@ -176,7 +176,7 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
                 if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
                 {
                     double d=MAX(w.cosAngle(h.getNormal()),w.cosAngle(-h.getNormal()));
-                    ltCol+=sc->getLight(k)->getColor()*d*h.getShape()->getRefractCoeff();
+                    ltCol+=sc->getLight(k)->getColor(h.getPoint())*d*h.getShape()->getRefractCoeff();
                 }
             }
         }

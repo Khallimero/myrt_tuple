@@ -28,7 +28,7 @@ public:
 
 public:
     virtual double dist(const Point& p)const=0;
-    const Color& getColor()const
+    virtual const Color getColor(const Point& p=Point::null)const
     {
         return c;
     }

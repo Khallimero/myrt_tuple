@@ -14,6 +14,25 @@ public:
     virtual Ray getRay(const Shape* s,const Point& p,const Point& o,const NestedIterator<double,2>* it=NULL)const;
     virtual double dist(const Point& p)const;
 
+    virtual const Color getColor(const Point& p=Point::null)const;
+
+public:
+    void setMitigation(double dist,double coeff=2.0)
+    {
+        this->mitigationDist=dist;
+        this->mitigationCoeff=coeff;
+    }
+    double getMitigationDist()const
+    {
+        return this->mitigationDist;
+    }
+    double getMitigationCoeff()const
+    {
+        return this->mitigationCoeff;
+    }
+
 protected:
     Point p;
+    double mitigationDist;
+    double mitigationCoeff;
 };
