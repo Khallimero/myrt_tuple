@@ -102,7 +102,9 @@ void buildScene(Scene& world)
     s99->setReflectCoeff(.05);
     world.addShape(s99);
 
-    world.addLight(new SphericLight(500,Point(0,0,3000)+Vector(.35,-.8,0.3).norm()*-10000,LIGHTCOL));
+    SphericLight *light=new SphericLight(500,Point(0,0,3000)+Vector(.35,-.8,0.3).norm()*-10000,LIGHTCOL);
+    light->setMitigation(10000);
+    world.addLight(light);
     world.setAmbiant(LIGHTCOL*.6);
 
     world.setPhotonBoxIn(new Sphere(r1+r2+10.,Mark(Point(0,0,3000))));
@@ -118,9 +120,9 @@ void setCamera(Camera& cam)
     Vector v1=Vector(1,1,0).projOrthoTo(cv).norm();
     Vector v2=cv.prodVect(v1).norm();
 
-    cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
+    //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
     //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
-    //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+    cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)

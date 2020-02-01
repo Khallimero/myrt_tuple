@@ -34,6 +34,7 @@
 #include "Vector.h"
 
 #define RSEED 1578292148L
+//#define RSEED 1579033008L
 
 #define PORCELAIN (Color::White)
 #define WOOD (Color("432616"))
@@ -115,7 +116,9 @@ void buildScene(Scene& world)
     Point sc(10,floor_height,1050);
     Vector vct=sc.getVectorTo(lc);
 
-    world.addLight(new SphericLight(10,sc+vct*0.5,Color::White*.8));
+    SphericLight *light=new SphericLight(10,sc+vct*0.5,Color::White*.8);
+    light->setMitigation(lc.dist(sc)*0.5);
+    world.addLight(light);
     world.setAmbiant(Color::White*.2);
 
     Shape *cyl=new Cylinder(12,Mark(sc,Rotation(vct.norm())));

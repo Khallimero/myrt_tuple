@@ -2,6 +2,7 @@
 //#include "scenes/cube.scn"
 //#include "scenes/decocube.scn"
 //#include "scenes/dragon.scn"
+//#include "scenes/dragon_artec.scn"
 //#include "scenes/hypercube.scn"
 //#include "scenes/isoriemann.scn"
 //#include "scenes/isorings.scn"

@@ -78,8 +78,9 @@ void buildScene(Scene& world)
     Point sc(-20,-30,1000);
     Vector vct=sc.getVectorTo(lc);
 
-    //world.addLight(new PointLight(Point(-500.,-1000.,-500.),Color::White*.8));
-    world.addLight(new SphericLight(10,sc+vct*0.5,Color::White*.8));
+    SphericLight* light=new SphericLight(10,sc+vct*0.5,Color::White*.8);
+    light->setMitigation(lc.dist(sc)*0.5);
+    world.addLight(light);
     world.setAmbiant(Color::White*.2);
 
     Shape *cyl=new Cylinder(12,Mark(sc,Rotation(vct.norm())));

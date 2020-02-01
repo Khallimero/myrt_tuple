@@ -114,7 +114,9 @@ void buildScene(Scene& world)
     world.addShape(p);
 
     world.setAmbiant(LIGHTCOL*0.2);
-    world.addLight(new SphericLight(800,ct+vct*.8,LIGHTCOL*1.0));
+    SphericLight *light=new SphericLight(800,ct+vct*0.8,LIGHTCOL*1.0);
+    light->setMitigation(vct.length()*0.8);
+    world.addLight(light);
 
     Shape *lc=new Cylinder(850,Mark(ct+vct*.8,Rotation(vct)));
     Shape *lp=new Plan(Vector::UnitZ,Mark(ct+vct*.2));

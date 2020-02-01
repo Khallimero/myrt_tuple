@@ -19,6 +19,7 @@ public:
 public:
     void setMitigation(double dist,double coeff=2.0)
     {
+        this->mitigation=true;
         this->mitigationDist=dist;
         this->mitigationCoeff=coeff;
     }
@@ -33,6 +34,7 @@ public:
 
 protected:
     Point p;
+    bool mitigation;
     double mitigationDist;
     double mitigationCoeff;
 };
