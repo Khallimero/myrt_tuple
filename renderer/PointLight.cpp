@@ -1,7 +1,7 @@
 #include "PointLight.h"
 
-PointLight::PointLight(const Point& p,const Color& c,double gl)
-    :Light(c,gl),p(p),mitigationDist(1.0),mitigationCoeff(2.0)
+PointLight::PointLight(const Point& p,const Color& c)
+    :Light(c),p(p),mitigationDist(1.0),mitigationCoeff(2.0)
 {
     this->mitigation=false;
 }
@@ -28,12 +28,7 @@ double PointLight::dist(const Point& p)const
     return this->p.dist(p);
 }
 
-const Color PointLight::getColor(const Point& p)const
+double PointLight::getMitigation(double d)const
 {
-    Color col=c;
-
-    if(!p.isNull()&&this->mitigation)
-        col/=pow(dist(p)/this->mitigationDist,this->mitigationCoeff);
-
-    return col;
+    return this->mitigation?pow(d/this->mitigationDist,this->mitigationCoeff):1.0;
 }

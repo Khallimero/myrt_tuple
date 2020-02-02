@@ -2,8 +2,8 @@
 
 #include <math.h>
 
-SphericLight::SphericLight(double r,const Point& p,const Color& c,double gl)
-    :PointLight(p,c,gl)
+SphericLight::SphericLight(double r,const Point& p,const Color& c)
+    :PointLight(p,c)
 {
     this->r=r;
     this->box=new Sphere(r,Mark(p));

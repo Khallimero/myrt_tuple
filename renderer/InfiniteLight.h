@@ -5,7 +5,7 @@
 class InfiniteLight:public Light
 {
 public:
-    InfiniteLight(const Vector& v,const Color& c,double gl=0);
+    InfiniteLight(const Vector& v,const Color& c);
     virtual ~InfiniteLight();
 
 public:

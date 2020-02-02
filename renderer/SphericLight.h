@@ -5,7 +5,7 @@
 class SphericLight:public PointLight
 {
 public:
-    SphericLight(double r,const Point& p,const Color& c,double gl=0);
+    SphericLight(double r,const Point& p,const Color& c);
     virtual ~SphericLight();
 
 public:

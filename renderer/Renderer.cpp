@@ -141,6 +141,7 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
         Color ltCol=Color::Black,glCol=Color::Black;
 
         double lDst=sc->getLight(k)->dist(p);
+        double mtg=sc->getLight(k)->getMitigation(lDst);
         Vector l=sc->getLight(k)->getVectorTo(p);
         Vector u=l.getOrtho();
         Vector v=l.prodVect(u).norm();
@@ -162,10 +163,10 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
             if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
             {
                 double d=MAX(w.cosAngle(h.getNormal()),w.cosAngle(-h.getNormal()));
-                ltCol+=sc->getLight(k)->getColor(h.getPoint())*d;
+                ltCol+=sc->getLight(k)->getColor()*mtg*d;
 
                 double a=rf.cosAngle(w);
-                if(a>0)glCol+=sc->getLight(k)->getColor(h.getPoint())*pow(a,h.getShape()->getGlareCoeff());
+                if(a>0)glCol+=sc->getLight(k)->getColor()*mtg*pow(a,h.getShape()->getGlareCoeff());
             }
 
             if(h.getShape()->getRefractCoeff()>0&&
@@ -176,25 +177,13 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
                 if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
                 {
                     double d=MAX(w.cosAngle(h.getNormal()),w.cosAngle(-h.getNormal()));
-                    ltCol+=sc->getLight(k)->getColor(h.getPoint())*d*h.getShape()->getRefractCoeff();
+                    ltCol+=sc->getLight(k)->getColor()*mtg*d*h.getShape()->getRefractCoeff();
                 }
             }
         }
+        
         ltSum+=ltCol/(double)it->getActualSteps();
         glSum+=glCol/(double)it->getActualSteps();
-
-        if(sc->getLight(k)->getGlare()>0)
-        {
-            Vector lv=sc->getLight(k)->getVectorTo(h.getIncident().getPoint());
-            double a=h.getIncident().getVector().cosAngle(lv);
-            if(a>0)
-            {
-                Hit hl=sc->getHit(Ray(h.getIncident().getPoint(),lv));
-                double d=sc->getLight(k)->dist(h.getIncident().getPoint());
-                if(hl.isNull()||((d>0)&&(d<h.getIncident().getPoint().dist(hl.getPoint()))))
-                    dlSum+=sc->getLight(k)->getColor()*pow(a,sc->getLight(k)->getGlare());
-            }
-        }
     }
 
     ltSum+=sc->getAmbiant()*(.5+fabs(h.getNormal().cosAngle(h.getThNormal()))/2.)*(.5+fabs(h.getNormal().cosAngle(h.getIncident().getVector()))/2.);
