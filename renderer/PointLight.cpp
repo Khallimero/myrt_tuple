@@ -30,5 +30,5 @@ double PointLight::dist(const Point& p)const
 
 double PointLight::getMitigation(double d)const
 {
-    return this->mitigation?pow(d/this->mitigationDist,this->mitigationCoeff):1.0;
+    return this->mitigation?1.0/pow(d/this->mitigationDist,this->mitigationCoeff):1.0;
 }
