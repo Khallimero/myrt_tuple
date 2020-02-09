@@ -52,13 +52,14 @@
 void buildScene(Scene& world)
 {
     double r1=600,r2=200;
+    Point sc=Point(0,0,3000);
 
     for(int i=0; i<2; i++)
     {
         double a=(double)i*25.;
-        Shape* s1=new Tore(r1,r2-a,Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)));
+        Shape* s1=new Tore(r1,r2-a,Mark(sc,Rotation(-M_PI/2.0,0,0)));
         VIL_MAT(s1,ARGENT*(i==0?1:.5));
-        Shape* s2=new Tore(r1,r2-10-a,Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)));
+        Shape* s2=new Tore(r1,r2-10-a,Mark(sc,Rotation(-M_PI/2.0,0,0)));
         VIL_MAT(s2,ARGENT*(i==0?.5:1));
         SmartPointer<const Shape> s3=new SubShape(s1,s2,false);
 
@@ -79,8 +80,8 @@ void buildScene(Scene& world)
         world.addShape(new InterShape(s3,s7,false));
     }
 
-    SmartPointer<const Shape> s10=new Tore(r1,r2-10-EPSILON*2.,Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)));
-    SmartPointer<const Shape> s11=new Tore(r1,r2-25+EPSILON*2.,Mark(Point(0,0,3000),Rotation(-M_PI/2.0,0,0)));
+    SmartPointer<const Shape> s10=new Tore(r1,r2-10-EPSILON*2.,Mark(sc,Rotation(-M_PI/2.0,0,0)));
+    SmartPointer<const Shape> s11=new Tore(r1,r2-25+EPSILON*2.,Mark(sc,Rotation(-M_PI/2.0,0,0)));
     SmartPointer<const Shape> s12=new SubShape(s10,s11);
 
     for(int i=15; i<360; i+=60)
@@ -102,13 +103,13 @@ void buildScene(Scene& world)
     s99->setReflectCoeff(.05);
     world.addShape(s99);
 
-    SphericLight *light=new SphericLight(500,Point(0,0,3000)+Vector(.35,-.8,0.3).norm()*-10000,LIGHTCOL);
-    light->setMitigation(10000);
+    SphericLight *light=new SphericLight(500,sc+Vector(.35,-.8,0.3).norm()*-10000,LIGHTCOL);
+    light->setMitigation(light->dist(sc));
     world.addLight(light);
     world.setAmbiant(LIGHTCOL*.6);
 
-    world.setPhotonBoxIn(new Sphere(r1+r2+10.,Mark(Point(0,0,3000))));
-    world.setPhotonBoxOut(new Sphere(10000,Mark(Point(0,0,3000))));
+    world.setPhotonBoxIn(new Sphere(r1+r2+10.,Mark(sc)));
+    world.setPhotonBoxOut(new Sphere(10000,Mark(sc)));
 }
 
 void setCamera(Camera& cam)

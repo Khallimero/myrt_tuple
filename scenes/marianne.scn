@@ -79,7 +79,7 @@ void buildScene(Scene& world)
     Vector vct=sc.getVectorTo(lc);
 
     SphericLight* light=new SphericLight(10,sc+vct*0.5,Color::White*.8);
-    light->setMitigation(lc.dist(sc)*0.5);
+    light->setMitigation(light->dist(sc));
     world.addLight(light);
     world.setAmbiant(Color::White*.2);
 
