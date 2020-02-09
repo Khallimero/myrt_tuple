@@ -153,7 +153,9 @@ void buildScene(Scene& world)
     p->setReflectCoeff(.1);
     world.addShape(p);
 
-    world.addLight(new SphericLight(500,Point(0,0,3000)+Vector(.25,-.6,.3).norm()*-3500.,LIGHTCOL*1.6));
+    SphericLight *light=new SphericLight(500,Point(0,0,3000)+Vector(.25,-.6,.3).norm()*-3500.,LIGHTCOL*1.6);
+    light->setMitigation(3500-(Rmajor+Rminor)*size);
+    world.addLight(light);
     world.setAmbiant(LIGHTCOL*.4);
 
     world.setPhotonBoxIn(new Sphere(Rmajor*size,Mark(ct)));
