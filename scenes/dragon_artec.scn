@@ -33,7 +33,7 @@
 #include "Point.h"
 #include "Vector.h"
 
-#define RSEED 1578292148L
+//#define RSEED 1578292148L
 //#define RSEED 1579033008L
 
 #define PORCELAIN (Color::White)
@@ -71,7 +71,7 @@ void buildScene(Scene& world)
     PLYShape* s=new PLYShape("../ply/DragonArtec.ply",0.15,
                              Mark(Point(-5,floor_height-base_height,1040),Rotation(-M_PI/2.,0,M_PI/16)));
     s->setTexture(tex,Volumic);
-    s->setDiffCoeff(1.0);
+    s->setDiffCoeff(0.95);
     s->setSpecCoeff(2.0);
     s->setGlareCoeff(100);
     world.addShape(s);
@@ -116,10 +116,10 @@ void buildScene(Scene& world)
     Point sc(10,floor_height,1050);
     Vector vct=sc.getVectorTo(lc);
 
-    SphericLight *light=new SphericLight(10,sc+vct*0.5,Color::White*.8);
+    SphericLight *light=new SphericLight(10,sc+vct*0.5,Color::White*.6);
     light->setMitigation(light->dist(sc));
     world.addLight(light);
-    world.setAmbiant(Color::White*.2);
+    world.setAmbiant(Color::White*.4);
 
     Shape *cyl=new Cylinder(12,Mark(sc,Rotation(vct.norm())));
     Shape *lp=new Plan(vct.norm()*-1,Mark(sc+vct*0.2));
