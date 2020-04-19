@@ -181,7 +181,7 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
                 }
             }
         }
-        
+
         ltSum+=ltCol/(double)it->getActualSteps();
         glSum+=glCol/(double)it->getActualSteps();
     }

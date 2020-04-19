@@ -10,10 +10,9 @@
 #define PHOTON_BOX_FCT 20.
 #define PHOTON_RAD 5.
 #define PHOTON_REF 5
-#define NB_PHOTON_IT 50000
-#define NB_PHOTON_LIGHT (1)
-//#define NB_PHOTON_LIGHT (25*25)
-#define PHOTON_EXP 4.
+#define NB_PHOTON_IT 500000
+#define NB_PHOTON_LIGHT (25*25)
+#define PHOTON_EXP 2.
 #define CAUSTIC_PHOTON_EXP 1.
 #define RADIANCE_PHOTON_EXP .2
 
@@ -104,7 +103,7 @@ void buildScene(Scene& world)
     world.addShape(s99);
 
     SphericLight *light=new SphericLight(500,sc+Vector(.35,-.8,0.3).norm()*-10000,LIGHTCOL);
-    light->setMitigation(light->dist(sc));
+    //light->setMitigation(light->dist(sc),1.2);
     world.addLight(light);
     world.setAmbiant(LIGHTCOL*.6);
 
@@ -124,6 +123,7 @@ void setCamera(Camera& cam)
     //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
     //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
     cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+    //cam=Camera(cp,cv,Enumeration<Vector>(1600,v1*.01792),Enumeration<Vector>(1200,v2*.01792));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)
