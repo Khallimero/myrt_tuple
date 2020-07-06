@@ -6,7 +6,8 @@ TARGET        = ../$(LIBDIR)/libCSG.a
 SOURCES       = AddShape.cpp \
 		CSGShape.cpp \
 		InterShape.cpp \
-		SubShape.cpp
+		SubShape.cpp \
+		XorShape.cpp
 
 all: $(TARGET)
 
