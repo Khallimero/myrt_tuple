@@ -173,15 +173,10 @@ void setCamera(Camera& cam)
 
     //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
     //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
-    cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
-
-    //cam=Camera(Point(0,0,0),Vector(0,0,100),
-    //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
-    //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
-    //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
-    //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
-
-    //cam.setFocus(cp.dist(sc),250);
+    //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
+    cam=Camera(cp,cv,Enumeration<Vector>(1600,v1*.01792),Enumeration<Vector>(1200,v2*.01792));
+    
+    cam.setFocus(cp.dist(sc),250);
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)
