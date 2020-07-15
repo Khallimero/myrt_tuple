@@ -3,7 +3,7 @@
 #define MAX_REC (250)
 #define ISO_STEP (1./500.)
 #define ISO_THRESHOLD (0.000000001)
-#define NB_REF 9
+#define NB_REF 5
 #define MAX_REF_SS 1
 #define PHOTON_EQ_DST .5
 #define PHOTON_EQ_ANG (M_PI/10.)
@@ -60,7 +60,7 @@ double getValue(const Point& p)
            *(n/800.+.33);
 }
 
-//#define RSEED 0L
+#define RSEED 0L
 
 const double size=400;
 
@@ -101,11 +101,9 @@ void buildScene(Scene& world)
     p->setReflectCoeff(.1);
     world.addShape(p);
 
-    //world.addLight(new InfiniteLight(Vector(.35,-.8,0.3),LIGHTCOL*.4));
-    //world.addLight(new InfiniteLight(Vector(0,0,1),LIGHTCOL*.2));
-    //world.addLight(new PointLight(Point(0,0,0),LIGHTCOL*.8));
-
-    world.addLight(new SphericLight(200,ct+Vector(.35,-.8,.3).norm()*-5000.,LIGHTCOL*1.6));
+    SphericLight* light=new SphericLight(200,ct+Vector(.35,-.8,.3).norm()*-5000.,LIGHTCOL*1.6);
+    light->setMitigation(light->dist(ct));
+    world.addLight(light);
     //world.addLight(new PointLight(ct+Vector(.35,-.8,.3).norm()*-50000.,LIGHTCOL*1.6));
     world.addLight(new InfiniteLight(Vector(1,0,1),LIGHTCOL*.2));
     world.setAmbiant(LIGHTCOL*.2);
