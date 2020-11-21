@@ -38,18 +38,18 @@ protected:
 
     struct PLYBox
     {
-        const Sphere* s;
+        const Sphere* box;
         Collection<const PLYPrimitive*> prm;
         Collection<const PLYPrimitive*> ht;
         bool operator==(const PLYBox& that)
         {
-            return this->s==that.s;
+            return this->box==that.box;
         }
     };
 
     struct PLYLargeBox
     {
-        Sphere* s;
+        Sphere* box;
         Collection<const PLYBox*> boxes;
     };
 

@@ -4,7 +4,7 @@
 #define ISO_STEP (.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 5
-#define MAX_REF_SS 1
+#define MAX_REF_SS 2
 #define PHOTON_EQ_DST 0.001
 #define PHOTON_EQ_ANG (M_PI/100.)
 #define PHOTON_BOX_FCT 2.

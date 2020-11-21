@@ -25,12 +25,12 @@ PLYShape::~PLYShape()
 {
     for(int i=0; i<largeBoxes._count(); i++)
     {
-        delete largeBoxes[i]->s;
+        delete largeBoxes[i]->box;
         delete largeBoxes[i];
     }
 
     for(int i=0; i<boxes._count(); i++)
-        delete boxes[i].s;
+        delete boxes[i].box;
 }
 
 Hit PLYShape::_getHit(const Ray& r)const
@@ -85,11 +85,11 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
         double dMin=-1.0;
         for(int i=0; i<largeBoxes._count(); i++)
         {
-            if(largeBoxes[i]->s->intersect(r))
+            if(largeBoxes[i]->box->intersect(r))
             {
                 for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
                 {
-                    if(largeBoxes[i]->boxes[j]->s->intersect(r))
+                    if(largeBoxes[i]->boxes[j]->box->intersect(r))
                     {
                         for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++)
                         {
@@ -102,7 +102,6 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
                                 {
                                     if(p!=NULL)*p=largeBoxes[i]->boxes[j]->ht[k];
                                     if(b!=NULL)*b=largeBoxes[i]->boxes[j];
-                                    if(largeBoxes[i]->boxes[j]->s->isInside(r.getPoint()))return ht;
                                     dMin=d,h=ht;
                                 }
                             }
@@ -195,7 +194,7 @@ void PLYShape::buildBoxes(bool flgBox)
         {
             flg=true;
             for(int k=0; flg&&k<3; k++)
-                if(!boxes[j].s->isInside(Point(shapes[i].pt[k])))flg=false;
+                if(!boxes[j].box->isInside(Point(shapes[i].pt[k])))flg=false;
         }
         if(!flg)
         {
@@ -217,8 +216,8 @@ void PLYShape::buildBoxes(bool flgBox)
 
         for(int j=0; j<largeBoxes._count(); j++)
         {
-            double d=largeBoxes[j]->s->getMark().getOrig().dist(boxes[i].s->getMark().getOrig())+boxes[i].s->getRadius();
-            if(d<largeBoxes[j]->s->getRadius()&&(dMin<0||d<dMin))
+            double d=largeBoxes[j]->box->getMark().getOrig().dist(boxes[i].box->getMark().getOrig())+boxes[i].box->getRadius();
+            if(d<largeBoxes[j]->box->getRadius()&&(dMin<0||d<dMin))
             {
                 dMin=d;
                 lb=largeBoxes.getTab()[j];
@@ -228,7 +227,7 @@ void PLYShape::buildBoxes(bool flgBox)
         if(lb==NULL)
         {
             lb=new PLYLargeBox();
-            lb->s=new Sphere(boxes[i].s->getRadius()*LARGEBOX_RADIUS_FCT,boxes[i].s->getMark());
+            lb->box=new Sphere(boxes[i].box->getRadius()*LARGEBOX_RADIUS_FCT,boxes[i].box->getMark());
             largeBoxes._add(lb);
         }
         lb->boxes._add(&(boxes[i]));
@@ -238,8 +237,8 @@ void PLYShape::buildBoxes(bool flgBox)
     {
         double dMax=-1.0;
         for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
-            dMax=MAX(dMax,largeBoxes[i]->s->getMark().getOrig().dist(largeBoxes[i]->boxes[j]->s->getMark().getOrig())+largeBoxes[i]->boxes[j]->s->getRadius());
-        largeBoxes.getTab()[i]->s->setRadius(dMax+EPSILON);
+            dMax=MAX(dMax,largeBoxes[i]->box->getMark().getOrig().dist(largeBoxes[i]->boxes[j]->box->getMark().getOrig())+largeBoxes[i]->boxes[j]->box->getRadius());
+        largeBoxes.getTab()[i]->box->setRadius(dMax+EPSILON);
     }
 
     fprintf(stdout,"Large boxes : %d\n",largeBoxes._count());
@@ -263,7 +262,7 @@ void PLYShape::addPrimitive(const Point& a,const Point& b,const Point& c)
 void PLYShape::addBox(const Point& pt,double r)
 {
     PLYBox b;
-    b.s=new Sphere(r,Mark(pt));
+    b.box=new Sphere(r,Mark(pt));
     boxes._add(b);
 }
 
@@ -290,7 +289,7 @@ void* boxThread(void* d)
         {
             int n=0;
             for(int j=0; j<3; j++)
-                if(s->boxes[i].s->isInside(Point(s->shapes[k].pt[j])))n++;
+                if(s->boxes[i].box->isInside(Point(s->shapes[k].pt[j])))n++;
             if(n>0)s->boxes.getTab()[i].prm._add(&s->shapes[k]);
             if(n==3)s->boxes.getTab()[i].ht._add(&s->shapes[k]);
         }

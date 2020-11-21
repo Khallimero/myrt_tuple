@@ -11,17 +11,7 @@ public:
     virtual ~Geometric();
 
 public:
-    double prodScal(const Geometric& that)const
-    {
-        struct treble_binary_fct:public binary_fct<double,double>
-        {
-            virtual void operator()(const double& t1,const double& t2)
-            {
-                (**this)+=t1*t2;
-            }
-        } _binary_fct;
-        return this->tamper(that,_binary_fct);
-    }
+    double prodScal(const Geometric& that)const;
 
 public:
     double getX()const
