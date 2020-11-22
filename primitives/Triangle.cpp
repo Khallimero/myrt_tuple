@@ -28,15 +28,15 @@ Hit Triangle::getTriangleHit(const Ray& r,const Shape* s,const Point* p)
 
 Hit Triangle::getTriangleHit(const Ray& r,const Shape* s,const Point& o,const Vector& v1,const Vector& v2)
 {
-    double d=Vector(v2.prodVect(v1)).prodScal(r.getVector());
+    double d=v2.prodVect(v1).prodScal(r.getVector());
     Vector w=o.getVectorTo(r.getPoint());
-    double a=Vector(v2.prodVect(w)).prodScal(r.getVector())/d;
+    double a=v2.prodVect(w).prodScal(r.getVector())/d;
     if(a<0.0||a>1.0)return Hit::null;
-    double b=Vector(w.prodVect(v1)).prodScal(r.getVector())/d;
+    double b=w.prodVect(v1).prodScal(r.getVector())/d;
     if(b<0.0||b>1.0)return Hit::null;
     if((a+b)>1.0)return Hit::null;
 
-    double t=(v1.prodVect(v2).prodScal(w))/d;
+    double t=v1.prodVect(v2).prodScal(w)/d;
     if(t>0.0)return Hit(r,s,Point(r.getPoint()+(r.getVector()*t)),Triangle::getTriangleNormal(v1,v2));
 
     return Hit::null;
@@ -60,5 +60,5 @@ Vector Triangle::getNormal()const
 
 double Triangle::getArea()const
 {
-    return v1.prodVect(v2).length()/2.;
+    return v1.prodVect(v2).length()/2.0;
 }
