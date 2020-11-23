@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 template <typename T> class ICollection:public Lockable
 {
@@ -138,10 +139,12 @@ public:
         AutoLock autolock(this);
         return _count();
     }
+
     const volatile int& _count()const
     {
         return nb;
     }
+
     T* getTab()
     {
         return tab;
@@ -281,4 +284,91 @@ private:
         this->tab=t;
         this->nb_alloc=s;
     }
+};
+
+template <typename T> class CollectionUnion
+{
+public:
+    CollectionUnion(int n,...)
+    {
+        this->tab=NULL;
+        _resize(n);
+        va_list vl;
+        va_start(vl,n);
+        for(int i=0; i<=n; i++)
+            this->tab[i]=va_arg(vl,ICollection<T>*);
+        va_end(vl);
+    }
+
+    CollectionUnion(const CollectionUnion& that)
+    {
+        this->tab=NULL;
+        *this=that;
+    }
+
+    CollectionUnion& operator=(const CollectionUnion& that)
+    {
+        _resize(that.nb);
+        memcpy(this->tab,that.tab,this->nb*sizeof(ICollection<T>*));
+        return *this;
+    }
+
+    virtual ~CollectionUnion()
+    {
+        _free();
+    }
+
+private:
+    virtual void _free()
+    {
+        if(this->tab)
+        {
+            free(this->tab);
+            this->tab=NULL;
+        }
+        this->nb=0;
+    }
+
+    virtual void _resize(int s)
+    {
+        this->tab=(ICollection<T>**)realloc(this->tab,s*sizeof(ICollection<T>*));
+        this->nb=s;
+    }
+
+public:
+    int count()const
+    {
+        int cnt=0;
+        for(int i=0; i<this->nb; i++)
+            cnt+=this->tab[i]->count();
+        return cnt;
+    }
+
+    const int _count()const
+    {
+        int cnt=0;
+        for(int i=0; i<this->nb; i++)
+            cnt+=this->tab[i]->_count();
+        return cnt;
+    }
+
+    const T& get(int i)const
+    {
+        for(int j=0; j<this->nb; j++)
+        {
+            if(i<this->tab[j]->_count())
+                return this->tab[j]->get(i);
+            i-=this->tab[j]->_count();
+        }
+        return NULL;
+    }
+
+    const T& operator[](int i)const
+    {
+        return get(i);
+    }
+
+protected:
+    ICollection<T>** tab;
+    int nb;
 };

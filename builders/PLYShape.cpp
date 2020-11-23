@@ -42,27 +42,28 @@ Hit PLYShape::_getHit(const Ray& r)const
     if(!h.isNull()&&smoothNormal)
     {
         double dst=EPSILON;
-        double* cTab=(double*)malloc(b->prm._count()*sizeof(double));
-        for(int i=0; i<b->prm._count(); i++)
+        CollectionUnion<const PLYPrimitive*> prmUnion=CollectionUnion<const PLYPrimitive*>(2,&b->ht,&b->prm);
+        double* cTab=(double*)malloc(prmUnion._count()*sizeof(double));
+        for(int i=0; i<prmUnion._count(); i++)
         {
             bool flg=false;
             for(int j=0; !flg&&j<3; j++)
                 for(int k=0; !flg&&k<3; k++)
-                    if(Point(b->prm[i]->pt[j])==Point(p->pt[k]))flg=true;
+                    if(Point(prmUnion[i]->pt[j])==Point(p->pt[k]))flg=true;
             if(flg)
             {
-                const Point& d=b->prm[i]->b;
+                const Point& d=prmUnion[i]->b;
                 cTab[i]=h.getPoint().dist(d);
                 dst=MAX(dst,p->b.dist(d));
             }
             else cTab[i]=-1;
         }
         Vector n=Vector::null;
-        for(int i=0; i<b->prm._count(); i++)
+        for(int i=0; i<prmUnion._count(); i++)
         {
             if(cTab[i]>0)
             {
-                Vector w=b->prm[i]->n;
+                Vector w=prmUnion[i]->n;
                 if(p->n.angle(w)>M_PI/4.0)w=-w;
                 if(p->n.angle(w)<M_PI/4.0)
                     n+=w*SQ(1.0-cTab[i]/dst);
@@ -290,8 +291,8 @@ void* boxThread(void* d)
             int n=0;
             for(int j=0; j<3; j++)
                 if(s->boxes[i].box->isInside(Point(s->shapes[k].pt[j])))n++;
-            if(n>0)s->boxes.getTab()[i].prm._add(&s->shapes[k]);
             if(n==3)s->boxes.getTab()[i].ht._add(&s->shapes[k]);
+            else if(n>0)s->boxes.getTab()[i].prm._add(&s->shapes[k]);
         }
 
         s->boxes.getTab()[i].prm.trim();
