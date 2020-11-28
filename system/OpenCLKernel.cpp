@@ -38,8 +38,7 @@ OpenCLKernel::OpenCLKernel(const char* name, const char* source)
 
 int OpenCLKernel::createBuffer(size_t nb,size_t size, cl_mem_flags flags)
 {
-    cl_int ret;
-    buffers.add(clCreateBuffer(context, flags, getWorkSize(nb)*size, NULL, &ret));
+    buffers.add(clCreateBuffer(context, flags, getWorkSize(nb)*size, NULL, NULL));
     int bufferId = buffers.count()-1;
     clSetKernelArg(kernel, bufferId, sizeof(cl_mem), (void *)&buffers[bufferId]);
     return bufferId;
