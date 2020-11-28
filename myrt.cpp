@@ -158,5 +158,5 @@ int main(void)
     sprintf(buf,"rt_%u.ppm",rseed);
     pct->write(buf);
 
-    pthread_exit(NULL);
+    exit(0);
 }

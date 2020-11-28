@@ -6,7 +6,7 @@
 #define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
 
-class OpenCLKernel
+class OpenCLKernel : public Lockable
 {
 public:
     OpenCLKernel(const char* name, const char* source);
@@ -25,13 +25,9 @@ protected:
     }
 
 private:
-    cl_platform_id platform_id;
-    cl_device_id device_id;
     cl_context context;
     cl_command_queue command_queue;
-    cl_program program;
     cl_kernel kernel;
-    cl_int ret;
     size_t workgroupSizeMultiple;
 
     Collection<cl_mem> buffers;

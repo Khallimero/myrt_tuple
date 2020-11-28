@@ -8,6 +8,7 @@
 #include "Ray.h"
 #include "Lockable.h"
 #include "ShapeBuilder.h"
+#include "OpenCLKernel.h"
 
 void* boxThread(void*);
 
@@ -89,4 +90,7 @@ protected:
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;
     int nb_box;
+#ifdef OpenCL
+    OpenCLKernel* kernel;
+#endif
 };

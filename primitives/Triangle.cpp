@@ -44,8 +44,7 @@ Hit Triangle::getTriangleHit(const Ray& r,const Shape* s,const Point& o,const Ve
 
 Vector Triangle::getTriangleNormal(const Point* p)
 {
-    return Triangle::getTriangleNormal(p[0].getVectorTo(p[1]),
-                                       p[0].getVectorTo(p[2]));
+    return Triangle::getTriangleNormal(p[0].getVectorTo(p[1]),p[0].getVectorTo(p[2]));
 }
 
 Vector Triangle::getTriangleNormal(const Vector& v1,const Vector& v2)
