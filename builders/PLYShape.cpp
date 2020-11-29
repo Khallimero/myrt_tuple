@@ -107,14 +107,14 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
                     {
 #ifdef OpenCL
                         int cnt=largeBoxes[i]->boxes[j]->ht._count();
-                        cl_double3 *pt=(cl_double3*)malloc(cnt*3*sizeof(cl_double3));
+                        double *pt=(double*)malloc(cnt*3*TREBLE_SIZE*sizeof(double));
                         for(int k=0; k<cnt; k++)
                             for(int l=0; l<3; l++)
-                                memcpy(&pt[(k*3)+l],largeBoxes[i]->boxes[j]->ht[k]->pt[l]._getTab(),TREBLE_SIZE*sizeof(double));
+                                memcpy(&pt[((k*3)+l)*TREBLE_SIZE],largeBoxes[i]->boxes[j]->ht[k]->pt[l]._getTab(),TREBLE_SIZE*sizeof(double));
                         AutoLock lock(this->kernel);
                         this->kernel->writeBuffer(0,TREBLE_SIZE,sizeof(double),r.getPoint()._getTab());
                         this->kernel->writeBuffer(1,TREBLE_SIZE,sizeof(double),r.getVector()._getTab());
-                        this->kernel->writeBuffer(2,cnt*3,sizeof(cl_double3),pt);
+                        this->kernel->writeBuffer(2,cnt*3*TREBLE_SIZE,sizeof(double),pt);
                         this->kernel->runKernel(cnt);
                         double *dst=(double*)malloc(cnt*sizeof(double));
                         this->kernel->readBuffer(3,cnt,sizeof(double),dst);
@@ -472,21 +472,23 @@ void PLYShape::buildFromFile(const char* filename)
 #ifdef OpenCL
     kernel=new OpenCLKernel("primitive_hit", "\
 __kernel void primitive_hit(\
-    __global const double3 *pt,\
-    __global const double3 *vct,\
-    __global const double3 *prm,\
+    __global const double *pt,\
+    __global const double *vct,\
+    __global const double *prm,\
     __global double *dst)\
 {\
     int id=get_global_id(0);\
     dst[id]=-1.0;\
-    double3 t_o=prm[id*3];\
-    double3 t_v1=prm[(id*3)+1]-t_o;\
-    double3 t_v2=prm[(id*3)+2]-t_o;\
-    double d=dot(cross(t_v2,t_v1),*vct);\
-    double3 t_w=(*pt)-t_o;\
-    double a=dot(cross(t_v2,t_w),*vct)/d;\
+    double3 t_pt=vload3(0,pt);\
+    double3 t_vct=vload3(0,vct);\
+    double3 t_o=vload3(id*3,prm);\
+    double3 t_v1=vload3((id*3)+1,prm)-t_o;\
+    double3 t_v2=vload3((id*3)+2,prm)-t_o;\
+    double d=dot(cross(t_v2,t_v1),t_vct);\
+    double3 t_w=t_pt-t_o;\
+    double a=dot(cross(t_v2,t_w),t_vct)/d;\
     if(a<0.0||a>1.0)return;\
-    double b=dot(cross(t_w,t_v1),*vct)/d;\
+    double b=dot(cross(t_w,t_v1),t_vct)/d;\
     if(b<0.0||b>1.0)return;\
     if((a+b)>1.0)return;\
     dst[id]=dot(cross(t_v1,t_v2),t_w)/d;\
@@ -497,9 +499,9 @@ __kernel void primitive_hit(\
         for(int j=0; j<this->largeBoxes[i]->boxes._count(); j++)
             nb=MAX(nb,this->largeBoxes[i]->boxes[j]->ht._count());
 
-    kernel->createBuffer(1,sizeof(cl_double3),CL_MEM_READ_ONLY);
-    kernel->createBuffer(1,sizeof(cl_double3),CL_MEM_READ_ONLY);
-    kernel->createBuffer(nb*3,sizeof(cl_double3),CL_MEM_READ_ONLY);
+    kernel->createBuffer(TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+    kernel->createBuffer(TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+    kernel->createBuffer(nb*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
     kernel->createBuffer(nb,sizeof(double),CL_MEM_WRITE_ONLY);
 #endif
 }
