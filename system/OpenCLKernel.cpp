@@ -17,7 +17,7 @@ OpenCLKernel::OpenCLKernel(const char* name, const char* source)
     cl_device_id device_id;
     cl_uint ret_num_devices;
     if(clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1,&device_id, &ret_num_devices)!=CL_SUCCESS) exit(1);
-    if(clGetDeviceInfo(device_id, CL_DEVICE_NAME, BUFSIZ,buf, NULL)!=CL_SUCCESS) exit(1);
+    if(clGetDeviceInfo(device_id, CL_DEVICE_NAME, BUFSIZ, buf, NULL)!=CL_SUCCESS) exit(1);
     fprintf(stdout,"OpenCL device : %s\n",buf);
 
     cl_int ret;
@@ -32,8 +32,10 @@ OpenCLKernel::OpenCLKernel(const char* name, const char* source)
         exit(1);
     }
     kernel = clCreateKernel(program, name, &ret);
-    clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t),&workgroupSizeMultiple,NULL);
     clReleaseProgram(program);
+
+    clGetDeviceInfo(device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(size_t), &computeUnits, NULL);
+    clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &workgroupSizeMultiple, NULL);
 }
 
 int OpenCLKernel::createBuffer(size_t nb,size_t size, cl_mem_flags flags)
@@ -49,10 +51,11 @@ bool OpenCLKernel::writeBuffer(int bufferId, size_t nb, size_t size, const void*
     return clEnqueueWriteBuffer(command_queue, buffers[bufferId], CL_TRUE, 0, nb*size, ptr, 0, NULL, NULL)==CL_SUCCESS;
 }
 
-bool OpenCLKernel::runKernel(size_t nb, cl_int dim)
+bool OpenCLKernel::runKernel(size_t nb)
 {
-    size_t size=getWorkSize(nb);
-    return clEnqueueNDRangeKernel(command_queue, kernel, dim, NULL, &size, &workgroupSizeMultiple, 0, NULL, NULL)==CL_SUCCESS;
+    size_t size=(int)getWorkSize(nb);
+    size_t workSize=(int)this->computeUnits;
+    return clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &size, &workSize, 0, NULL, NULL)==CL_SUCCESS;
 }
 
 bool OpenCLKernel::readBuffer(int bufferId, size_t nb, size_t size, void* ptr)

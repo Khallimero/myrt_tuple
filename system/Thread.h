@@ -23,6 +23,7 @@ public:
     void setCancelable(bool c=true);
 
 public:
+    static int nbThread();
     static void run(void*(*fct)(void*),void* arg,int nb_thread=-1);
 
 protected:

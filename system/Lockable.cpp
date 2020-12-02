@@ -33,7 +33,6 @@ int Lockable::unlock()const
     return tsafe?_unlock():0;
 }
 
-
 int Lockable::_lock()const
 {
     return pthread_mutex_lock(&mtx);

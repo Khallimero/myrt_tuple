@@ -7,14 +7,14 @@
 #include <stdio.h>
 
 #define PLYBOX_RADIUS_FCT 10.0
-#define LARGEBOX_RADIUS_FCT 10.0
+#define LARGEBOX_RADIUS_FCT 5.0
 
 PLYShape::PLYShape(const char* f,double size,const Mark& mk)
     :Shape(mk),Lockable(),
      size(Treble<double>(1,-1,-1)*size),smoothNormal(true)
 {
 #ifdef OpenCL
-    kernel=NULL;
+    this->kernel=NULL;
 #endif
 
     buildFromFile(f);
@@ -25,7 +25,7 @@ PLYShape::PLYShape(double size,const Mark& mk)
      size(Treble<double>(1,1,1)*size),smoothNormal(true),box(NULL)
 {
 #ifdef OpenCL
-    kernel=NULL;
+    this->kernel=NULL;
 #endif
 }
 
@@ -38,11 +38,21 @@ PLYShape::~PLYShape()
     }
 
     for(int i=0; i<boxes._count(); i++)
+    {
+#ifdef OpenCL
+        if(boxes[i].pt!=NULL)
+            free(boxes[i].pt);
+#endif
         delete boxes[i].box;
+    }
 
 #ifdef OpenCL
     if(kernel!=NULL)
-        delete kernel;
+    {
+        for(int i=0; i<Thread::nbThread(); i++)
+            delete kernel[i];
+        delete[] kernel;
+    }
 #endif
 }
 
@@ -97,6 +107,11 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
     if(box==NULL||box->intersect(r))
     {
         double dMin=-1.0;
+#ifdef OpenCL
+        float r_pt[TREBLE_SIZE],r_vct[TREBLE_SIZE];
+        for(int i=0; i<TREBLE_SIZE; i++)
+            r_pt[i]=(float)r.getPoint().get(i),r_vct[i]=(float)r.getVector().get(i);
+#endif
         for(int i=0; i<largeBoxes._count(); i++)
         {
             if(largeBoxes[i]->box->intersect(r))
@@ -107,31 +122,46 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
                     {
 #ifdef OpenCL
                         int cnt=largeBoxes[i]->boxes[j]->ht._count();
-                        double *pt=(double*)malloc(cnt*3*TREBLE_SIZE*sizeof(double));
-                        for(int k=0; k<cnt; k++)
-                            for(int l=0; l<3; l++)
-                                memcpy(&pt[((k*3)+l)*TREBLE_SIZE],largeBoxes[i]->boxes[j]->ht[k]->pt[l]._getTab(),TREBLE_SIZE*sizeof(double));
-                        AutoLock lock(this->kernel);
-                        this->kernel->writeBuffer(0,TREBLE_SIZE,sizeof(double),r.getPoint()._getTab());
-                        this->kernel->writeBuffer(1,TREBLE_SIZE,sizeof(double),r.getVector()._getTab());
-                        this->kernel->writeBuffer(2,cnt*3*TREBLE_SIZE,sizeof(double),pt);
-                        this->kernel->runKernel(cnt);
-                        double *dst=(double*)malloc(cnt*sizeof(double));
-                        this->kernel->readBuffer(3,cnt,sizeof(double),dst);
-                        lock.unlock();
+                        largeBoxes[i]->boxes[j]->lock.lock();
+                        if(largeBoxes[i]->boxes[j]->pt==NULL)
+                        {
+                            largeBoxes[i]->boxes.getTab()[j]->pt=(float*)malloc(cnt*3*TREBLE_SIZE*sizeof(float));
+                            for(int k=0; k<cnt; k++)
+                                for(int l=0; l<3; l++)
+                                    for(int m=0; m<TREBLE_SIZE; m++)
+                                        largeBoxes[i]->boxes.getTab()[j]->pt[(((k*3)+l)*TREBLE_SIZE)+m]=(float)largeBoxes[i]->boxes[j]->ht[k]->pt[l].get(m);
+                        }
+                        largeBoxes[i]->boxes[j]->lock.unlock();
+                        float *dst=(float*)malloc(cnt*sizeof(float));
+
+                        bool flg=false;
+                        for(int k=rand(); flg==false; k++)
+                        {
+                            OpenCLKernel* krn=this->kernel[k%Thread::nbThread()];
+                            if(krn->trylock()==0)
+                            {
+                                krn->writeBuffer(0,TREBLE_SIZE,sizeof(float),r_pt);
+                                krn->writeBuffer(1,TREBLE_SIZE,sizeof(float),r_vct);
+                                krn->writeBuffer(2,cnt*3*TREBLE_SIZE,sizeof(float),largeBoxes[i]->boxes[j]->pt);
+                                krn->runKernel(cnt);
+                                krn->readBuffer(3,cnt,sizeof(float),dst);
+                                krn->unlock();
+                                flg=true;
+                            }
+                        }
+
                         for(int k=0; k<cnt; k++)
                         {
                             if(dst[k]>0&&((dst[k]<dMin)||(dMin<0)))
                             {
                                 if(p!=NULL)*p=largeBoxes[i]->boxes[j]->ht[k];
                                 if(b!=NULL)*b=largeBoxes[i]->boxes[j];
-                                dMin=dst[k];
-                                h=Hit(r,this,Point(r.getPoint()+(r.getVector()*dst[k])),
-                                      Triangle::getTriangleNormal(largeBoxes[i]->boxes[j]->ht[k]->pt));
+                                dMin=(double)dst[k];
+                                h=Triangle::getTriangleHit(r,this,largeBoxes[i]->boxes[j]->ht[k]->pt);
                                 h.setId(k);
                             }
                         }
-                        free(pt);
+
                         free(dst);
 #else
                         for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++)
@@ -307,6 +337,9 @@ void PLYShape::addBox(const Point& pt,double r)
 {
     PLYBox b;
     b.box=new Sphere(r,Mark(pt));
+#ifdef OpenCL
+    b.pt=NULL;
+#endif
     boxes._add(b);
 }
 
@@ -470,38 +503,43 @@ void PLYShape::buildFromFile(const char* filename)
     }
 
 #ifdef OpenCL
-    kernel=new OpenCLKernel("primitive_hit", "\
-__kernel void primitive_hit(\
-    __global const double *pt,\
-    __global const double *vct,\
-    __global const double *prm,\
-    __global double *dst)\
-{\
-    int id=get_global_id(0);\
-    dst[id]=-1.0;\
-    double3 t_pt=vload3(0,pt);\
-    double3 t_vct=vload3(0,vct);\
-    double3 t_o=vload3(id*3,prm);\
-    double3 t_v1=vload3((id*3)+1,prm)-t_o;\
-    double3 t_v2=vload3((id*3)+2,prm)-t_o;\
-    double d=dot(cross(t_v2,t_v1),t_vct);\
-    double3 t_w=t_pt-t_o;\
-    double a=dot(cross(t_v2,t_w),t_vct)/d;\
-    if(a<0.0||a>1.0)return;\
-    double b=dot(cross(t_w,t_v1),t_vct)/d;\
-    if(b<0.0||b>1.0)return;\
-    if((a+b)>1.0)return;\
-    dst[id]=dot(cross(t_v1,t_v2),t_w)/d;\
-}");
-
     int nb=0;
     for(int i=0; i<this->largeBoxes._count(); i++)
         for(int j=0; j<this->largeBoxes[i]->boxes._count(); j++)
             nb=MAX(nb,this->largeBoxes[i]->boxes[j]->ht._count());
 
-    kernel->createBuffer(TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-    kernel->createBuffer(TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-    kernel->createBuffer(nb*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-    kernel->createBuffer(nb,sizeof(double),CL_MEM_WRITE_ONLY);
+    this->kernel=new OpenCLKernel*[Thread::nbThread()];
+
+    for(int i=0; i<Thread::nbThread(); i++)
+    {
+        this->kernel[i]=new OpenCLKernel("primitive_hit", "\
+__kernel void primitive_hit(\
+    __global const float *pt,\
+    __global const float *vct,\
+    __global const float *prm,\
+    __global float *dst)\
+{\
+    int id=get_global_id(0);\
+    dst[id]=-1.0;\
+    float3 t_pt=vload3(0,pt);\
+    float3 t_vct=vload3(0,vct);\
+    float3 t_o=vload3(id*3,prm);\
+    float3 t_v1=vload3((id*3)+1,prm)-t_o;\
+    float3 t_v2=vload3((id*3)+2,prm)-t_o;\
+    float d=dot(cross(t_v2,t_v1),t_vct);\
+    float3 t_w=t_pt-t_o;\
+    float a=dot(cross(t_v2,t_w),t_vct)/d;\
+    if(a<0.0||a>1.0)return;\
+    float b=dot(cross(t_w,t_v1),t_vct)/d;\
+    if(b<0.0||b>1.0)return;\
+    if((a+b)>1.0)return;\
+    dst[id]=dot(cross(t_v1,t_v2),t_w)/d;\
+}");
+
+        this->kernel[i]->createBuffer(TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
+        this->kernel[i]->createBuffer(TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
+        this->kernel[i]->createBuffer(nb*3*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
+        this->kernel[i]->createBuffer(nb,sizeof(float),CL_MEM_WRITE_ONLY);
+    }
 #endif
 }

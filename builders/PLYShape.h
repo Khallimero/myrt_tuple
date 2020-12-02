@@ -42,6 +42,10 @@ protected:
         const Sphere* box;
         Collection<const PLYPrimitive*> prm;
         Collection<const PLYPrimitive*> ht;
+#ifdef OpenCL
+        Lockable lock;
+        mutable float *pt;
+#endif
         bool operator==(const PLYBox& that)
         {
             return this->box==that.box;
@@ -91,6 +95,6 @@ protected:
     Collection<PLYLargeBox*> largeBoxes;
     int nb_box;
 #ifdef OpenCL
-    OpenCLKernel* kernel;
+    OpenCLKernel** kernel;
 #endif
 };
