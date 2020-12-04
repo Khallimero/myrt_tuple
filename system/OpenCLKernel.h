@@ -18,7 +18,7 @@ public:
     bool runKernel(size_t nb);
     bool readBuffer(int bufferId, size_t nb,size_t size, void* ptr);
     void flush();
-    
+
 protected:
     size_t getWorkSize(size_t size) const
     {

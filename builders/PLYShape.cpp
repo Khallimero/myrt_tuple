@@ -109,15 +109,6 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
         double dMin=-1.0;
 #ifdef OpenCL
         OpenCLKernel* krn=NULL;
-        for(int k=rand(); krn==NULL; k++)
-            if(this->kernel[k%Thread::nbThread()]->trylock()==0)
-                krn=this->kernel[k%Thread::nbThread()];
-
-        float k_r[2*TREBLE_SIZE];
-        for(int i=0; i<TREBLE_SIZE; i++)
-            k_r[i]=(float)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(float)r.getVector().get(i);
-
-        krn->writeBuffer(0,2*TREBLE_SIZE,sizeof(float),k_r);
 #endif
         for(int i=0; i<largeBoxes._count(); i++)
         {
@@ -128,6 +119,20 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
                     if(largeBoxes[i]->boxes[j]->box->intersect(r))
                     {
 #ifdef OpenCL
+                        for(int k=rand(); krn==NULL; k++)
+                        {
+                            if(this->kernel[k%Thread::nbThread()]->trylock()==0)
+                            {
+                                krn=this->kernel[k%Thread::nbThread()];
+
+                                float k_r[2*TREBLE_SIZE];
+                                for(int i=0; i<TREBLE_SIZE; i++)
+                                    k_r[i]=(float)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(float)r.getVector().get(i);
+
+                                krn->writeBuffer(0,2*TREBLE_SIZE,sizeof(float),k_r);
+                            }
+                        }
+
                         int cnt=largeBoxes[i]->boxes[j]->ht._count();
                         largeBoxes[i]->boxes[j]->lock.lock();
                         if(largeBoxes[i]->boxes[j]->pt==NULL)
@@ -139,10 +144,10 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
                                         largeBoxes[i]->boxes.getTab()[j]->pt[(((k*3)+l)*TREBLE_SIZE)+m]=(float)largeBoxes[i]->boxes[j]->ht[k]->pt[l].get(m);
                         }
                         largeBoxes[i]->boxes[j]->lock.unlock();
-                        float *dst=(float*)malloc(cnt*sizeof(float));
 
                         krn->writeBuffer(1,cnt*3*TREBLE_SIZE,sizeof(float),largeBoxes[i]->boxes[j]->pt);
                         krn->runKernel(cnt);
+                        float *dst=(float*)malloc(cnt*sizeof(float));
                         krn->readBuffer(2,cnt,sizeof(float),dst);
 
                         for(int k=0; k<cnt; k++)
@@ -180,8 +185,11 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
             }
         }
 #ifdef OpenCL
-        krn->flush();
-        krn->unlock();
+        if(krn!=NULL)
+        {
+            krn->flush();
+            krn->unlock();
+        }
 #endif
     }
 
