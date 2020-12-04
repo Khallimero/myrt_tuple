@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+int Thread::_nb_thread=-1;
+
 void* runThread(void* th)
 {
     Thread* t=(Thread*)th;
@@ -57,8 +59,12 @@ void Thread::kill()
 
 int Thread::nbThread()
 {
-    cpu_set_t set;
-    return pthread_getaffinity_np(pthread_self(),sizeof(set),&set)==0?CPU_COUNT(&set):NB_THREAD;
+    if(_nb_thread<0)
+    {
+        cpu_set_t set;
+        _nb_thread=pthread_getaffinity_np(pthread_self(),sizeof(set),&set)==0?CPU_COUNT(&set):NB_THREAD;
+    }
+    return _nb_thread;
 }
 
 void Thread::run(void*(*fct)(void*),void* arg,int nb_thread)

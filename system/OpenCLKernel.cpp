@@ -63,10 +63,15 @@ bool OpenCLKernel::readBuffer(int bufferId, size_t nb, size_t size, void* ptr)
     return clEnqueueReadBuffer(command_queue, buffers[bufferId], CL_TRUE, 0, nb*size, ptr, 0, NULL, NULL)==CL_SUCCESS;
 }
 
-OpenCLKernel::~OpenCLKernel()
+void OpenCLKernel::flush()
 {
     clFlush(command_queue);
     clFinish(command_queue);
+}
+
+OpenCLKernel::~OpenCLKernel()
+{
+    flush();
     clReleaseKernel(kernel);
     for(int i=0; i<buffers._count(); i++)
         clReleaseMemObject(buffers[i]);

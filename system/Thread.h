@@ -28,6 +28,7 @@ public:
 
 protected:
     pthread_t pthread;
+    static int _nb_thread;
 
 protected:
     void*(*fct)(void*);
