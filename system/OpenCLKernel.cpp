@@ -54,8 +54,51 @@ bool OpenCLKernel::writeBuffer(int bufferId, size_t nb, size_t size, const void*
 bool OpenCLKernel::runKernel(size_t nb)
 {
     size_t size=(int)getWorkSize(nb);
-    size_t workSize=(int)this->computeUnits;
-    return clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &size, &workSize, 0, NULL, NULL)==CL_SUCCESS;
+    size_t workSize=(int)this->workgroupSizeMultiple;
+    cl_int ret=clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &size, &workSize, 0, NULL, NULL);
+    switch(ret)
+    {
+    case CL_INVALID_PROGRAM_EXECUTABLE:
+        fprintf(stderr,"Invalid program executable\n");
+        break;
+    case CL_INVALID_COMMAND_QUEUE:
+        fprintf(stderr,"Invalid command queue\n");
+        break;
+    case CL_INVALID_KERNEL:
+        fprintf(stderr,"Invalid kernel\n");
+        break;
+    case CL_INVALID_CONTEXT:
+        fprintf(stderr,"Invalid context\n");
+        break;
+    case CL_INVALID_KERNEL_ARGS:
+        fprintf(stderr,"Invalid kernel args\n");
+        break;
+    case CL_INVALID_WORK_DIMENSION:
+        fprintf(stderr,"Invalid work dimension\n");
+        break;
+    case CL_INVALID_WORK_GROUP_SIZE:
+        fprintf(stderr,"Invalid work group size\n");
+        break;
+    case CL_INVALID_WORK_ITEM_SIZE:
+        fprintf(stderr,"Invalid work item size_n");
+        break;
+    case CL_INVALID_GLOBAL_OFFSET:
+        fprintf(stderr,"Invalid global offset\n");
+        break;
+    case CL_OUT_OF_RESOURCES:
+        fprintf(stderr,"Out of resources\n");
+        break;
+    case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+        fprintf(stderr,"Mem object allocation failure\n");
+        break;
+    case CL_INVALID_EVENT_WAIT_LIST:
+        fprintf(stderr,"Invalid event wait list\n");
+        break;
+    case CL_OUT_OF_HOST_MEMORY:
+        fprintf(stderr,"Out of host memory\n");
+        break;
+    }
+    return ret==CL_SUCCESS;
 }
 
 bool OpenCLKernel::readBuffer(int bufferId, size_t nb, size_t size, void* ptr)
