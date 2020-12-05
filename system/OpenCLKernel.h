@@ -13,7 +13,7 @@ public:
     virtual ~OpenCLKernel();
 
 public:
-    int createBuffer(size_t nb,size_t size, cl_mem_flags flags);
+    int createBuffer(size_t nb,size_t size, cl_mem_flags flags, bool adjustSize=false);
     bool writeBuffer(int bufferId, size_t nb,size_t size, const void* ptr);
     bool runKernel(size_t nb);
     bool readBuffer(int bufferId, size_t nb,size_t size, void* ptr);

@@ -38,9 +38,9 @@ OpenCLKernel::OpenCLKernel(const char* name, const char* source)
     clGetKernelWorkGroupInfo(kernel, device_id, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &workgroupSizeMultiple, NULL);
 }
 
-int OpenCLKernel::createBuffer(size_t nb,size_t size, cl_mem_flags flags)
+int OpenCLKernel::createBuffer(size_t nb,size_t size, cl_mem_flags flags,bool adjustSize)
 {
-    buffers.add(clCreateBuffer(context, flags, getWorkSize(nb)*size, NULL, NULL));
+    buffers.add(clCreateBuffer(context, flags, (adjustSize?getWorkSize(nb):nb)*size, NULL, NULL));
     int bufferId = buffers.count()-1;
     clSetKernelArg(kernel, bufferId, sizeof(cl_mem), (void *)&buffers[bufferId]);
     return bufferId;
@@ -80,7 +80,7 @@ bool OpenCLKernel::runKernel(size_t nb)
         fprintf(stderr,"Invalid work group size\n");
         break;
     case CL_INVALID_WORK_ITEM_SIZE:
-        fprintf(stderr,"Invalid work item size_n");
+        fprintf(stderr,"Invalid work item size\n");
         break;
     case CL_INVALID_GLOBAL_OFFSET:
         fprintf(stderr,"Invalid global offset\n");
@@ -109,12 +109,12 @@ bool OpenCLKernel::readBuffer(int bufferId, size_t nb, size_t size, void* ptr)
 void OpenCLKernel::flush()
 {
     clFlush(command_queue);
-    clFinish(command_queue);
 }
 
 OpenCLKernel::~OpenCLKernel()
 {
     flush();
+    clFinish(command_queue);
     clReleaseKernel(kernel);
     for(int i=0; i<buffers._count(); i++)
         clReleaseMemObject(buffers[i]);
