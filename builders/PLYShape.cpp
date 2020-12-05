@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#define PLYBOX_RADIUS_FCT 10.0
+#define PLYBOX_RADIUS_FCT 25.0
 #define LARGEBOX_RADIUS_FCT 5.0
 
 PLYShape::PLYShape(const char* f,double size,const Mark& mk)
@@ -106,9 +106,10 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
 
     if(box==NULL||box->intersect(r))
     {
-        double dMin=-1.0;
 #ifdef OpenCL
         OpenCLKernel* krn=NULL;
+#else
+        double dMin=-1.0;
 #endif
         for(int i=0; i<largeBoxes._count(); i++)
         {
@@ -128,8 +129,13 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
                                 float k_r[2*TREBLE_SIZE];
                                 for(int i=0; i<TREBLE_SIZE; i++)
                                     k_r[i]=(float)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(float)r.getVector().get(i);
-
                                 krn->writeBuffer(0,2*TREBLE_SIZE,sizeof(float),k_r);
+
+                                float d=-1.0;
+                                krn->writeBuffer(4,1,sizeof(float),&d);
+
+                                int mutex=0;
+                                krn->writeBuffer(5,1,sizeof(int),&mutex);
                             }
                         }
 
@@ -146,23 +152,20 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b)cons
                         largeBoxes[i]->boxes[j]->lock.unlock();
 
                         krn->writeBuffer(1,cnt*3*TREBLE_SIZE,sizeof(float),largeBoxes[i]->boxes[j]->pt);
+                        krn->writeBuffer(2,1,sizeof(int),&cnt);
                         krn->runKernel(cnt);
-                        float *dst=(float*)malloc(cnt*sizeof(float));
-                        krn->readBuffer(2,cnt,sizeof(float),dst);
 
-                        for(int k=0; k<cnt; k++)
+                        int id=0;
+                        krn->readBuffer(3,1,sizeof(int),&id);
+                        if(id!=-1)
                         {
-                            if(dst[k]>0&&((dst[k]<dMin)||(dMin<0)))
-                            {
-                                if(p!=NULL)*p=largeBoxes[i]->boxes[j]->ht[k];
-                                if(b!=NULL)*b=largeBoxes[i]->boxes[j];
-                                dMin=(double)dst[k];
-                                h=Triangle::getTriangleHit(r,this,largeBoxes[i]->boxes[j]->ht[k]->pt);
-                                h.setId(k);
-                            }
+                            if(p!=NULL)*p=largeBoxes[i]->boxes[j]->ht[id];
+                            if(b!=NULL)*b=largeBoxes[i]->boxes[j];
+                            float d=-1.0;
+                            krn->readBuffer(4,1,sizeof(float),&d);
+                            h=Hit(r,this,Point(r.getPoint()+(r.getVector()*d)),Triangle::getTriangleNormal(largeBoxes[i]->boxes[j]->ht[id]->pt));
+                            h.setId(id);
                         }
-
-                        free(dst);
 #else
                         for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++)
                         {
@@ -523,10 +526,15 @@ void PLYShape::buildFromFile(const char* filename)
 __kernel void primitive_hit(\
     __global const float *r,\
     __global const float *prm,\
-    __global float *dst)\
+    __global int *cnt,\
+    __global int *k,\
+    __global float *dst,\
+    __global int *mutex)\
 {\
     int id=get_global_id(0);\
-    dst[id]=-1.0;\
+    if(id==0)*k=-1;\
+    barrier(CLK_GLOBAL_MEM_FENCE);\
+    if(id>=(*cnt))return;\
     float3 t_pt=vload3(0,r);\
     float3 t_vct=vload3(1,r);\
     float3 t_o=vload3(id*3,prm);\
@@ -535,16 +543,26 @@ __kernel void primitive_hit(\
     float d=dot(cross(t_v2,t_v1),t_vct);\
     float3 t_w=t_pt-t_o;\
     float a=dot(cross(t_v2,t_w),t_vct)/d;\
-    if(a<0.0||a>1.0)return;\
     float b=dot(cross(t_w,t_v1),t_vct)/d;\
-    if(b<0.0||b>1.0)return;\
-    if((a+b)>1.0)return;\
-    dst[id]=dot(cross(t_v1,t_v2),t_w)/d;\
+    if(a>=0.0 && a<=1.0 && b>=0.0 && b<=1.0 && (a+b)<=1.0)\
+    {\
+        float x=dot(cross(t_v1,t_v2),t_w)/d;\
+        if(x>0.0)\
+        {\
+            while(atomic_cmpxchg(mutex,0,1)==0);\
+            if((*dst)<0.0||x<(*dst))\
+                *dst=x,*k=id;\
+            atomic_xchg(mutex,0);\
+        }\
+    }\
 }");
 
         this->kernel[i]->createBuffer(2*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
         this->kernel[i]->createBuffer(nb*3*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
-        this->kernel[i]->createBuffer(nb,sizeof(float),CL_MEM_WRITE_ONLY);
+        this->kernel[i]->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+        this->kernel[i]->createBuffer(1,sizeof(int),CL_MEM_WRITE_ONLY);
+        this->kernel[i]->createBuffer(1,sizeof(float),CL_MEM_READ_WRITE);
+        this->kernel[i]->createBuffer(1,sizeof(int),CL_MEM_READ_WRITE);
     }
 #endif
 }
