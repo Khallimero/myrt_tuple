@@ -10,11 +10,15 @@
 #include "ShapeBuilder.h"
 #include "OpenCLKernel.h"
 
+#ifndef OpenCL
 void* boxThread(void*);
+#endif
 
 class PLYShape:public Shape,public Lockable
 {
+#ifndef OpenCL
     friend void* boxThread(void*);
+#endif
     friend class ShapeBuilder<2>;
 
 public:
@@ -37,15 +41,12 @@ protected:
         }
     };
 
+#ifndef OpenCL
     struct PLYBox
     {
         const Sphere* box;
         Collection<const PLYPrimitive*> prm;
         Collection<const PLYPrimitive*> ht;
-#ifdef OpenCL
-        Lockable lock;
-        mutable float *pt;
-#endif
         bool operator==(const PLYBox& that)
         {
             return this->box==that.box;
@@ -57,19 +58,24 @@ protected:
         Sphere* box;
         Collection<const PLYBox*> boxes;
     };
+#endif
 
 protected:
     virtual Hit _getHit(const Ray& r)const;
+#ifndef OpenCL
     virtual Hit __getHit(const Ray& r,const PLYPrimitive** p=NULL,const PLYBox** b=NULL)const;
+#endif
 
+#ifndef OpenCL
 protected:
     bool getNextBox(int* n);
+    void addBox(const Point& pt,double r);
+#endif
 
 protected:
     void buildFromFile(const char* filename);
     void buildBoxes(bool flgBox=true);
     void addPrimitive(const Point& a,const Point& b,const Point& c);
-    void addBox(const Point& pt,double r);
     Point PLYtoRef(const Point& pt)const;
 
 public:
@@ -91,10 +97,11 @@ protected:
     bool smoothNormal;
     const Shape* box;
     ObjCollection<PLYPrimitive> shapes;
+#ifdef OpenCL
+    OpenCLKernel* kernel;
+#else
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;
     int nb_box;
-#ifdef OpenCL
-    OpenCLKernel** kernel;
 #endif
 };

@@ -48,7 +48,7 @@ int OpenCLKernel::createBuffer(size_t nb,size_t size, cl_mem_flags flags,bool ad
 
 bool OpenCLKernel::writeBuffer(int bufferId, size_t nb, size_t size, const void* ptr)
 {
-    return clEnqueueWriteBuffer(command_queue, buffers[bufferId], CL_FALSE, 0, nb*size, ptr, 0, NULL, NULL)==CL_SUCCESS;
+    return clEnqueueWriteBuffer(command_queue, buffers[bufferId], CL_TRUE, 0, nb*size, ptr, 0, NULL, NULL)==CL_SUCCESS;
 }
 
 bool OpenCLKernel::runKernel(size_t nb)

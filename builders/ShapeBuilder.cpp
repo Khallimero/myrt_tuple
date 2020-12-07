@@ -210,6 +210,7 @@ Shape* ShapeBuilder<2>::getInstance(const Mark& mk,
             }
         }
 
+#ifndef OpenCL
         if(it[IPair::first].getId()%2==0&&it[IPair::second].getId()==0)
         {
             ParametricSurfacePrimitive psp(prim);
@@ -219,6 +220,7 @@ Shape* ShapeBuilder<2>::getInstance(const Mark& mk,
 
             shape->addBox(p,MAX(p.dist(p1),p.dist(p2))+EPSILON);
         }
+#endif
     }
 
     shape->buildBoxes(true);
