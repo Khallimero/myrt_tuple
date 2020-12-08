@@ -482,7 +482,7 @@ void PLYShape::buildFromFile(const char* filename)
     }
 
 #ifdef OpenCL
-    int cnt=shapes._count(),mutex=0;
+    int cnt=shapes._count();
     float *pt=(float*)malloc(cnt*3*TREBLE_SIZE*sizeof(float));
     for(int i=0; i<cnt; i++)
         for(int j=0; j<3; j++)
@@ -495,13 +495,13 @@ __kernel void primitive_hit(\
     __global const float *prm,\
     __global int *cnt,\
     __global int *k,\
-    __global float *dst,\
-    __global int *mutex)\
+    __global float *dst)\
 {\
+    __local int mutex;mutex=0;\
     int id=get_global_id(0);\
+    if(id>=(*cnt))return;\
     if(id==0)*k=-1,*dst=-1.0;\
     barrier(CLK_GLOBAL_MEM_FENCE);\
-    if(id>=(*cnt))return;\
     float3 t_pt=vload3(0,r);\
     float3 t_vct=vload3(1,r);\
     float3 t_o=vload3(id*3,prm);\
@@ -516,9 +516,9 @@ __kernel void primitive_hit(\
         float x=dot(cross(t_v1,t_v2),t_w)/d;\
         if(x>0.0)\
         {\
-            while(atomic_cmpxchg(mutex,0,1)==0){}\
+            while(atomic_cmpxchg(&mutex,0,1)==0){}\
             if((*dst)<0.0||x<(*dst))*dst=x,*k=id;\
-            atomic_xchg(mutex,0);\
+            atomic_xchg(&mutex,0);\
         }\
     }\
 }");
@@ -528,11 +528,9 @@ __kernel void primitive_hit(\
     this->kernel->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
     this->kernel->createBuffer(1,sizeof(int),CL_MEM_WRITE_ONLY);
     this->kernel->createBuffer(1,sizeof(float),CL_MEM_READ_WRITE);
-    this->kernel->createBuffer(1,sizeof(int),CL_MEM_READ_WRITE);
 
     this->kernel->writeBuffer(1,cnt*3*TREBLE_SIZE,sizeof(float),pt);
     this->kernel->writeBuffer(2,1,sizeof(int),&cnt);
-    this->kernel->writeBuffer(5,1,sizeof(int),&mutex);
 
     free(pt);
 #endif
