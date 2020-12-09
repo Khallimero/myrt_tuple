@@ -24,6 +24,7 @@ protected:
     {
         return (size_t)((int)size)+(((int)this->workgroupSizeMultiple)-((int)size)%((int)this->workgroupSizeMultiple));
     }
+    void printError(const char* fct,cl_int ret);
 
 private:
     cl_context context;
