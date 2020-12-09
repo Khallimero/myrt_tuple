@@ -93,75 +93,71 @@ OpenCLKernel::~OpenCLKernel()
     clReleaseContext(context);
 }
 
+#define CaseErrorCode(x) case x: fprintf(stderr,"%s : %s\n",fct,#x);break
 void OpenCLKernel::printError(const char* fct, cl_int ret)
 {
     switch(ret)
     {
     case CL_SUCCESS:
         break;
-    case CL_INVALID_CONTEXT:
-        fprintf(stderr,"%s : Invalid context\n",fct);
-        break;
-    case CL_INVALID_VALUE:
-        fprintf(stderr,"%s : Invalid value\n",fct);
-        break;
-    case CL_INVALID_BUFFER_SIZE:
-        fprintf(stderr,"%s : Invalid buffer size\n",fct);
-        break;
-    case CL_INVALID_HOST_PTR:
-        fprintf(stderr,"%s : Invalid host pointer\n",fct);
-        break;
-    case CL_MEM_OBJECT_ALLOCATION_FAILURE:
-        fprintf(stderr,"%s : Mem object allocation failure\n",fct);
-        break;
-    case CL_OUT_OF_HOST_MEMORY:
-        fprintf(stderr,"%s : Out of host memory\n",fct);
-        break;
-    case CL_INVALID_COMMAND_QUEUE:
-        fprintf(stderr,"%s : Invalid command queue\n",fct);
-        break;
-    case CL_INVALID_MEM_OBJECT:
-        fprintf(stderr,"%s : Invalid mem object\n",fct);
-        break;
-    case CL_INVALID_EVENT_WAIT_LIST:
-        fprintf(stderr,"%s : Invalid event wait list\n",fct);
-        break;
-    case CL_INVALID_PROGRAM_EXECUTABLE:
-        fprintf(stderr,"%s : Invalid program executable\n",fct);
-        break;
-    case CL_INVALID_KERNEL:
-        fprintf(stderr,"%s : Invalid kernel\n",fct);
-        break;
-    case CL_INVALID_KERNEL_ARGS:
-        fprintf(stderr,"%s : Invalid kernel args\n",fct);
-        break;
-    case CL_INVALID_WORK_DIMENSION:
-        fprintf(stderr,"%s : Invalid work dimension\n",fct);
-        break;
-    case CL_INVALID_WORK_GROUP_SIZE:
-        fprintf(stderr,"%s : Invalid work group size\n",fct);
-        break;
-    case CL_INVALID_WORK_ITEM_SIZE:
-        fprintf(stderr,"%s : Invalid work item size\n",fct);
-        break;
-    case CL_INVALID_GLOBAL_OFFSET:
-        fprintf(stderr,"%s : Invalid global offset\n",fct);
-        break;
-    case CL_OUT_OF_RESOURCES:
-        fprintf(stderr,"%s : Out of resources\n",fct);
-        break;
-    case CL_INVALID_ARG_INDEX:
-        fprintf(stderr,"%s : Invalid arg index\n",fct);
-        break;
-    case CL_INVALID_ARG_VALUE:
-        fprintf(stderr,"%s : Invalid arg value\n",fct);
-        break;
-    case CL_INVALID_SAMPLER:
-        fprintf(stderr,"%s : Invalid sampler\n",fct);
-        break;
-    case CL_INVALID_ARG_SIZE:
-        fprintf(stderr,"%s : Invalid arg size\n",fct);
-        break;
+        CaseErrorCode(CL_DEVICE_NOT_FOUND);
+        CaseErrorCode(CL_DEVICE_NOT_AVAILABLE);
+        CaseErrorCode(CL_COMPILER_NOT_AVAILABLE);
+        CaseErrorCode(CL_MEM_OBJECT_ALLOCATION_FAILURE);
+        CaseErrorCode(CL_OUT_OF_RESOURCES);
+        CaseErrorCode(CL_OUT_OF_HOST_MEMORY);
+        CaseErrorCode(CL_PROFILING_INFO_NOT_AVAILABLE);
+        CaseErrorCode(CL_MEM_COPY_OVERLAP);
+        CaseErrorCode(CL_IMAGE_FORMAT_MISMATCH);
+        CaseErrorCode(CL_IMAGE_FORMAT_NOT_SUPPORTED);
+        CaseErrorCode(CL_BUILD_PROGRAM_FAILURE);
+        CaseErrorCode(CL_MAP_FAILURE);
+        CaseErrorCode(CL_MISALIGNED_SUB_BUFFER_OFFSET);
+        CaseErrorCode(CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST);
+        CaseErrorCode(CL_COMPILE_PROGRAM_FAILURE);
+        CaseErrorCode(CL_LINKER_NOT_AVAILABLE);
+        CaseErrorCode(CL_LINK_PROGRAM_FAILURE);
+        CaseErrorCode(CL_DEVICE_PARTITION_FAILED);
+        CaseErrorCode(CL_KERNEL_ARG_INFO_NOT_AVAILABLE);
+        CaseErrorCode(CL_INVALID_VALUE);
+        CaseErrorCode(CL_INVALID_DEVICE_TYPE);
+        CaseErrorCode(CL_INVALID_PLATFORM);
+        CaseErrorCode(CL_INVALID_DEVICE);
+        CaseErrorCode(CL_INVALID_CONTEXT);
+        CaseErrorCode(CL_INVALID_QUEUE_PROPERTIES);
+        CaseErrorCode(CL_INVALID_COMMAND_QUEUE);
+        CaseErrorCode(CL_INVALID_HOST_PTR);
+        CaseErrorCode(CL_INVALID_MEM_OBJECT);
+        CaseErrorCode(CL_INVALID_IMAGE_FORMAT_DESCRIPTOR);
+        CaseErrorCode(CL_INVALID_IMAGE_SIZE);
+        CaseErrorCode(CL_INVALID_SAMPLER);
+        CaseErrorCode(CL_INVALID_BINARY);
+        CaseErrorCode(CL_INVALID_BUILD_OPTIONS);
+        CaseErrorCode(CL_INVALID_PROGRAM);
+        CaseErrorCode(CL_INVALID_PROGRAM_EXECUTABLE);
+        CaseErrorCode(CL_INVALID_KERNEL_NAME);
+        CaseErrorCode(CL_INVALID_KERNEL_DEFINITION);
+        CaseErrorCode(CL_INVALID_KERNEL);
+        CaseErrorCode(CL_INVALID_ARG_INDEX);
+        CaseErrorCode(CL_INVALID_ARG_VALUE);
+        CaseErrorCode(CL_INVALID_ARG_SIZE);
+        CaseErrorCode(CL_INVALID_KERNEL_ARGS);
+        CaseErrorCode(CL_INVALID_WORK_DIMENSION);
+        CaseErrorCode(CL_INVALID_WORK_GROUP_SIZE);
+        CaseErrorCode(CL_INVALID_WORK_ITEM_SIZE);
+        CaseErrorCode(CL_INVALID_GLOBAL_OFFSET);
+        CaseErrorCode(CL_INVALID_EVENT_WAIT_LIST);
+        CaseErrorCode(CL_INVALID_EVENT);
+        CaseErrorCode(CL_INVALID_OPERATION);
+        CaseErrorCode(CL_INVALID_GL_OBJECT);
+        CaseErrorCode(CL_INVALID_BUFFER_SIZE);
+        CaseErrorCode(CL_INVALID_MIP_LEVEL);
+        CaseErrorCode(CL_INVALID_GLOBAL_WORK_SIZE);
+        CaseErrorCode(CL_INVALID_PROPERTY);
+        CaseErrorCode(CL_INVALID_IMAGE_DESCRIPTOR);
+        CaseErrorCode(CL_INVALID_COMPILER_OPTIONS);
+        CaseErrorCode(CL_INVALID_LINKER_OPTIONS);
+        CaseErrorCode(CL_INVALID_DEVICE_PARTITION_COUNT);
     default:
         fprintf(stderr,"%s : Unknown error\n",fct);
     }
