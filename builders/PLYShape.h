@@ -62,7 +62,9 @@ protected:
 
 protected:
     virtual Hit _getHit(const Ray& r)const;
-#ifndef OpenCL
+#ifdef OpenCL
+    virtual Hit __getHit(const Ray& r)const;
+#else
     virtual Hit __getHit(const Ray& r,const PLYPrimitive** p=NULL,const PLYBox** b=NULL)const;
 #endif
 
@@ -98,7 +100,7 @@ protected:
     const Shape* box;
     ObjCollection<PLYPrimitive> shapes;
 #ifdef OpenCL
-    OpenCLKernel* kernel;
+    OpenCLKernel *hit_kernel,*nrm_kernel;
 #else
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;
