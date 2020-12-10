@@ -70,7 +70,7 @@ Hit PLYShape::_getHit(const Ray& r)const
             buf[i]=(float)h.getPoint().get(i);
         int id=h.getId();
 
-        AutoLock lock(this->nrm_kernel);
+        AutoLock lock(this->nrm_kernel->isGPU()?(Lockable*)this->nrm_kernel:(Lockable*)this);
 
         this->nrm_kernel->writeBuffer(4,1,sizeof(int),&id);
         this->nrm_kernel->writeBuffer(5,TREBLE_SIZE,sizeof(float),buf);
@@ -141,7 +141,7 @@ Hit PLYShape::__getHit(const Ray& r)const
         for(int i=0; i<TREBLE_SIZE; i++)
             k_r[i]=(float)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(float)r.getVector().get(i);
 
-        AutoLock lock(this->hit_kernel);
+        AutoLock lock(this->hit_kernel->isGPU()?(Lockable*)this->hit_kernel:(Lockable*)this);
         this->hit_kernel->writeBuffer(0,2*TREBLE_SIZE,sizeof(float),k_r);
 
         this->hit_kernel->runKernel(shapes._count());
@@ -596,7 +596,7 @@ __kernel void smooth_normal(\
         for(int j=0;j<3;j++)\
             if(length(vload3((id*3)+i,prm)-vload3(((*k)*3)+j,prm))==0)\
             {\
-                float dst=sqrt(length(vload3(id,brc)-vload3(0,hpt)));\
+                float dst=1.0/sqrt(length(vload3(id,brc)-vload3(0,hpt)));\
                 float3 ni=vload3(id,nrm);\
                 float3 nk=vload3(*k,nrm);\
                 float3 w=ni*(acos(dot(ni,nk)/(length(ni)*length(nk)))>M_PI_4_F?-1:1)*dst;\

@@ -18,6 +18,7 @@ OpenCLKernel::OpenCLKernel(const char* name, const char* source)
     cl_uint ret_num_devices;
     if(clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1,&device_id, &ret_num_devices)!=CL_SUCCESS) exit(1);
     if(clGetDeviceInfo(device_id, CL_DEVICE_NAME, BUFSIZ, buf, NULL)!=CL_SUCCESS) exit(1);
+    clGetDeviceInfo(device_id, CL_DEVICE_NAME, sizeof(cl_device_type), &device_type, NULL);
     fprintf(stdout,"OpenCL device : %s\n",buf);
 
     cl_int ret;

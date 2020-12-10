@@ -13,6 +13,16 @@ public:
     virtual ~OpenCLKernel();
 
 public:
+    bool isCPU()const
+    {
+        return device_type==CL_DEVICE_TYPE_CPU;
+    }
+    bool isGPU()const
+    {
+        return device_type==CL_DEVICE_TYPE_GPU;
+    }
+
+public:
     int createBuffer(size_t nb,size_t size, cl_mem_flags flags, bool adjustSize=false);
     bool writeBuffer(int bufferId, size_t nb,size_t size, const void* ptr);
     bool runKernel(size_t nb);
@@ -27,6 +37,7 @@ protected:
     void printError(const char* fct,cl_int ret);
 
 private:
+    cl_device_type device_type;
     cl_context context;
     cl_command_queue command_queue;
     cl_kernel kernel;
