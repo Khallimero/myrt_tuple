@@ -65,26 +65,43 @@ Hit PLYShape::_getHit(const Ray& r)const
 
     if(!h.isNull()&&smoothNormal)
     {
-        float buf[TREBLE_SIZE];
-        for(int i=0; i<TREBLE_SIZE; i++)
-            buf[i]=(float)h.getPoint().get(i);
         int id=h.getId();
 
         AutoLock lock(this->nrm_kernel->isGPU()?(Lockable*)this->nrm_kernel:(Lockable*)this);
 
-        this->nrm_kernel->writeBuffer(4,1,sizeof(int),&id);
-        this->nrm_kernel->writeBuffer(5,TREBLE_SIZE,sizeof(float),buf);
+        this->nrm_kernel->writeBuffer(2,1,sizeof(int),&id);
 
         this->nrm_kernel->runKernel(shapes._count());
 
-        this->nrm_kernel->readBuffer(6,TREBLE_SIZE,sizeof(float),&buf);
+        int nb=-1;
+        this->nrm_kernel->readBuffer(3,1,sizeof(int),&nb);
+        if(nb>0)
+        {
+            int* ind=(int*)malloc((1+nb)*sizeof(int));
+            this->nrm_kernel->readBuffer(3,1+nb,sizeof(int),ind);
+            this->nrm_kernel->flush();
+            lock.unlock();
 
-        Vector n=Vector::null;
-        for(int i=0; i<TREBLE_SIZE; i++)
-            n[i]=(double)buf[i];
-        h.setNormal(n);
+            double dst=EPSILON;
+            for(int i=1; i<=nb; i++)
+                dst=MAX(dst,shapes[id].b.dist(shapes[ind[i]].b));
+            Vector n=Vector::null;
+            for(int i=1; i<=nb; i++)
+            {
+                Vector w=shapes[ind[i]].n;
+                if(shapes[id].n.angle(w)>M_PI/4.0)w=-w;
+                if(shapes[id].n.angle(w)<M_PI/4.0)
+                    n+=w*SQ(1.0-h.getPoint().dist(shapes[ind[i]].b)/dst);
+            }
 
-        this->nrm_kernel->flush();
+            h.setThNormal(n.isNull()?shapes[id].n:n.norm());
+
+            free(ind);
+        }
+        else
+        {
+            this->nrm_kernel->flush();
+        }
     }
 #else
     const PLYPrimitive* p=NULL;
@@ -146,18 +163,34 @@ Hit PLYShape::__getHit(const Ray& r)const
 
         this->hit_kernel->runKernel(shapes._count());
 
-        int id=-1;
-        this->hit_kernel->readBuffer(3,1,sizeof(int),&id);
-        if(id!=-1)
+        int nb=-1;
+        this->hit_kernel->readBuffer(3,1,sizeof(int),&nb);
+        if(nb>0)
         {
-            float d=-1.0;
-            this->hit_kernel->readBuffer(4,1,sizeof(float),&d);
-
-            h=Hit(r,this,Point(r.getPoint()+(r.getVector()*d)),shapes[id].n);
-            h.setId(id);
+            int* ind=(int*)malloc((1+nb)*sizeof(int));
+            this->hit_kernel->readBuffer(3,1+nb,sizeof(int),ind);
+            this->hit_kernel->flush();
+            lock.unlock();
+            double dMin=-1.0;
+            for(int i=1; i<=nb; i++)
+            {
+                Hit ht=Triangle::getTriangleHit(r,this,this->shapes[ind[i]].pt);
+                if(!(ht.isNull()))
+                {
+                    double d=r.getPoint().dist(ht.getPoint());
+                    if((h.isNull())||(d<dMin))
+                    {
+                        ht.setId(ind[i]);
+                        dMin=d,h=ht;
+                    }
+                }
+            }
+            free(ind);
         }
-
-        this->hit_kernel->flush();
+        else
+        {
+            this->hit_kernel->flush();
+        }
     }
 
     return h;
@@ -521,30 +554,20 @@ void PLYShape::buildFromFile(const char* filename)
 #ifdef OpenCL
     int cnt=shapes._count();
     float *pt=(float*)malloc(cnt*3*TREBLE_SIZE*sizeof(float));
-    float *brn=(float*)malloc(cnt*TREBLE_SIZE*sizeof(float));
-    float *nrm=(float*)malloc(cnt*TREBLE_SIZE*sizeof(float));
     for(int i=0; i<cnt; i++)
-    {
-        for(int k=0; k<TREBLE_SIZE; k++)
-        {
-            for(int j=0; j<3; j++)
+        for(int j=0; j<3; j++)
+            for(int k=0; k<TREBLE_SIZE; k++)
                 pt[(((i*3)+j)*TREBLE_SIZE)+k]=(float)shapes[i].pt[j].get(k);
-            brn[(i*TREBLE_SIZE)+k]=(float)shapes[i].b.get(k);
-            nrm[(i*TREBLE_SIZE)+k]=(float)shapes[i].n.get(k);
-        }
-    }
 
     this->hit_kernel=new OpenCLKernel("primitive_hit", "\
-__kernel void primitive_hit(\
+    __kernel void primitive_hit(\
     __global const float *r,\
     __global const float *prm,\
     __global const int *cnt,\
-    __global int *k,\
-    __global float *dst,\
-    __global volatile int *mutex)\
-{\
+    __global int *k)\
+    {\
     int id=get_global_id(0);\
-    if(id==0)*k=-1,*dst=-1.0,*mutex=0;\
+    if(id==0)*k=0;\
     barrier(CLK_GLOBAL_MEM_FENCE);\
     if(id>=(*cnt))return;\
     float3 t_pt=vload3(0,r);\
@@ -557,23 +580,14 @@ __kernel void primitive_hit(\
     float a=dot(cross(t_v2,t_w),t_vct)/d;\
     float b=dot(cross(t_w,t_v1),t_vct)/d;\
     if(a>=0.0 && a<=1.0 && b>=0.0 && b<=1.0 && (a+b)<=1.0)\
-    {\
-        float x=dot(cross(t_v1,t_v2),t_w)/d;\
-        if(x>0.0)\
-        {\
-            while(atomic_xchg(mutex,1)==1){}\
-            if((*dst)<0.0||x<(*dst))*dst=x,*k=id;\
-            atomic_xchg(mutex,0);\
-        }\
-    }\
-}");
+        if(dot(cross(t_v1,t_v2),t_w)/d>0.0)\
+            k[atomic_inc(k)+1]=id;\
+    }");
 
     this->hit_kernel->createBuffer(2*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
     this->hit_kernel->createBuffer(cnt*3*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
-    this->hit_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    this->hit_kernel->createBuffer(1,sizeof(int),CL_MEM_WRITE_ONLY);
-    this->hit_kernel->createBuffer(1,sizeof(float),CL_MEM_READ_WRITE);
     this->hit_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_WRITE);
+    this->hit_kernel->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
 
     this->hit_kernel->writeBuffer(1,cnt*3*TREBLE_SIZE,sizeof(float),pt);
     this->hit_kernel->writeBuffer(2,1,sizeof(int),&cnt);
@@ -581,49 +595,31 @@ __kernel void primitive_hit(\
     this->nrm_kernel=new OpenCLKernel("smooth_normal","\
 __kernel void smooth_normal(\
     __global const float *prm,\
-    __global const float *brc,\
-    __global const float *nrm,\
     __global const int *cnt,\
-    __global const int *k,\
-    __global const float *hpt,\
-    __global float *n,\
-    __global volatile int *mutex)\
+    __global const int *ht,\
+    __global int* k)\
 {\
     int id=get_global_id(0);\
-    if(id==0)vstore3((float3)(0,0,0),0,n),*mutex=0;\
+    if(id==0)*k=0;\
     barrier(CLK_GLOBAL_MEM_FENCE);\
     if(id>=(*cnt))return;\
     for(int i=0;i<3;i++)\
         for(int j=0;j<3;j++)\
-            if(length(vload3((id*3)+i,prm)-vload3(((*k)*3)+j,prm))==0)\
+            if(length(vload3((id*3)+i,prm)-vload3(((*ht)*3)+j,prm))==0)\
             {\
-                float dst=1.0/sqrt(length(vload3(id,brc)-vload3(0,hpt)));\
-                float3 ni=vload3(id,nrm);\
-                float3 nk=vload3(*k,nrm);\
-                float3 w=ni*(acos(dot(ni,nk)/(length(ni)*length(nk)))>M_PI_4_F?-1:1)*dst;\
-                while(atomic_xchg(mutex,1)==1){}\
-                vstore3(vload3(0,n)+w,0,n);\
-                atomic_xchg(mutex,0);\
+                k[atomic_inc(k)+1]=id;\
                 return;\
             }\
 }");
 
     this->nrm_kernel->createBuffer(cnt*3*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
-    this->nrm_kernel->createBuffer(cnt*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
-    this->nrm_kernel->createBuffer(cnt*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
     this->nrm_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
     this->nrm_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    this->nrm_kernel->createBuffer(TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
-    this->nrm_kernel->createBuffer(TREBLE_SIZE,sizeof(float),CL_MEM_READ_WRITE);
-    this->nrm_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_WRITE);
+    this->nrm_kernel->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
 
     this->nrm_kernel->writeBuffer(0,cnt*3*TREBLE_SIZE,sizeof(float),pt);
-    this->nrm_kernel->writeBuffer(1,cnt*TREBLE_SIZE,sizeof(float),brn);
-    this->nrm_kernel->writeBuffer(2,cnt*TREBLE_SIZE,sizeof(float),nrm);
-    this->nrm_kernel->writeBuffer(3,1,sizeof(int),&cnt);
+    this->nrm_kernel->writeBuffer(1,1,sizeof(int),&cnt);
 
     free(pt);
-    free(brn);
-    free(nrm);
 #endif
 }
