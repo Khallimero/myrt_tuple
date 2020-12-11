@@ -540,11 +540,11 @@ __kernel void primitive_hit(\
     __global const float *prm,\
     __global const int *cnt,\
     __global int *k,\
-    __global float *dst)\
+    __global float *dst,\
+    __global volatile int *mutex)\
 {\
-    __local int mutex;mutex=0;\
     int id=get_global_id(0);\
-    if(id==0)*k=-1,*dst=-1.0;\
+    if(id==0)*k=-1,*dst=-1.0,*mutex=0;\
     barrier(CLK_GLOBAL_MEM_FENCE);\
     if(id>=(*cnt))return;\
     float3 t_pt=vload3(0,r);\
@@ -561,9 +561,9 @@ __kernel void primitive_hit(\
         float x=dot(cross(t_v1,t_v2),t_w)/d;\
         if(x>0.0)\
         {\
-            while(atomic_cmpxchg(&mutex,0,1)==0){}\
+            while(atomic_xchg(mutex,1)==1){}\
             if((*dst)<0.0||x<(*dst))*dst=x,*k=id;\
-            atomic_xchg(&mutex,0);\
+            atomic_xchg(mutex,0);\
         }\
     }\
 }");
@@ -573,6 +573,7 @@ __kernel void primitive_hit(\
     this->hit_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
     this->hit_kernel->createBuffer(1,sizeof(int),CL_MEM_WRITE_ONLY);
     this->hit_kernel->createBuffer(1,sizeof(float),CL_MEM_READ_WRITE);
+    this->hit_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_WRITE);
 
     this->hit_kernel->writeBuffer(1,cnt*3*TREBLE_SIZE,sizeof(float),pt);
     this->hit_kernel->writeBuffer(2,1,sizeof(int),&cnt);
@@ -585,11 +586,11 @@ __kernel void smooth_normal(\
     __global const int *cnt,\
     __global const int *k,\
     __global const float *hpt,\
-    __global float *n)\
+    __global float *n,\
+    __global volatile int *mutex)\
 {\
-    __local int mutex;mutex=0;\
     int id=get_global_id(0);\
-    if(id==0)vstore3((float3)(0,0,0),0,n);\
+    if(id==0)vstore3((float3)(0,0,0),0,n),*mutex=0;\
     barrier(CLK_GLOBAL_MEM_FENCE);\
     if(id>=(*cnt))return;\
     for(int i=0;i<3;i++)\
@@ -600,9 +601,9 @@ __kernel void smooth_normal(\
                 float3 ni=vload3(id,nrm);\
                 float3 nk=vload3(*k,nrm);\
                 float3 w=ni*(acos(dot(ni,nk)/(length(ni)*length(nk)))>M_PI_4_F?-1:1)*dst;\
-                while(atomic_cmpxchg(&mutex,0,1)==0){}\
+                while(atomic_xchg(mutex,1)==1){}\
                 vstore3(vload3(0,n)+w,0,n);\
-                atomic_xchg(&mutex,0);\
+                atomic_xchg(mutex,0);\
                 return;\
             }\
 }");
@@ -614,6 +615,7 @@ __kernel void smooth_normal(\
     this->nrm_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
     this->nrm_kernel->createBuffer(TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
     this->nrm_kernel->createBuffer(TREBLE_SIZE,sizeof(float),CL_MEM_READ_WRITE);
+    this->nrm_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_WRITE);
 
     this->nrm_kernel->writeBuffer(0,cnt*3*TREBLE_SIZE,sizeof(float),pt);
     this->nrm_kernel->writeBuffer(1,cnt*TREBLE_SIZE,sizeof(float),brn);
