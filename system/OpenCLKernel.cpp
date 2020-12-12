@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-OpenCLKernel::OpenCLKernel(OpenCLContext *ctx,const char* name, const char* source)
+OpenCLKernel::OpenCLKernel(OpenCLContext *ctx,const char* name, const char* source, const char* options)
     :context(ctx)
 {
     char buf[BUFSIZ];
@@ -12,10 +12,11 @@ OpenCLKernel::OpenCLKernel(OpenCLContext *ctx,const char* name, const char* sour
     size_t source_size = strlen(source);
     cl_program program = clCreateProgramWithSource(context->getContext(), 1,(const char **)&source, (const size_t *)&source_size, &ret);
     OpenCLContext::printError("clCreateProgramWithSource",ret);
-    if(clBuildProgram(program, 1, &context->getDeviceId(), NULL, NULL, NULL)!=CL_SUCCESS)
+    if((ret=clBuildProgram(program, 1, &context->getDeviceId(), options, NULL, NULL))!=CL_SUCCESS)
     {
-        clGetProgramBuildInfo(program, context->getDeviceId(), CL_PROGRAM_BUILD_LOG,BUFSIZ, buf, NULL);
-        fprintf(stderr, "%s\n", buf);
+        OpenCLContext::printError("clBuildProgram",ret);
+        ret = clGetProgramBuildInfo(program, context->getDeviceId(), CL_PROGRAM_BUILD_LOG, BUFSIZ, buf, NULL);
+        if(ret==CL_SUCCESS)fprintf(stderr, "%s\n", buf);
         exit(1);
     }
     kernel = clCreateKernel(program, name, &ret);

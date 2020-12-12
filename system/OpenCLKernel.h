@@ -9,7 +9,7 @@
 class OpenCLKernel
 {
 public:
-    OpenCLKernel(OpenCLContext *ctx,const char* name, const char* source);
+    OpenCLKernel(OpenCLContext *ctx,const char* name, const char* source, const char* options=NULL);
     virtual ~OpenCLKernel();
 
 public:

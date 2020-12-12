@@ -9,6 +9,12 @@
 #define PLYBOX_RADIUS_FCT 25.0
 #define LARGEBOX_RADIUS_FCT 5.0
 
+#ifdef OpenCL_float
+#define OpenCL_Datatype float
+#else
+#define OpenCL_Datatype double
+#endif
+
 PLYShape::PLYShape(const char* f,double size,const Mark& mk)
     :Shape(mk),Lockable(),
      size(Treble<double>(1,-1,-1)*size),smoothNormal(true)
@@ -134,12 +140,12 @@ Hit PLYShape::__getHit(const Ray& r)const
 
     if(box==NULL||box->intersect(r))
     {
-        float k_r[2*TREBLE_SIZE];
+        OpenCL_Datatype k_r[2*TREBLE_SIZE];
         for(int i=0; i<TREBLE_SIZE; i++)
-            k_r[i]=(float)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(float)r.getVector().get(i);
+            k_r[i]=(OpenCL_Datatype)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(OpenCL_Datatype)r.getVector().get(i);
 
         AutoLock lock(this->context.getPointer());
-        this->context->writeBuffer(2,2*TREBLE_SIZE,sizeof(float),k_r);
+        this->context->writeBuffer(2,2*TREBLE_SIZE,sizeof(OpenCL_Datatype),k_r);
         this->hit_kernel->runKernel(shapes._count());
 
         int nb=-1;
@@ -534,55 +540,61 @@ void PLYShape::buildFromFile(const char* filename)
     this->context=new OpenCLContext();
 
     int cnt=shapes._count();
-    this->context->createBuffer(cnt*3*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
+    this->context->createBuffer(cnt*3*TREBLE_SIZE,sizeof(OpenCL_Datatype),CL_MEM_READ_ONLY);
     this->context->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    this->context->createBuffer(2*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
+    this->context->createBuffer(2*TREBLE_SIZE,sizeof(OpenCL_Datatype),CL_MEM_READ_ONLY);
     this->context->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
     this->context->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
     this->context->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
 
-    float *pt=(float*)malloc(cnt*3*TREBLE_SIZE*sizeof(float));
+    OpenCL_Datatype *pt=(OpenCL_Datatype*)malloc(cnt*3*TREBLE_SIZE*sizeof(OpenCL_Datatype));
     for(int i=0; i<cnt; i++)
         for(int j=0; j<3; j++)
             for(int k=0; k<TREBLE_SIZE; k++)
-                pt[(((i*3)+j)*TREBLE_SIZE)+k]=(float)shapes[i].pt[j].get(k);
-    this->context->writeBuffer(0,cnt*3*TREBLE_SIZE,sizeof(float),pt);
+                pt[(((i*3)+j)*TREBLE_SIZE)+k]=(OpenCL_Datatype)shapes[i].pt[j].get(k);
+    this->context->writeBuffer(0,cnt*3*TREBLE_SIZE,sizeof(OpenCL_Datatype),pt);
     this->context->writeBuffer(1,1,sizeof(int),&cnt);
     free(pt);
 
-    this->hit_kernel=new OpenCLKernel(this->context, "primitive_hit", "\
-    __kernel void primitive_hit(\
-    __global const float *prm,\
+#ifdef OpenCL_float
+    const char *options="-Ddata=float -Dvdata=float3";
+#else
+    const char *options="-Ddata=double -Dvdata=double3";
+#endif
+
+    this->hit_kernel=new OpenCLKernel(this->context, "primitive_hit", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
+__kernel void primitive_hit(\
+    __global const data *prm,\
     __global const int *cnt,\
-    __global const float *r,\
+    __global const data *r,\
     __global int *k)\
 {\
     int id=get_global_id(0);\
     if(id==0)*k=0;\
     barrier(CLK_GLOBAL_MEM_FENCE);\
     if(id>=(*cnt))return;\
-    float3 t_pt=vload3(0,r);\
-    float3 t_vct=vload3(1,r);\
-    float3 t_o=vload3(id*3,prm);\
-    float3 t_v1=vload3((id*3)+1,prm)-t_o;\
-    float3 t_v2=vload3((id*3)+2,prm)-t_o;\
-    float d=dot(cross(t_v2,t_v1),t_vct);\
-    float3 t_w=t_pt-t_o;\
-    float a=dot(cross(t_v2,t_w),t_vct)/d;\
-    float b=dot(cross(t_w,t_v1),t_vct)/d;\
+    vdata t_pt=vload3(0,r);\
+    vdata t_vct=vload3(1,r);\
+    vdata t_o=vload3(id*3,prm);\
+    vdata t_v1=vload3((id*3)+1,prm)-t_o;\
+    vdata t_v2=vload3((id*3)+2,prm)-t_o;\
+    data d=dot(cross(t_v2,t_v1),t_vct);\
+    vdata t_w=t_pt-t_o;\
+    data a=dot(cross(t_v2,t_w),t_vct)/d;\
+    data b=dot(cross(t_w,t_v1),t_vct)/d;\
     if(a>=0.0 && a<=1.0 && b>=0.0 && b<=1.0 && (a+b)<=1.0)\
         if(dot(cross(t_v1,t_v2),t_w)/d>0.0)\
             k[atomic_inc(k)+1]=id;\
-}");
+}",options);
 
     this->hit_kernel->setArg(0, this->context->getBuffer(0));
     this->hit_kernel->setArg(1, this->context->getBuffer(1));
     this->hit_kernel->setArg(2, this->context->getBuffer(2));
     this->hit_kernel->setArg(3, this->context->getBuffer(3));
 
-    this->nrm_kernel=new OpenCLKernel(this->context, "smooth_normal","\
+    this->nrm_kernel=new OpenCLKernel(this->context, "smooth_normal","#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
 __kernel void smooth_normal(\
-    __global const float *prm,\
+    __global const data *prm,\
     __global const int *cnt,\
     __global const int *ht,\
     __global int* k)\
@@ -598,7 +610,7 @@ __kernel void smooth_normal(\
                 k[atomic_inc(k)+1]=id;\
                 return;\
             }\
-}");
+}",options);
 
     this->nrm_kernel->setArg(0, this->context->getBuffer(0));
     this->nrm_kernel->setArg(1, this->context->getBuffer(1));
