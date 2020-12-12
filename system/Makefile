@@ -5,6 +5,7 @@ TARGET        = ../$(LIBDIR)/libsystem.a
 
 SOURCES       =	AutoLock.cpp \
 		Lockable.cpp \
+		OpenCLContext.cpp \
 		OpenCLKernel.cpp \
 		Thread.cpp
 

@@ -13,11 +13,6 @@ PLYShape::PLYShape(const char* f,double size,const Mark& mk)
     :Shape(mk),Lockable(),
      size(Treble<double>(1,-1,-1)*size),smoothNormal(true)
 {
-#ifdef OpenCL
-    this->hit_kernel=NULL;
-    this->nrm_kernel=NULL;
-#endif
-
     buildFromFile(f);
 }
 
@@ -25,24 +20,11 @@ PLYShape::PLYShape(double size,const Mark& mk)
     :Shape(mk),Lockable(),
      size(Treble<double>(1,1,1)*size),smoothNormal(true),box(NULL)
 {
-#ifdef OpenCL
-    this->hit_kernel=NULL;
-    this->nrm_kernel=NULL;
-#endif
 }
 
 PLYShape::~PLYShape()
 {
-#ifdef OpenCL
-    if(hit_kernel!=NULL)
-    {
-        delete hit_kernel;
-    }
-    if(nrm_kernel!=NULL)
-    {
-        delete nrm_kernel;
-    }
-#else
+#ifndef OpenCL
     for(int i=0; i<largeBoxes._count(); i++)
     {
         delete largeBoxes[i]->box;
@@ -67,19 +49,17 @@ Hit PLYShape::_getHit(const Ray& r)const
     {
         int id=h.getId();
 
-        AutoLock lock(this->nrm_kernel->isGPU()?(Lockable*)this->nrm_kernel:(Lockable*)this);
-
-        this->nrm_kernel->writeBuffer(2,1,sizeof(int),&id);
-
+        AutoLock lock(this->context.getPointer());
+        this->context->writeBuffer(4,1,sizeof(int),&id);
         this->nrm_kernel->runKernel(shapes._count());
 
         int nb=-1;
-        this->nrm_kernel->readBuffer(3,1,sizeof(int),&nb);
+        this->context->readBuffer(5,1,sizeof(int),&nb);
         if(nb>0)
         {
             int* ind=(int*)malloc((1+nb)*sizeof(int));
-            this->nrm_kernel->readBuffer(3,1+nb,sizeof(int),ind);
-            this->nrm_kernel->flush();
+            this->context->readBuffer(5,1+nb,sizeof(int),ind);
+            this->context->flush();
             lock.unlock();
 
             double dst=EPSILON;
@@ -100,7 +80,7 @@ Hit PLYShape::_getHit(const Ray& r)const
         }
         else
         {
-            this->nrm_kernel->flush();
+            this->context->flush();
         }
     }
 #else
@@ -158,18 +138,17 @@ Hit PLYShape::__getHit(const Ray& r)const
         for(int i=0; i<TREBLE_SIZE; i++)
             k_r[i]=(float)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(float)r.getVector().get(i);
 
-        AutoLock lock(this->hit_kernel->isGPU()?(Lockable*)this->hit_kernel:(Lockable*)this);
-        this->hit_kernel->writeBuffer(0,2*TREBLE_SIZE,sizeof(float),k_r);
-
+        AutoLock lock(this->context.getPointer());
+        this->context->writeBuffer(2,2*TREBLE_SIZE,sizeof(float),k_r);
         this->hit_kernel->runKernel(shapes._count());
 
         int nb=-1;
-        this->hit_kernel->readBuffer(3,1,sizeof(int),&nb);
+        this->context->readBuffer(3,1,sizeof(int),&nb);
         if(nb>0)
         {
             int* ind=(int*)malloc((1+nb)*sizeof(int));
-            this->hit_kernel->readBuffer(3,1+nb,sizeof(int),ind);
-            this->hit_kernel->flush();
+            this->context->readBuffer(3,1+nb,sizeof(int),ind);
+            this->context->flush();
             lock.unlock();
             double dMin=-1.0;
             for(int i=1; i<=nb; i++)
@@ -189,7 +168,7 @@ Hit PLYShape::__getHit(const Ray& r)const
         }
         else
         {
-            this->hit_kernel->flush();
+            this->context->flush();
         }
     }
 
@@ -552,20 +531,32 @@ void PLYShape::buildFromFile(const char* filename)
     }
 
 #ifdef OpenCL
+    this->context=new OpenCLContext();
+
     int cnt=shapes._count();
+    this->context->createBuffer(cnt*3*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
+    this->context->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+    this->context->createBuffer(2*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
+    this->context->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
+    this->context->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+    this->context->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
+
     float *pt=(float*)malloc(cnt*3*TREBLE_SIZE*sizeof(float));
     for(int i=0; i<cnt; i++)
         for(int j=0; j<3; j++)
             for(int k=0; k<TREBLE_SIZE; k++)
                 pt[(((i*3)+j)*TREBLE_SIZE)+k]=(float)shapes[i].pt[j].get(k);
+    this->context->writeBuffer(0,cnt*3*TREBLE_SIZE,sizeof(float),pt);
+    this->context->writeBuffer(1,1,sizeof(int),&cnt);
+    free(pt);
 
-    this->hit_kernel=new OpenCLKernel("primitive_hit", "\
+    this->hit_kernel=new OpenCLKernel(this->context, "primitive_hit", "\
     __kernel void primitive_hit(\
-    __global const float *r,\
     __global const float *prm,\
     __global const int *cnt,\
+    __global const float *r,\
     __global int *k)\
-    {\
+{\
     int id=get_global_id(0);\
     if(id==0)*k=0;\
     barrier(CLK_GLOBAL_MEM_FENCE);\
@@ -582,17 +573,14 @@ void PLYShape::buildFromFile(const char* filename)
     if(a>=0.0 && a<=1.0 && b>=0.0 && b<=1.0 && (a+b)<=1.0)\
         if(dot(cross(t_v1,t_v2),t_w)/d>0.0)\
             k[atomic_inc(k)+1]=id;\
-    }");
+}");
 
-    this->hit_kernel->createBuffer(2*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
-    this->hit_kernel->createBuffer(cnt*3*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
-    this->hit_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_WRITE);
-    this->hit_kernel->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
+    this->hit_kernel->setArg(0, this->context->getBuffer(0));
+    this->hit_kernel->setArg(1, this->context->getBuffer(1));
+    this->hit_kernel->setArg(2, this->context->getBuffer(2));
+    this->hit_kernel->setArg(3, this->context->getBuffer(3));
 
-    this->hit_kernel->writeBuffer(1,cnt*3*TREBLE_SIZE,sizeof(float),pt);
-    this->hit_kernel->writeBuffer(2,1,sizeof(int),&cnt);
-
-    this->nrm_kernel=new OpenCLKernel("smooth_normal","\
+    this->nrm_kernel=new OpenCLKernel(this->context, "smooth_normal","\
 __kernel void smooth_normal(\
     __global const float *prm,\
     __global const int *cnt,\
@@ -612,14 +600,9 @@ __kernel void smooth_normal(\
             }\
 }");
 
-    this->nrm_kernel->createBuffer(cnt*3*TREBLE_SIZE,sizeof(float),CL_MEM_READ_ONLY);
-    this->nrm_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    this->nrm_kernel->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    this->nrm_kernel->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
-
-    this->nrm_kernel->writeBuffer(0,cnt*3*TREBLE_SIZE,sizeof(float),pt);
-    this->nrm_kernel->writeBuffer(1,1,sizeof(int),&cnt);
-
-    free(pt);
+    this->nrm_kernel->setArg(0, this->context->getBuffer(0));
+    this->nrm_kernel->setArg(1, this->context->getBuffer(1));
+    this->nrm_kernel->setArg(2, this->context->getBuffer(4));
+    this->nrm_kernel->setArg(3, this->context->getBuffer(5));
 #endif
 }
