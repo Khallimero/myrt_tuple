@@ -1,7 +1,6 @@
 #pragma once
 
 #ifdef OpenCL
-#include "OpenCLContext.h"
 
 #define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
@@ -9,7 +8,7 @@
 class OpenCLKernel
 {
 public:
-    OpenCLKernel(OpenCLContext *ctx,const char* name, const char* source, const char* options=NULL);
+    OpenCLKernel(const char* name, const char* source, const char* options=NULL);
     virtual ~OpenCLKernel();
 
 public:
@@ -23,7 +22,6 @@ protected:
     }
 
 private:
-    OpenCLContext *context;
     cl_kernel kernel;
     size_t workgroupSizeMultiple;
 };

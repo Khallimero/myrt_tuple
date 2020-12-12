@@ -2,6 +2,7 @@
 #include "Triangle.h"
 #include "Thread.h"
 #include "AutoLock.h"
+#include "OpenCLContext.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -55,17 +56,17 @@ Hit PLYShape::_getHit(const Ray& r)const
     {
         int id=h.getId();
 
-        AutoLock lock(this->context.getPointer());
-        this->context->writeBuffer(4,1,sizeof(int),&id);
+        AutoLock lock(OpenCLContext::openCLcontext.getPointer());
+        OpenCLContext::openCLcontext->writeBuffer(nrm_buffId[0],1,sizeof(int),&id);
         this->nrm_kernel->runKernel(shapes._count());
 
         int nb=-1;
-        this->context->readBuffer(5,1,sizeof(int),&nb);
+        OpenCLContext::openCLcontext->readBuffer(nrm_buffId[1],1,sizeof(int),&nb);
         if(nb>0)
         {
             int* ind=(int*)malloc((1+nb)*sizeof(int));
-            this->context->readBuffer(5,1+nb,sizeof(int),ind);
-            this->context->flush();
+            OpenCLContext::openCLcontext->readBuffer(nrm_buffId[1],1+nb,sizeof(int),ind);
+            OpenCLContext::openCLcontext->flush();
             lock.unlock();
 
             double dst=EPSILON;
@@ -86,7 +87,7 @@ Hit PLYShape::_getHit(const Ray& r)const
         }
         else
         {
-            this->context->flush();
+            OpenCLContext::openCLcontext->flush();
         }
     }
 #else
@@ -144,17 +145,17 @@ Hit PLYShape::__getHit(const Ray& r)const
         for(int i=0; i<TREBLE_SIZE; i++)
             k_r[i]=(OpenCL_Datatype)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(OpenCL_Datatype)r.getVector().get(i);
 
-        AutoLock lock(this->context.getPointer());
-        this->context->writeBuffer(2,2*TREBLE_SIZE,sizeof(OpenCL_Datatype),k_r);
+        AutoLock lock(OpenCLContext::openCLcontext.getPointer());
+        OpenCLContext::openCLcontext->writeBuffer(hit_buffId[0],2*TREBLE_SIZE,sizeof(OpenCL_Datatype),k_r);
         this->hit_kernel->runKernel(shapes._count());
 
         int nb=-1;
-        this->context->readBuffer(3,1,sizeof(int),&nb);
+        OpenCLContext::openCLcontext->readBuffer(hit_buffId[1],1,sizeof(int),&nb);
         if(nb>0)
         {
             int* ind=(int*)malloc((1+nb)*sizeof(int));
-            this->context->readBuffer(3,1+nb,sizeof(int),ind);
-            this->context->flush();
+            OpenCLContext::openCLcontext->readBuffer(hit_buffId[1],1+nb,sizeof(int),ind);
+            OpenCLContext::openCLcontext->flush();
             lock.unlock();
             double dMin=-1.0;
             for(int i=1; i<=nb; i++)
@@ -174,7 +175,7 @@ Hit PLYShape::__getHit(const Ray& r)const
         }
         else
         {
-            this->context->flush();
+            OpenCLContext::openCLcontext->flush();
         }
     }
 
@@ -537,23 +538,21 @@ void PLYShape::buildFromFile(const char* filename)
     }
 
 #ifdef OpenCL
-    this->context=new OpenCLContext();
-
     int cnt=shapes._count();
-    this->context->createBuffer(cnt*3*TREBLE_SIZE,sizeof(OpenCL_Datatype),CL_MEM_READ_ONLY);
-    this->context->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    this->context->createBuffer(2*TREBLE_SIZE,sizeof(OpenCL_Datatype),CL_MEM_READ_ONLY);
-    this->context->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
-    this->context->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    this->context->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
+    int b_pt=OpenCLContext::openCLcontext->createBuffer(cnt*3*TREBLE_SIZE,sizeof(OpenCL_Datatype),CL_MEM_READ_ONLY);
+    int b_cnt=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+    hit_buffId[0]=OpenCLContext::openCLcontext->createBuffer(2*TREBLE_SIZE,sizeof(OpenCL_Datatype),CL_MEM_READ_ONLY);
+    hit_buffId[1]=OpenCLContext::openCLcontext->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
+    nrm_buffId[0]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+    nrm_buffId[1]=OpenCLContext::openCLcontext->createBuffer(1+cnt,sizeof(int),CL_MEM_READ_WRITE);
 
     OpenCL_Datatype *pt=(OpenCL_Datatype*)malloc(cnt*3*TREBLE_SIZE*sizeof(OpenCL_Datatype));
     for(int i=0; i<cnt; i++)
         for(int j=0; j<3; j++)
             for(int k=0; k<TREBLE_SIZE; k++)
                 pt[(((i*3)+j)*TREBLE_SIZE)+k]=(OpenCL_Datatype)shapes[i].pt[j].get(k);
-    this->context->writeBuffer(0,cnt*3*TREBLE_SIZE,sizeof(OpenCL_Datatype),pt);
-    this->context->writeBuffer(1,1,sizeof(int),&cnt);
+    OpenCLContext::openCLcontext->writeBuffer(b_pt,cnt*3*TREBLE_SIZE,sizeof(OpenCL_Datatype),pt);
+    OpenCLContext::openCLcontext->writeBuffer(b_cnt,1,sizeof(int),&cnt);
     free(pt);
 
 #ifdef OpenCL_float
@@ -562,7 +561,7 @@ void PLYShape::buildFromFile(const char* filename)
     const char *options="-Ddata=double -Dvdata=double3";
 #endif
 
-    this->hit_kernel=new OpenCLKernel(this->context, "primitive_hit", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
+    this->hit_kernel=new OpenCLKernel("primitive_hit", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
 __kernel void primitive_hit(\
     __global const data *prm,\
     __global const int *cnt,\
@@ -587,12 +586,12 @@ __kernel void primitive_hit(\
             k[atomic_inc(k)+1]=id;\
 }",options);
 
-    this->hit_kernel->setArg(0, this->context->getBuffer(0));
-    this->hit_kernel->setArg(1, this->context->getBuffer(1));
-    this->hit_kernel->setArg(2, this->context->getBuffer(2));
-    this->hit_kernel->setArg(3, this->context->getBuffer(3));
+    this->hit_kernel->setArg(0, OpenCLContext::openCLcontext->getBuffer(b_pt));
+    this->hit_kernel->setArg(1, OpenCLContext::openCLcontext->getBuffer(b_cnt));
+    this->hit_kernel->setArg(2, OpenCLContext::openCLcontext->getBuffer(hit_buffId[0]));
+    this->hit_kernel->setArg(3, OpenCLContext::openCLcontext->getBuffer(hit_buffId[1]));
 
-    this->nrm_kernel=new OpenCLKernel(this->context, "smooth_normal","#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
+    this->nrm_kernel=new OpenCLKernel("smooth_normal","#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
 __kernel void smooth_normal(\
     __global const data *prm,\
     __global const int *cnt,\
@@ -612,9 +611,9 @@ __kernel void smooth_normal(\
             }\
 }",options);
 
-    this->nrm_kernel->setArg(0, this->context->getBuffer(0));
-    this->nrm_kernel->setArg(1, this->context->getBuffer(1));
-    this->nrm_kernel->setArg(2, this->context->getBuffer(4));
-    this->nrm_kernel->setArg(3, this->context->getBuffer(5));
+    this->nrm_kernel->setArg(0, OpenCLContext::openCLcontext->getBuffer(b_pt));
+    this->nrm_kernel->setArg(1, OpenCLContext::openCLcontext->getBuffer(b_cnt));
+    this->nrm_kernel->setArg(2, OpenCLContext::openCLcontext->getBuffer(nrm_buffId[0]));
+    this->nrm_kernel->setArg(3, OpenCLContext::openCLcontext->getBuffer(nrm_buffId[1]));
 #endif
 }

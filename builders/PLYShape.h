@@ -9,7 +9,6 @@
 #include "Lockable.h"
 #include "SmartPointer.h"
 #include "ShapeBuilder.h"
-#include "OpenCLContext.h"
 #include "OpenCLKernel.h"
 
 #ifndef OpenCL
@@ -102,8 +101,8 @@ protected:
     const Shape* box;
     ObjCollection<PLYPrimitive> shapes;
 #ifdef OpenCL
-    SmartPointer<OpenCLContext> context;
     SmartPointer<OpenCLKernel> hit_kernel,nrm_kernel;
+    int hit_buffId[2],nrm_buffId[2];
 #else
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;

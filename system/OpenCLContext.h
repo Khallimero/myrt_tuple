@@ -3,14 +3,16 @@
 #ifdef OpenCL
 #include "Lockable.h"
 #include "Collection.h"
+#include "SmartPointer.h"
 
 #define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
 
 class OpenCLContext:public Lockable
 {
-public:
+protected:
     OpenCLContext();
+public:
     virtual ~OpenCLContext();
 
 public:
@@ -49,6 +51,9 @@ public:
         return command_queue;
     }
     bool flush()const;
+
+public:
+    static SmartPointer<OpenCLContext> openCLcontext;
 
 protected:
     cl_device_id device_id;

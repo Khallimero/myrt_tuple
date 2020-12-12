@@ -1,6 +1,8 @@
 #include "OpenCLContext.h"
 
 #ifdef OpenCL
+#include "AutoLock.h"
+
 #include <stdio.h>
 
 OpenCLContext::OpenCLContext()
@@ -37,8 +39,9 @@ OpenCLContext::~OpenCLContext()
 
 int OpenCLContext::createBuffer(size_t nb,size_t size, cl_mem_flags flags)
 {
+    AutoLock lock(&buffers);
     cl_int ret;
-    buffers.add(clCreateBuffer(context, flags, nb*size, NULL, &ret));
+    buffers._add(clCreateBuffer(context, flags, nb*size, NULL, &ret));
     printError("clCreateBuffer",ret);
     return buffers._count()-1;
 }
@@ -62,73 +65,75 @@ bool OpenCLContext::flush()const
     return clFlush(command_queue)==CL_SUCCESS;
 }
 
-#define CaseErrorCode(x) case x: fprintf(stderr,"%s : %s\n",fct,#x);break
+#define ErrorCode(x) x: fprintf(stderr,"%s : %s\n",fct,#x);break
 void OpenCLContext::printError(const char* fct, cl_int ret)
 {
     switch(ret)
     {
     case CL_SUCCESS:
         break;
-        CaseErrorCode(CL_DEVICE_NOT_FOUND);
-        CaseErrorCode(CL_DEVICE_NOT_AVAILABLE);
-        CaseErrorCode(CL_COMPILER_NOT_AVAILABLE);
-        CaseErrorCode(CL_MEM_OBJECT_ALLOCATION_FAILURE);
-        CaseErrorCode(CL_OUT_OF_RESOURCES);
-        CaseErrorCode(CL_OUT_OF_HOST_MEMORY);
-        CaseErrorCode(CL_PROFILING_INFO_NOT_AVAILABLE);
-        CaseErrorCode(CL_MEM_COPY_OVERLAP);
-        CaseErrorCode(CL_IMAGE_FORMAT_MISMATCH);
-        CaseErrorCode(CL_IMAGE_FORMAT_NOT_SUPPORTED);
-        CaseErrorCode(CL_BUILD_PROGRAM_FAILURE);
-        CaseErrorCode(CL_MAP_FAILURE);
-        CaseErrorCode(CL_MISALIGNED_SUB_BUFFER_OFFSET);
-        CaseErrorCode(CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST);
-        CaseErrorCode(CL_COMPILE_PROGRAM_FAILURE);
-        CaseErrorCode(CL_LINKER_NOT_AVAILABLE);
-        CaseErrorCode(CL_LINK_PROGRAM_FAILURE);
-        CaseErrorCode(CL_DEVICE_PARTITION_FAILED);
-        CaseErrorCode(CL_KERNEL_ARG_INFO_NOT_AVAILABLE);
-        CaseErrorCode(CL_INVALID_VALUE);
-        CaseErrorCode(CL_INVALID_DEVICE_TYPE);
-        CaseErrorCode(CL_INVALID_PLATFORM);
-        CaseErrorCode(CL_INVALID_DEVICE);
-        CaseErrorCode(CL_INVALID_CONTEXT);
-        CaseErrorCode(CL_INVALID_QUEUE_PROPERTIES);
-        CaseErrorCode(CL_INVALID_COMMAND_QUEUE);
-        CaseErrorCode(CL_INVALID_HOST_PTR);
-        CaseErrorCode(CL_INVALID_MEM_OBJECT);
-        CaseErrorCode(CL_INVALID_IMAGE_FORMAT_DESCRIPTOR);
-        CaseErrorCode(CL_INVALID_IMAGE_SIZE);
-        CaseErrorCode(CL_INVALID_SAMPLER);
-        CaseErrorCode(CL_INVALID_BINARY);
-        CaseErrorCode(CL_INVALID_BUILD_OPTIONS);
-        CaseErrorCode(CL_INVALID_PROGRAM);
-        CaseErrorCode(CL_INVALID_PROGRAM_EXECUTABLE);
-        CaseErrorCode(CL_INVALID_KERNEL_NAME);
-        CaseErrorCode(CL_INVALID_KERNEL_DEFINITION);
-        CaseErrorCode(CL_INVALID_KERNEL);
-        CaseErrorCode(CL_INVALID_ARG_INDEX);
-        CaseErrorCode(CL_INVALID_ARG_VALUE);
-        CaseErrorCode(CL_INVALID_ARG_SIZE);
-        CaseErrorCode(CL_INVALID_KERNEL_ARGS);
-        CaseErrorCode(CL_INVALID_WORK_DIMENSION);
-        CaseErrorCode(CL_INVALID_WORK_GROUP_SIZE);
-        CaseErrorCode(CL_INVALID_WORK_ITEM_SIZE);
-        CaseErrorCode(CL_INVALID_GLOBAL_OFFSET);
-        CaseErrorCode(CL_INVALID_EVENT_WAIT_LIST);
-        CaseErrorCode(CL_INVALID_EVENT);
-        CaseErrorCode(CL_INVALID_OPERATION);
-        CaseErrorCode(CL_INVALID_GL_OBJECT);
-        CaseErrorCode(CL_INVALID_BUFFER_SIZE);
-        CaseErrorCode(CL_INVALID_MIP_LEVEL);
-        CaseErrorCode(CL_INVALID_GLOBAL_WORK_SIZE);
-        CaseErrorCode(CL_INVALID_PROPERTY);
-        CaseErrorCode(CL_INVALID_IMAGE_DESCRIPTOR);
-        CaseErrorCode(CL_INVALID_COMPILER_OPTIONS);
-        CaseErrorCode(CL_INVALID_LINKER_OPTIONS);
-        CaseErrorCode(CL_INVALID_DEVICE_PARTITION_COUNT);
+    case ErrorCode(CL_DEVICE_NOT_FOUND);
+    case ErrorCode(CL_DEVICE_NOT_AVAILABLE);
+    case ErrorCode(CL_COMPILER_NOT_AVAILABLE);
+    case ErrorCode(CL_MEM_OBJECT_ALLOCATION_FAILURE);
+    case ErrorCode(CL_OUT_OF_RESOURCES);
+    case ErrorCode(CL_OUT_OF_HOST_MEMORY);
+    case ErrorCode(CL_PROFILING_INFO_NOT_AVAILABLE);
+    case ErrorCode(CL_MEM_COPY_OVERLAP);
+    case ErrorCode(CL_IMAGE_FORMAT_MISMATCH);
+    case ErrorCode(CL_IMAGE_FORMAT_NOT_SUPPORTED);
+    case ErrorCode(CL_BUILD_PROGRAM_FAILURE);
+    case ErrorCode(CL_MAP_FAILURE);
+    case ErrorCode(CL_MISALIGNED_SUB_BUFFER_OFFSET);
+    case ErrorCode(CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST);
+    case ErrorCode(CL_COMPILE_PROGRAM_FAILURE);
+    case ErrorCode(CL_LINKER_NOT_AVAILABLE);
+    case ErrorCode(CL_LINK_PROGRAM_FAILURE);
+    case ErrorCode(CL_DEVICE_PARTITION_FAILED);
+    case ErrorCode(CL_KERNEL_ARG_INFO_NOT_AVAILABLE);
+    case ErrorCode(CL_INVALID_VALUE);
+    case ErrorCode(CL_INVALID_DEVICE_TYPE);
+    case ErrorCode(CL_INVALID_PLATFORM);
+    case ErrorCode(CL_INVALID_DEVICE);
+    case ErrorCode(CL_INVALID_CONTEXT);
+    case ErrorCode(CL_INVALID_QUEUE_PROPERTIES);
+    case ErrorCode(CL_INVALID_COMMAND_QUEUE);
+    case ErrorCode(CL_INVALID_HOST_PTR);
+    case ErrorCode(CL_INVALID_MEM_OBJECT);
+    case ErrorCode(CL_INVALID_IMAGE_FORMAT_DESCRIPTOR);
+    case ErrorCode(CL_INVALID_IMAGE_SIZE);
+    case ErrorCode(CL_INVALID_SAMPLER);
+    case ErrorCode(CL_INVALID_BINARY);
+    case ErrorCode(CL_INVALID_BUILD_OPTIONS);
+    case ErrorCode(CL_INVALID_PROGRAM);
+    case ErrorCode(CL_INVALID_PROGRAM_EXECUTABLE);
+    case ErrorCode(CL_INVALID_KERNEL_NAME);
+    case ErrorCode(CL_INVALID_KERNEL_DEFINITION);
+    case ErrorCode(CL_INVALID_KERNEL);
+    case ErrorCode(CL_INVALID_ARG_INDEX);
+    case ErrorCode(CL_INVALID_ARG_VALUE);
+    case ErrorCode(CL_INVALID_ARG_SIZE);
+    case ErrorCode(CL_INVALID_KERNEL_ARGS);
+    case ErrorCode(CL_INVALID_WORK_DIMENSION);
+    case ErrorCode(CL_INVALID_WORK_GROUP_SIZE);
+    case ErrorCode(CL_INVALID_WORK_ITEM_SIZE);
+    case ErrorCode(CL_INVALID_GLOBAL_OFFSET);
+    case ErrorCode(CL_INVALID_EVENT_WAIT_LIST);
+    case ErrorCode(CL_INVALID_EVENT);
+    case ErrorCode(CL_INVALID_OPERATION);
+    case ErrorCode(CL_INVALID_GL_OBJECT);
+    case ErrorCode(CL_INVALID_BUFFER_SIZE);
+    case ErrorCode(CL_INVALID_MIP_LEVEL);
+    case ErrorCode(CL_INVALID_GLOBAL_WORK_SIZE);
+    case ErrorCode(CL_INVALID_PROPERTY);
+    case ErrorCode(CL_INVALID_IMAGE_DESCRIPTOR);
+    case ErrorCode(CL_INVALID_COMPILER_OPTIONS);
+    case ErrorCode(CL_INVALID_LINKER_OPTIONS);
+    case ErrorCode(CL_INVALID_DEVICE_PARTITION_COUNT);
     default:
         fprintf(stderr,"%s : Unknown error\n",fct);
     }
 }
+
+SmartPointer<OpenCLContext> OpenCLContext::openCLcontext=new OpenCLContext();
 #endif
