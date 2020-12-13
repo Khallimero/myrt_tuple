@@ -11,15 +11,11 @@
 #include "ShapeBuilder.h"
 #include "OpenCLKernel.h"
 
-#ifndef OpenCL
 void* boxThread(void*);
-#endif
 
 class PLYShape:public Shape,public Lockable
 {
-#ifndef OpenCL
     friend void* boxThread(void*);
-#endif
     friend class ShapeBuilder<2>;
 
 public:
@@ -42,7 +38,6 @@ protected:
         }
     };
 
-#ifndef OpenCL
     struct PLYBox
     {
         const Sphere* box;
@@ -59,21 +54,14 @@ protected:
         Sphere* box;
         Collection<const PLYBox*> boxes;
     };
-#endif
 
 protected:
     virtual Hit _getHit(const Ray& r)const;
-#ifdef OpenCL
-    virtual Hit __getHit(const Ray& r)const;
-#else
-    virtual Hit __getHit(const Ray& r,const PLYPrimitive** p=NULL,const PLYBox** b=NULL)const;
-#endif
+    virtual Hit __getHit(const Ray& r,const PLYPrimitive** p=NULL,const PLYBox** b=NULL,int *bufferId=NULL)const;
 
-#ifndef OpenCL
 protected:
     bool getNextBox(int* n);
     void addBox(const Point& pt,double r);
-#endif
 
 protected:
     void buildFromFile(const char* filename);
@@ -102,10 +90,10 @@ protected:
     ObjCollection<PLYPrimitive> shapes;
 #ifdef OpenCL
     SmartPointer<OpenCLKernel> hit_kernel,nrm_kernel;
-    int hit_buffId[2],nrm_buffId[2];
-#else
+    Collection<int> box_buffId;
+    int hit_buffId[3],nrm_buffId[3];
+#endif
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;
     int nb_box;
-#endif
 };
