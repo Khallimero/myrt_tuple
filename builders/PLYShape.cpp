@@ -77,8 +77,7 @@ Hit PLYShape::_getHit(const Ray& r)const
             {
                 Vector w=shapes[ind[i]].n;
                 if(shapes[id].n.angle(w)>M_PI/4.0)w=-w;
-                if(shapes[id].n.angle(w)<M_PI/4.0)
-                    n+=w*SQ(1.0-h.getPoint().dist(shapes[ind[i]].b)/dst);
+                n+=w*SQ(1.0-h.getPoint().dist(shapes[ind[i]].b)/dst);
             }
 
             h.setThNormal(n.isNull()?shapes[id].n:n.norm());
