@@ -99,7 +99,7 @@ Hit PLYShape::_getHit(const Ray& r)const
     {
         double dst=EPSILON;
         CollectionUnion<const PLYPrimitive*> prmUnion=CollectionUnion<const PLYPrimitive*>(2,&b->ht,&b->prm);
-        double* cTab=(double*)malloc(prmUnion._count()*sizeof(double));
+        Collection<int> cTab;
         for(int i=0; i<prmUnion._count(); i++)
         {
             bool flg=false;
@@ -108,24 +108,17 @@ Hit PLYShape::_getHit(const Ray& r)const
                     if(Point(prmUnion[i]->pt[j])==Point(p->pt[k]))flg=true;
             if(flg)
             {
-                const Point& d=prmUnion[i]->b;
-                cTab[i]=h.getPoint().dist(d);
-                dst=MAX(dst,p->b.dist(d));
+                cTab._add(i);
+                dst=MAX(dst,p->b.dist(prmUnion[i]->b));
             }
-            else cTab[i]=-1;
         }
         Vector n=Vector::null;
-        for(int i=0; i<prmUnion._count(); i++)
+        for(int i=0; i<cTab._count(); i++)
         {
-            if(cTab[i]>0)
-            {
-                Vector w=prmUnion[i]->n;
-                if(p->n.angle(w)>M_PI/4.0)w=-w;
-                if(p->n.angle(w)<M_PI/4.0)
-                    n+=w*SQ(1.0-cTab[i]/dst);
-            }
+            Vector w=prmUnion[cTab[i]]->n;
+            if(p->n.angle(w)>M_PI/4.0)w=-w;
+            n+=w*SQ(1.0-h.getPoint().dist(prmUnion[cTab[i]]->b)/dst);
         }
-        free(cTab);
 
         h.setThNormal(n.isNull()?p->n:n.norm());
     }
