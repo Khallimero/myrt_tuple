@@ -7,7 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#define PLYBOX_RADIUS_FCT 25.0
+#define PLYBOX_RADIUS_FCT 20.0
 #define LARGEBOX_RADIUS_FCT 5.0
 
 PLYShape::PLYShape(const char* f,double size,const Mark& mk)
@@ -43,8 +43,12 @@ Hit PLYShape::_getHit(const Ray& r)const
 
     const PLYPrimitive* p=NULL;
     const PLYBox* b=NULL;
+#ifdef OpenCL
     int buffId=-1;
     h=__getHit(r,&p,&b,&buffId);
+#else
+    h=__getHit(r,&p,&b);
+#endif
 
     if(!h.isNull()&&smoothNormal)
     {
@@ -53,7 +57,7 @@ Hit PLYShape::_getHit(const Ray& r)const
         CollectionUnion<const PLYPrimitive*> prmUnion=CollectionUnion<const PLYPrimitive*>(2,&b->ht,&b->prm);
 
 #ifdef OpenCL
-        if(buffId>0 && OpenCLContext::openCLcontext.getPointer()->trylock()==0)
+        if(OpenCLContext::openCLcontext.getPointer()->trylock()==0)
         {
             int id=h.getId();
             int cnt=prmUnion._count();
