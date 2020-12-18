@@ -356,6 +356,92 @@ void PLYShape::buildBoxes(bool flgBox)
     Thread::run(boxThread,this);
     fprintf(stdout,"\n");
     fflush(stdout);
+    
+#ifdef OpenCL
+    int maxHt=0,maxPrm=0;
+    for(int i=0; i<largeBoxes._count(); i++)
+    {
+        for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
+        {
+            int cntHt=largeBoxes[i]->boxes[j]->ht._count();
+            int cntPrm=largeBoxes[i]->boxes[j]->prm._count();
+            double *pt=(double*)malloc((cntHt+cntPrm)*3*TREBLE_SIZE*sizeof(double));
+            for(int k=0; k<cntHt; k++)
+                for(int l=0; l<3; l++)
+                    for(int m=0; m<TREBLE_SIZE; m++)
+                        pt[(((k*3)+l)*TREBLE_SIZE)+m]=(double)largeBoxes[i]->boxes[j]->ht[k]->pt[l].get(m);
+            for(int k=0; k<cntPrm; k++)
+                for(int l=0; l<3; l++)
+                    for(int m=0; m<TREBLE_SIZE; m++)
+                        pt[((((cntHt+k)*3)+l)*TREBLE_SIZE)+m]=(double)largeBoxes[i]->boxes[j]->prm[k]->pt[l].get(m);
+            int buffId=OpenCLContext::openCLcontext->createBuffer((cntHt+cntPrm)*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+            OpenCLContext::openCLcontext->writeBuffer(buffId,(cntHt+cntPrm)*3*TREBLE_SIZE,sizeof(double),pt);
+            box_buffId._add(buffId);
+            free(pt);
+
+            maxHt=MAX(maxHt,cntHt);
+            maxPrm=MAX(maxPrm,cntHt+cntPrm);
+        }
+    }
+
+    hit_buffId[0]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+    hit_buffId[1]=OpenCLContext::openCLcontext->createBuffer(2*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+    hit_buffId[2]=OpenCLContext::openCLcontext->createBuffer(1+maxHt,sizeof(int),CL_MEM_READ_WRITE);
+    nrm_buffId[0]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+    nrm_buffId[1]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+    nrm_buffId[2]=OpenCLContext::openCLcontext->createBuffer(1+maxPrm,sizeof(int),CL_MEM_READ_WRITE);
+
+    this->hit_kernel=new OpenCLKernel("primitive_hit", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
+__kernel void primitive_hit(\
+    __global const double *prm,\
+    __global const int *cnt,\
+    __global const double *r,\
+    __global int *k)\
+{\
+    int id=get_global_id(0);\
+    if(id==0)*k=0;\
+    barrier(CLK_GLOBAL_MEM_FENCE);\
+    if(id>=(*cnt))return;\
+    double3 t_pt=vload3(0,r);\
+    double3 t_vct=vload3(1,r);\
+    double3 t_o=vload3(id*3,prm);\
+    double3 t_v1=vload3((id*3)+1,prm)-t_o;\
+    double3 t_v2=vload3((id*3)+2,prm)-t_o;\
+    double d=dot(cross(t_v2,t_v1),t_vct);\
+    double3 t_w=t_pt-t_o;\
+    double a=dot(cross(t_v2,t_w),t_vct)/d;\
+    double b=dot(cross(t_w,t_v1),t_vct)/d;\
+    if(a>=0.0 && a<=1.0 && b>=0.0 && b<=1.0 && (a+b)<=1.0)\
+        if(dot(cross(t_v1,t_v2),t_w)/d>0.0)\
+            k[atomic_inc(k)+1]=id;\
+}");
+
+    for(int i=0; i<3; i++)
+        this->hit_kernel->setArg(i+1, OpenCLContext::openCLcontext->getBuffer(hit_buffId[i]));
+
+    this->nrm_kernel=new OpenCLKernel("smooth_normal","#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
+__kernel void smooth_normal(\
+    __global const double *prm,\
+    __global const int *cnt,\
+    __global const int *ht,\
+    __global int* k)\
+{\
+    int id=get_global_id(0);\
+    if(id==0)*k=0;\
+    barrier(CLK_GLOBAL_MEM_FENCE);\
+    if(id>=(*cnt))return;\
+    for(int i=0;i<3;i++)\
+        for(int j=0;j<3;j++)\
+            if(length(vload3((id*3)+i,prm)-vload3(((*ht)*3)+j,prm))==0)\
+            {\
+                k[atomic_inc(k)+1]=id;\
+                return;\
+            }\
+}");
+
+    for(int i=0; i<3; i++)
+        this->nrm_kernel->setArg(i+1, OpenCLContext::openCLcontext->getBuffer(nrm_buffId[i]));
+#endif    
 }
 
 void PLYShape::addPrimitive(const Point& a,const Point& b,const Point& c)
@@ -532,90 +618,4 @@ void PLYShape::buildFromFile(const char* filename)
         fflush(stderr);
         exit(1);
     }
-
-#ifdef OpenCL
-    int maxHt=0,maxPrm=0;
-    for(int i=0; i<largeBoxes._count(); i++)
-    {
-        for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
-        {
-            int cntHt=largeBoxes[i]->boxes[j]->ht._count();
-            int cntPrm=largeBoxes[i]->boxes[j]->prm._count();
-            double *pt=(double*)malloc((cntHt+cntPrm)*3*TREBLE_SIZE*sizeof(double));
-            for(int k=0; k<cntHt; k++)
-                for(int l=0; l<3; l++)
-                    for(int m=0; m<TREBLE_SIZE; m++)
-                        pt[(((k*3)+l)*TREBLE_SIZE)+m]=(double)largeBoxes[i]->boxes[j]->ht[k]->pt[l].get(m);
-            for(int k=0; k<cntPrm; k++)
-                for(int l=0; l<3; l++)
-                    for(int m=0; m<TREBLE_SIZE; m++)
-                        pt[((((cntHt+k)*3)+l)*TREBLE_SIZE)+m]=(double)largeBoxes[i]->boxes[j]->prm[k]->pt[l].get(m);
-            int buffId=OpenCLContext::openCLcontext->createBuffer((cntHt+cntPrm)*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-            OpenCLContext::openCLcontext->writeBuffer(buffId,(cntHt+cntPrm)*3*TREBLE_SIZE,sizeof(double),pt);
-            box_buffId._add(buffId);
-            free(pt);
-
-            maxHt=MAX(maxHt,cntHt);
-            maxPrm=MAX(maxPrm,cntHt+cntPrm);
-        }
-    }
-
-    hit_buffId[0]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    hit_buffId[1]=OpenCLContext::openCLcontext->createBuffer(2*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-    hit_buffId[2]=OpenCLContext::openCLcontext->createBuffer(1+maxHt,sizeof(int),CL_MEM_READ_WRITE);
-    nrm_buffId[0]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    nrm_buffId[1]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    nrm_buffId[2]=OpenCLContext::openCLcontext->createBuffer(1+maxPrm,sizeof(int),CL_MEM_READ_WRITE);
-
-    this->hit_kernel=new OpenCLKernel("primitive_hit", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
-__kernel void primitive_hit(\
-    __global const double *prm,\
-    __global const int *cnt,\
-    __global const double *r,\
-    __global int *k)\
-{\
-    int id=get_global_id(0);\
-    if(id==0)*k=0;\
-    barrier(CLK_GLOBAL_MEM_FENCE);\
-    if(id>=(*cnt))return;\
-    double3 t_pt=vload3(0,r);\
-    double3 t_vct=vload3(1,r);\
-    double3 t_o=vload3(id*3,prm);\
-    double3 t_v1=vload3((id*3)+1,prm)-t_o;\
-    double3 t_v2=vload3((id*3)+2,prm)-t_o;\
-    double d=dot(cross(t_v2,t_v1),t_vct);\
-    double3 t_w=t_pt-t_o;\
-    double a=dot(cross(t_v2,t_w),t_vct)/d;\
-    double b=dot(cross(t_w,t_v1),t_vct)/d;\
-    if(a>=0.0 && a<=1.0 && b>=0.0 && b<=1.0 && (a+b)<=1.0)\
-        if(dot(cross(t_v1,t_v2),t_w)/d>0.0)\
-            k[atomic_inc(k)+1]=id;\
-}");
-
-    for(int i=0; i<3; i++)
-        this->hit_kernel->setArg(i+1, OpenCLContext::openCLcontext->getBuffer(hit_buffId[i]));
-
-    this->nrm_kernel=new OpenCLKernel("smooth_normal","#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
-__kernel void smooth_normal(\
-    __global const double *prm,\
-    __global const int *cnt,\
-    __global const int *ht,\
-    __global int* k)\
-{\
-    int id=get_global_id(0);\
-    if(id==0)*k=0;\
-    barrier(CLK_GLOBAL_MEM_FENCE);\
-    if(id>=(*cnt))return;\
-    for(int i=0;i<3;i++)\
-        for(int j=0;j<3;j++)\
-            if(length(vload3((id*3)+i,prm)-vload3(((*ht)*3)+j,prm))==0)\
-            {\
-                k[atomic_inc(k)+1]=id;\
-                return;\
-            }\
-}");
-
-    for(int i=0; i<3; i++)
-        this->nrm_kernel->setArg(i+1, OpenCLContext::openCLcontext->getBuffer(nrm_buffId[i]));
-#endif
 }
