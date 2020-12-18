@@ -16,8 +16,10 @@ int AutoLock::lock(bool wait)
 {
     if(this->lockable!=NULL)
     {
-        if(!this->locked)
-            this->locked=((wait?this->lockable->lock():this->lockable->trylock())==0);
+        if((wait?this->lockable->lock():this->lockable->trylock())==0)
+        {
+            this->locked=true;
+        }
     }
     else this->locked=false;
     return this->locked;
@@ -27,7 +29,7 @@ void AutoLock::unlock()
 {
     if(this->locked)
     {
-        lockable->unlock();
         this->locked=false;
+        lockable->unlock();
     }
 }
