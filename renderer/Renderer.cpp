@@ -28,10 +28,14 @@ Renderer::Renderer(const Scene* sc,const Camera& cam,const RendererQuality& qual
 
     this->setRenderingProgress(Init);
     this->rndProgressCount=0;
+
+    Renderer::Monitored.add(this);
 }
 
 Renderer::~Renderer()
 {
+    Renderer::Monitored.replace(this,NULL);
+
     AutoLock autolock(this);
     if(pIt!=NULL)delete pIt;
 }
@@ -41,7 +45,6 @@ SmartPointer<Picture> Renderer::render(const Scene* sc,const Camera& cam,
 {
     Renderer rnd(sc,cam,quality);
     rnd.pct=new Picture(cam.getVaX().getNb(),cam.getVaY().getNb());
-    Renderer::Monitored.add(&rnd);
 
     if(rnd.sc->getPhotonBoxIn()!=NULL)
     {
@@ -52,9 +55,7 @@ SmartPointer<Picture> Renderer::render(const Scene* sc,const Camera& cam,
 
     rnd.setRenderingProgress(Rendering);
     Thread::run(renderThread,&rnd);
-
     rnd.setRenderingProgress(Complete);
-    Renderer::Monitored.replace(&rnd,NULL);
 
     return SmartPointer<Picture>(rnd.pct);
 }
