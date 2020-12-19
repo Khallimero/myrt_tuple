@@ -63,9 +63,6 @@ int Thread::nbThread()
     {
         cpu_set_t set;
         _nb_thread=pthread_getaffinity_np(pthread_self(),sizeof(set),&set)==0?CPU_COUNT(&set):NB_THREAD;
-#ifdef OpenCL
-        _nb_thread++;
-#endif
     }
     return _nb_thread;
 }

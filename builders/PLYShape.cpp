@@ -57,8 +57,9 @@ Hit PLYShape::_getHit(const Ray& r)const
         CollectionUnion<const PLYPrimitive*> prmUnion=CollectionUnion<const PLYPrimitive*>(2,&b->ht,&b->prm);
 
 #ifdef OpenCL
-        if(OpenCLContext::openCLcontext.getPointer()->trylock()==0)
+        if(OpenCLContext::openCLQueue.tryEnqueueLock()==0)
         {
+            OpenCLContext::openCLQueue.waitLock();
             int id=h.getId();
             int cnt=prmUnion._count();
 
@@ -75,7 +76,7 @@ Hit PLYShape::_getHit(const Ray& r)const
                 int* ind=(int*)malloc((1+nb)*sizeof(int));
                 OpenCLContext::openCLcontext->readBuffer(nrm_buffId[2],1+nb,sizeof(int),ind);
                 OpenCLContext::openCLcontext->flush();
-                OpenCLContext::openCLcontext.getPointer()->unlock();
+                OpenCLContext::openCLQueue.unlock();
 
                 for(int i=1; i<=nb; i++)
                     dst=MAX(dst,p->b.dist(prmUnion[ind[i]]->b));
@@ -92,7 +93,7 @@ Hit PLYShape::_getHit(const Ray& r)const
             else
             {
                 OpenCLContext::openCLcontext->flush();
-                OpenCLContext::openCLcontext.getPointer()->unlock();
+                OpenCLContext::openCLQueue.unlock();
             }
         }
         else
@@ -148,8 +149,9 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b,int 
                     if(largeBoxes[i]->boxes[j]->box->intersect(r))
                     {
 #ifdef OpenCL
-                        if(OpenCLContext::openCLcontext.getPointer()->trylock()==0)
+                        if(OpenCLContext::openCLQueue.tryEnqueueLock()==0)
                         {
+                            OpenCLContext::openCLQueue.waitLock();
                             int cnt=largeBoxes[i]->boxes[j]->ht._count();
                             this->hit_kernel->setArg(0, OpenCLContext::openCLcontext->getBuffer(box_buffId[buffId+j]));
                             OpenCLContext::openCLcontext->writeBuffer(hit_buffId[0],1,sizeof(int),&cnt);
@@ -164,7 +166,7 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b,int 
                                 int* ind=(int*)malloc((1+nb)*sizeof(int));
                                 OpenCLContext::openCLcontext->readBuffer(hit_buffId[2],1+nb,sizeof(int),ind);
                                 OpenCLContext::openCLcontext->flush();
-                                OpenCLContext::openCLcontext.getPointer()->unlock();
+                                OpenCLContext::openCLQueue.unlock();
 
                                 for(int k=1; k<=nb; k++)
                                 {
@@ -187,7 +189,7 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b,int 
                             else
                             {
                                 OpenCLContext::openCLcontext->flush();
-                                OpenCLContext::openCLcontext.getPointer()->unlock();
+                                OpenCLContext::openCLQueue.unlock();
                             }
                         }
                         else
@@ -356,7 +358,7 @@ void PLYShape::buildBoxes(bool flgBox)
     Thread::run(boxThread,this);
     fprintf(stdout,"\n");
     fflush(stdout);
-    
+
 #ifdef OpenCL
     int maxHt=0,maxPrm=0;
     for(int i=0; i<largeBoxes._count(); i++)
@@ -441,7 +443,7 @@ __kernel void smooth_normal(\
 
     for(int i=0; i<3; i++)
         this->nrm_kernel->setArg(i+1, OpenCLContext::openCLcontext->getBuffer(nrm_buffId[i]));
-#endif    
+#endif
 }
 
 void PLYShape::addPrimitive(const Point& a,const Point& b,const Point& c)

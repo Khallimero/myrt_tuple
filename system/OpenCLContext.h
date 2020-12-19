@@ -2,6 +2,7 @@
 
 #ifdef OpenCL
 #include "Lockable.h"
+#include "LockQueue.h"
 #include "Collection.h"
 #include "SmartPointer.h"
 
@@ -54,6 +55,7 @@ public:
 
 public:
     static SmartPointer<OpenCLContext> openCLcontext;
+    static LockQueue<2> openCLQueue;
 
 protected:
     cl_device_id device_id;

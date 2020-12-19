@@ -136,4 +136,5 @@ void OpenCLContext::printError(const char* fct, cl_int ret)
 }
 
 SmartPointer<OpenCLContext> OpenCLContext::openCLcontext=new OpenCLContext();
+LockQueue<2> OpenCLContext::openCLQueue(OpenCLContext::openCLcontext);
 #endif
