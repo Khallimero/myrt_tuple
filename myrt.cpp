@@ -158,5 +158,7 @@ int main(void)
     sprintf(buf,"rt_%u.ppm",rseed);
     pct->write(buf);
 
+    setAlarm(0);
+
     exit(0);
 }
