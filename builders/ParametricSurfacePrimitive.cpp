@@ -1,6 +1,6 @@
 #include "ParametricSurfacePrimitive.h"
 
-ParametricSurfacePrimitive::ParametricSurfacePrimitive(const ParametricPrimitive<1> *prim)
+ParametricSurfacePrimitive::ParametricSurfacePrimitive(SmartPointer<const ParametricPrimitive<1>> prim)
 {
     this->prim=prim;
 }

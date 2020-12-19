@@ -17,6 +17,7 @@
 #define RADIANCE_PHOTON_EXP 0.
 
 #ifdef SCENE
+#include "SmartPointer.h"
 #include "BasicTexture.h"
 #include "MobiusTore.h"
 #include "ShapeBuilder.h"
@@ -37,7 +38,7 @@ void buildScene(Scene& world)
 {
     Point ct=Point(-300,-100,3000);
 
-    ParametricPrimitive<2>* mtp=new MobiusTore(2,1,2);
+    SmartPointer<ParametricPrimitive<2>> mtp=new MobiusTore(2,1,2);
     ShapeBuilder<2> sbm(300,1,Tuple<int,2>::Unit*360*4);
     Shape* mt=sbm.getInstance(Mark(ct,Rotation(-M_PI/2.0,-M_PI/2.0,0)),mtp);
     mt->setTexture(new BasicTexture(ORANGE));
@@ -47,14 +48,9 @@ void buildScene(Scene& world)
     mt->setReflectCoeff(.1);
     world.addShape(mt);
 
-    ParametricPrimitive<1>* pp=new TorusKnot(1,2,2);
-    //StraightShapeBuilder sb(300,1,360,60);
-    //ShapeBuilder<2> sb(300,1,Pair<int>(360*4,360));
     for(int i=0; i<2; i++)
     {
-        //Shape* tk=sb.getInstance(Mark(ct,Rotation(M_PI/2.0,0,M_PI/4.0*(double)(2*i-1))),pp,Cylindrical);
-        //Shape* tk=sb.getInstance(Mark(ct,Rotation(M_PI/2.0,0,M_PI/4.0*(double)(2*i-1))),pp,0.2,true);
-        Shape* tk=new ParametricIsoSurface(pp,300,1,180,60,
+        Shape* tk=new ParametricIsoSurface(new TorusKnot(1,2,2),300,1,180,60,
                                            Mark(ct,Rotation(M_PI/2.0,M_PI/4.0*(double)(2*i-1),0)));
         tk->setTexture(new BasicTexture(BROWN));
         tk->setDiffCoeff(.05);
