@@ -3,6 +3,7 @@
 #include "Thread.h"
 #include "AutoLock.h"
 #include "OpenCLContext.h"
+#include "SmartPointer.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -45,9 +46,9 @@ Hit PLYShape::_getHit(const Ray& r)const
     const PLYBox* b=NULL;
 #ifdef OpenCL
     int buffId=-1;
-    h=__getHit(r,&p,&b,&buffId);
+    h=__getHit(r,false,&p,&b,&buffId);
 #else
-    h=__getHit(r,&p,&b);
+    h=__getHit(r,false,&p,&b);
 #endif
 
     if(!h.isNull()&&smoothNormal)
@@ -73,7 +74,7 @@ Hit PLYShape::_getHit(const Ray& r)const
             OpenCLContext::openCLcontext->readBuffer(nrm_buffId[2],1,sizeof(int),&nb);
             if(nb>0)
             {
-                int* ind=(int*)malloc((1+nb)*sizeof(int));
+                SmartPointer<int> ind=(int*)malloc((1+nb)*sizeof(int));
                 OpenCLContext::openCLcontext->readBuffer(nrm_buffId[2],1+nb,sizeof(int),ind);
                 OpenCLContext::openCLcontext->flush();
                 OpenCLContext::openCLQueue.unlock();
@@ -87,8 +88,6 @@ Hit PLYShape::_getHit(const Ray& r)const
                     if(p->n.angle(w)<M_PI/4.0)
                         n+=w*SQ(1.0-h.getPoint().dist(prmUnion[ind[i]]->b)/dst);
                 }
-
-                free(ind);
             }
             else
             {
@@ -127,7 +126,7 @@ Hit PLYShape::_getHit(const Ray& r)const
     return h;
 }
 
-Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b,int *bufferId)const
+Hit PLYShape::__getHit(const Ray& r,bool intersect,const PLYPrimitive** p,const PLYBox** b,int *bufferId)const
 {
     Hit h=Hit::null;
 
@@ -163,7 +162,7 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b,int 
                             OpenCLContext::openCLcontext->readBuffer(hit_buffId[2],1,sizeof(int),&nb);
                             if(nb>0)
                             {
-                                int* ind=(int*)malloc((1+nb)*sizeof(int));
+                                SmartPointer<int> ind=(int*)malloc((1+nb)*sizeof(int));
                                 OpenCLContext::openCLcontext->readBuffer(hit_buffId[2],1+nb,sizeof(int),ind);
                                 OpenCLContext::openCLcontext->flush();
                                 OpenCLContext::openCLQueue.unlock();
@@ -180,11 +179,11 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b,int 
                                             if(p!=NULL)*p=largeBoxes[i]->boxes[j]->ht[ind[k]];
                                             if(b!=NULL)*b=largeBoxes[i]->boxes[j];
                                             if(bufferId!=NULL)*bufferId=buffId+j;
+                                            if(intersect)return ht;
                                             dMin=d,h=ht;
                                         }
                                     }
                                 }
-                                free(ind);
                             }
                             else
                             {
@@ -208,6 +207,7 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b,int 
 #ifdef OpenCL
                                         if(bufferId!=NULL)*bufferId=buffId+j;
 #endif
+                                        if(intersect)return ht;
                                         dMin=d,h=ht;
                                     }
                                 }
@@ -222,6 +222,11 @@ Hit PLYShape::__getHit(const Ray& r,const PLYPrimitive** p,const PLYBox** b,int 
     }
 
     return h;
+}
+
+bool PLYShape::intersect(const Ray& r)const
+{
+    return !(__getHit(r,true).isNull());
 }
 
 bool PLYShape::isInside(const Point& p,double e)const

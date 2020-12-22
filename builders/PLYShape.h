@@ -24,6 +24,7 @@ public:
     virtual ~PLYShape();
 
 public:
+    virtual bool intersect(const Ray& r)const;
     virtual bool isInside(const Point& p,double e=0.0)const;
 
 protected:
@@ -57,7 +58,7 @@ protected:
 
 protected:
     virtual Hit _getHit(const Ray& r)const;
-    virtual Hit __getHit(const Ray& r,const PLYPrimitive** p=NULL,const PLYBox** b=NULL,int *bufferId=NULL)const;
+  virtual Hit __getHit(const Ray& r,bool intersect=false,const PLYPrimitive** p=NULL,const PLYBox** b=NULL,int *bufferId=NULL)const;
 
 protected:
     bool getNextBox(int* n);
