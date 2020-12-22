@@ -9,6 +9,10 @@
 #define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
 
+#ifndef OpenCL_Queue
+#define OpenCL_Queue 2
+#endif
+
 class OpenCLContext:public Lockable
 {
 protected:
@@ -55,7 +59,7 @@ public:
 
 public:
     static SmartPointer<OpenCLContext> openCLcontext;
-    static LockQueue<2> openCLQueue;
+    static LockQueue<OpenCL_Queue> openCLQueue;
 
 protected:
     cl_device_id device_id;

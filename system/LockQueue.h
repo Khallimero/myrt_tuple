@@ -18,18 +18,26 @@ public:
 public:
     int tryEnqueueLock()
     {
+        if(N==0)return lockable->trylock();
         return lckTab[0].trylock();
     }
     void waitLock()
     {
-        for(int i=1; i<N; i++)
+        if(N==0)
         {
-            lckTab[i].lock();
-            lckTab[i-1].unlock();
+            locked=true;
         }
-        lockable->lock();
-        locked=true;
-        lckTab[N-1].unlock();
+        else
+        {
+            for(int i=1; i<N; i++)
+            {
+                lckTab[i].lock();
+                lckTab[i-1].unlock();
+            }
+            lockable->lock();
+            locked=true;
+            lckTab[N-1].unlock();
+        }
     }
     void unlock()
     {
