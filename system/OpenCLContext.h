@@ -21,16 +21,6 @@ public:
     virtual ~OpenCLContext();
 
 public:
-    bool isCPU()const
-    {
-        return device_type==CL_DEVICE_TYPE_CPU;
-    }
-    bool isGPU()const
-    {
-        return device_type==CL_DEVICE_TYPE_GPU;
-    }
-
-public:
     int createBuffer(size_t nb,size_t size, cl_mem_flags flags);
     bool writeBuffer(int bufferId, size_t nb,size_t size, const void* ptr)const;
     bool readBuffer(int bufferId, size_t nb,size_t size, void* ptr)const;
@@ -63,7 +53,6 @@ public:
 
 protected:
     cl_device_id device_id;
-    cl_device_type device_type;
     cl_context context;
     cl_command_queue command_queue;
 
