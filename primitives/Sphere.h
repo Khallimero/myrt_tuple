@@ -15,5 +15,6 @@ public:
     virtual Point getPoint(const Point& p,const IteratorElement<double>& i,const IteratorElement<double>& j)const;
 
 public:
+    virtual bool isInside(const Point& h,double e=0.0)const;
     virtual Point getRelativePoint(const Hit& h,Mapping mp=Undefined)const;
 };

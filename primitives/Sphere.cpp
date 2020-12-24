@@ -28,6 +28,11 @@ Point Sphere::getPoint(const Point& p,const IteratorElement<double>& i,const Ite
     return mark.getOrig()+(v1+v2);
 }
 
+bool Sphere::isInside(const Point& h,double e)const
+{
+    return h.dist(mark.getOrig())<=radius+e;
+}
+
 Point Sphere::getRelativePoint(const Hit& h,Mapping mp)const
 {
     if(mp==Planar)
