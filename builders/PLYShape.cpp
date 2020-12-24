@@ -8,8 +8,8 @@
 #include <math.h>
 #include <stdio.h>
 
-#define PLYBOX_RADIUS_FCT 20.0
-#define LARGEBOX_RADIUS_FCT 5.0
+#define PLYBOX_RADIUS_FCT 25.0
+#define LARGEBOX_RADIUS_FCT 4.0
 
 PLYShape::PLYShape(const char* f,bool smooth,double size,const Mark& mk)
     :Shape(mk),Lockable(),
@@ -106,7 +106,7 @@ Hit PLYShape::_getHit(const Ray& r)const
                 bool flg=false;
                 for(int j=0; !flg&&j<3; j++)
                     for(int k=j; !flg&&k<3; k++)
-                        if(Point(prmUnion[i]->pt[j])==Point(p->pt[k]))flg=true;
+                        flg|=Point(prmUnion[i]->pt[j])==Point(p->pt[k]);
                 if(flg)
                 {
                     cTab._add(i);
@@ -309,9 +309,9 @@ void PLYShape::buildBoxes(bool flgBox)
         bool flg=false;
         for(int j=boxes._count()-1; !flg&&j>=0; j--)
         {
-            flg=true;
+            flg=boxes[j].ht._count()<shapes._count()/1000;
             for(int k=0; flg&&k<3; k++)
-                if(!boxes[j].box->isInside(Point(shapes[i].pt[k])))flg=false;
+                flg&=boxes[j].box->isInside(Point(shapes[i].pt[k]));
             if(flg)boxes.getTab()[j].ht._add(&shapes[i]);
         }
         if(!flg)
@@ -331,6 +331,11 @@ void PLYShape::buildBoxes(bool flgBox)
     for(int i=0; i<boxes._count(); i++)
     {
         boxes.getTab()[i].ht.trim();
+        double dMax=-1.0;
+        for(int j=0;j<boxes[i].ht._count();j++)
+            for(int k=0;k<3;k++)
+                dMax=MAX(dMax,boxes[i].box->getMark().getOrig().dist(boxes[i].ht[j]->pt[k]));
+        boxes.getTab()[i].box->setRadius(dMax+EPSILON);
 
         double dMin=-1.0;
         PLYLargeBox* lb=NULL;
@@ -499,7 +504,7 @@ void* boxThread(void* d)
         {
             bool flg=false;
             for(int k=0; !flg&&k<3; k++)
-                if(s->boxes[i].box->isInside(s->shapes[j].pt[k]))flg=true;
+                flg|=s->boxes[i].box->isInside(s->shapes[j].pt[k]);
             if(flg)
             {
                 int nb=0;

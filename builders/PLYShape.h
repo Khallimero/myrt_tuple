@@ -41,7 +41,7 @@ protected:
 
     struct PLYBox
     {
-        const Sphere* box;
+        Sphere* box;
         Collection<const PLYPrimitive*> prm;
         Collection<const PLYPrimitive*> ht;
         bool operator==(const PLYBox& that)
