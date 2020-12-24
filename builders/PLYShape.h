@@ -19,8 +19,8 @@ class PLYShape:public Shape,public Lockable
     friend class ShapeBuilder<2>;
 
 public:
-    PLYShape(const char* f,double size,const Mark& mk=Mark::Ref);
-    PLYShape(double size=1.0,const Mark& mk=Mark::Ref);
+    PLYShape(const char* f,bool smooth,double size,const Mark& mk=Mark::Ref);
+    PLYShape(bool smooth,double size=1.0,const Mark& mk=Mark::Ref);
     virtual ~PLYShape();
 
 public:
@@ -71,10 +71,6 @@ protected:
     Point PLYtoRef(const Point& pt)const;
 
 public:
-    void setSmoothNormal(bool flg)
-    {
-        smoothNormal=flg;
-    }
     const Shape* getBox()const
     {
         return box;

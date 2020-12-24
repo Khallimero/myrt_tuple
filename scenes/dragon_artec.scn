@@ -68,7 +68,7 @@ void buildScene(Scene& world)
         new BasicTexture(PORCELAIN*1.3),
         4,3,2,2);
 
-    PLYShape* s=new PLYShape("../ply/DragonArtec.ply",0.15,
+    PLYShape* s=new PLYShape("../ply/DragonArtec.ply",true,0.15,
                              Mark(Point(-5,floor_height-base_height,1040),Rotation(-M_PI/2.,0,M_PI/16)));
     s->setTexture(tex,Volumic);
     s->setDiffCoeff(0.95);

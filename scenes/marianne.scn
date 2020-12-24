@@ -48,7 +48,7 @@ void buildScene(Scene& world)
         new BasicTexture(MARBRE*.9),
         4,3,2,2);
 
-    PLYShape* s=new PLYShape("../ply/marianne.ply",0.05,
+    PLYShape* s=new PLYShape("../ply/marianne.ply",true,0.05,
                              Mark(Point(-3,3,1000),Rotation(M_PI/36.,0,-M_PI/13.)));
     s->setTexture(tex,Volumic);
     s->setDiffCoeff(.75);

@@ -11,17 +11,19 @@
 #define PLYBOX_RADIUS_FCT 20.0
 #define LARGEBOX_RADIUS_FCT 5.0
 
-PLYShape::PLYShape(const char* f,double size,const Mark& mk)
+PLYShape::PLYShape(const char* f,bool smooth,double size,const Mark& mk)
     :Shape(mk),Lockable(),
-     size(Treble<double>(1,-1,-1)*size),smoothNormal(true)
+     size(Treble<double>(1,-1,-1)*size)
 {
+    smoothNormal=smooth;
     buildFromFile(f);
 }
 
-PLYShape::PLYShape(double size,const Mark& mk)
+PLYShape::PLYShape(bool smooth,double size,const Mark& mk)
     :Shape(mk),Lockable(),
-     size(Treble<double>(1,1,1)*size),smoothNormal(true),box(NULL)
+     size(Treble<double>(1,1,1)*size),box(NULL)
 {
+    smoothNormal=smooth;
 }
 
 PLYShape::~PLYShape()
@@ -103,7 +105,7 @@ Hit PLYShape::_getHit(const Ray& r)const
             {
                 bool flg=false;
                 for(int j=0; !flg&&j<3; j++)
-                    for(int k=0; !flg&&k<3; k++)
+                    for(int k=j; !flg&&k<3; k++)
                         if(Point(prmUnion[i]->pt[j])==Point(p->pt[k]))flg=true;
                 if(flg)
                 {
@@ -310,6 +312,7 @@ void PLYShape::buildBoxes(bool flgBox)
             flg=true;
             for(int k=0; flg&&k<3; k++)
                 if(!boxes[j].box->isInside(Point(shapes[i].pt[k])))flg=false;
+            if(flg)boxes.getTab()[j].ht._add(&shapes[i]);
         }
         if(!flg)
         {
@@ -317,6 +320,7 @@ void PLYShape::buildBoxes(bool flgBox)
             for(int j=0; j<3; j++)
                 d=MAX(d,Point(shapes[i].pt[j]).dist(shapes[i].b));
             addBox(shapes[i].b,d*PLYBOX_RADIUS_FCT);
+            boxes.getTab()[boxes._count()-1].ht._add(&shapes[i]);
         }
     }
     boxes.trim();
@@ -326,6 +330,8 @@ void PLYShape::buildBoxes(bool flgBox)
 
     for(int i=0; i<boxes._count(); i++)
     {
+        boxes.getTab()[i].ht.trim();
+
         double dMin=-1.0;
         PLYLargeBox* lb=NULL;
 
@@ -359,10 +365,13 @@ void PLYShape::buildBoxes(bool flgBox)
     fprintf(stdout,"Large boxes : %d\n",largeBoxes._count());
     fflush(stdout);
 
-    nb_box=0;
-    Thread::run(boxThread,this);
-    fprintf(stdout,"\n");
-    fflush(stdout);
+    if(smoothNormal)
+    {
+        nb_box=0;
+        Thread::run(boxThread,this);
+        fprintf(stdout,"\n");
+        fflush(stdout);
+    }
 
 #ifdef OpenCL
     int maxHt=0,maxPrm=0;
@@ -438,7 +447,7 @@ __kernel void smooth_normal(\
     barrier(CLK_GLOBAL_MEM_FENCE);\
     if(id>=(*cnt))return;\
     for(int i=0;i<3;i++)\
-        for(int j=0;j<3;j++)\
+        for(int j=i;j<3;j++)\
             if(length(vload3((id*3)+i,prm)-vload3(((*ht)*3)+j,prm))==0)\
             {\
                 k[atomic_inc(k)+1]=id;\
@@ -486,17 +495,28 @@ void* boxThread(void* d)
     int i=0;
     while(s->getNextBox(&i))
     {
-        for(int k=0; k<s->shapes._count(); k++)
+        for(int j=0; j<s->shapes._count(); j++)
         {
-            int n=0;
-            for(int j=0; j<3; j++)
-                if(s->boxes[i].box->isInside(Point(s->shapes[k].pt[j])))n++;
-            if(n==3)s->boxes.getTab()[i].ht._add(&s->shapes[k]);
-            else if(n>0)s->boxes.getTab()[i].prm._add(&s->shapes[k]);
+            bool flg=false;
+            for(int k=0; !flg&&k<3; k++)
+                if(s->boxes[i].box->isInside(s->shapes[j].pt[k]))flg=true;
+            if(flg)
+            {
+                int nb=0;
+                for(int k=0; nb<3&&k<s->boxes[i].ht._count(); k++)
+                {
+                    int n=0;
+                    for(int l=0; l<3; l++)
+                        for(int m=l; m<3; m++)
+                            if(s->shapes[j].pt[l]==s->boxes[i].ht[k]->pt[m])n++;
+                    nb=MAX(nb,n);
+                }
+                if(nb>0&&nb<3)
+                    s->boxes.getTab()[i].prm._add(&s->shapes[j]);
+            }
         }
 
         s->boxes.getTab()[i].prm.trim();
-        s->boxes.getTab()[i].ht.trim();
     }
     return NULL;
 }

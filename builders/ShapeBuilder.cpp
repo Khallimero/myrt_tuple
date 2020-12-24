@@ -183,8 +183,7 @@ Shape* ShapeBuilder<2>::getInstance(const Mark& mk,
                                     double rad,
                                     bool smoothNormal)const
 {
-    PLYShape *shape=new PLYShape();
-    shape->setSmoothNormal(smoothNormal);
+    PLYShape *shape=new PLYShape(smoothNormal);
 
     NestedIterator<int,2> it=_getIterator();
     while(it.next())
@@ -229,8 +228,7 @@ Shape* ShapeBuilder<2>::getInstance(const Mark& mk,
                                     const ParametricPrimitive<2> *prim,
                                     bool smoothNormal)const
 {
-    PLYShape *shape=new PLYShape();
-    shape->setSmoothNormal(smoothNormal);
+    PLYShape *shape=new PLYShape(smoothNormal);
 
     NestedIterator<int,2> it=_getIterator();
     while(it.next())

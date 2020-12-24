@@ -32,8 +32,7 @@
 
 void buildScene(Scene& world)
 {
-    Shape* dragon=new PLYShape("../ply/xyzrgb_dragon_ascii.ply",0.1,
-                               //"../ply/bun_zipper.ply",100,
+    Shape* dragon=new PLYShape("../ply/xyzrgb_dragon_ascii.ply",true,0.1,
                                Mark(Point(0,0,1000),Rotation(0,M_PI*.75,0)));
     dragon->setTexture(new CustomPerlinPattern(new BasicTexture(ORANGE),
                        new BasicTexture(ORANGE*.95),
@@ -46,13 +45,10 @@ void buildScene(Scene& world)
 
     Shape* plan=new Plan(4.128651+EPSILON,Point(0,0,0),
                          Mark(Point(0.,1.,0.)));
-    //plan->setTexture(new BasicTexture(VERT));
     plan->setTexture(new BasicTexture(Color::Black));
     plan->setDiffCoeff(.9);
     plan->setReflectCoeff(.2);
     world.addShape(plan);
-
-    //world.setPhotonBoxIn(new Sphere(20,Mark(Point(0,0,1000))));
 
     //world.addLight(new PointLight(Point(-500.,-2000.,-1500.),Color::White*.8));
     world.addLight(new SphericLight(200,Point(-1000.,-2000.,-1000.),Color::White*.8));
