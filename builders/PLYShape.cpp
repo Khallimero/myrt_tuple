@@ -331,9 +331,31 @@ void PLYShape::buildBoxes(bool flgBox)
     for(int i=0; i<boxes._count(); i++)
     {
         boxes.getTab()[i].ht.trim();
+
+        Point bounds[2];
+        bool flg=false;
+        for(int j=0; j<boxes[i].ht._count(); j++)
+        {
+            for(int k=0; k<3; k++)
+            {
+                const Point& p=boxes[i].ht[j]->pt[k];
+                if(flg)
+                {
+                    bounds[0]=min(bounds[0],p);
+                    bounds[1]=max(bounds[1],p);
+                }
+                else
+                {
+                    for(int l=0; l<2; l++)bounds[l]=p;
+                    flg=true;
+                }
+            }
+        }
+        boxes.getTab()[i].box->setMark(Mark(Point::barycenter(bounds[0],bounds[1])));
+
         double dMax=-1.0;
-        for(int j=0;j<boxes[i].ht._count();j++)
-            for(int k=0;k<3;k++)
+        for(int j=0; j<boxes[i].ht._count(); j++)
+            for(int k=0; k<3; k++)
                 dMax=MAX(dMax,boxes[i].box->getMark().getOrig().dist(boxes[i].ht[j]->pt[k]));
         boxes.getTab()[i].box->setRadius(dMax+EPSILON);
 

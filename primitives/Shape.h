@@ -47,7 +47,10 @@ public:
     {
         return mark;
     }
-
+    void setMark(const Mark& m)
+    {
+        mark=m;
+    }
     const Texture* getTexture()const
     {
         return tex.getPointer();
