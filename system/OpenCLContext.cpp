@@ -31,7 +31,8 @@ OpenCLContext::OpenCLContext()
 OpenCLContext::~OpenCLContext()
 {
     for(int i=0; i<buffers._count(); i++)
-        clReleaseMemObject(buffers[i]);
+        if(buffers[i]!=NULL)
+            clReleaseMemObject(buffers[i]);
     clReleaseCommandQueue(command_queue);
     clReleaseContext(context);
 }
@@ -57,6 +58,15 @@ bool OpenCLContext::readBuffer(int bufferId, size_t nb, size_t size, void* ptr)c
     cl_int ret=clEnqueueReadBuffer(command_queue, buffers[bufferId], CL_TRUE, 0, nb*size, ptr, 0, NULL, NULL);
     printError("clEnqueueReadBuffer",ret);
     return ret==CL_SUCCESS;
+}
+
+void OpenCLContext::releaseBuffer(int bufferId)
+{
+    if(buffers[bufferId]!=NULL)
+    {
+        clReleaseMemObject(buffers[bufferId]);
+        buffers.getTab()[bufferId]=NULL;
+    }
 }
 
 bool OpenCLContext::flush()const

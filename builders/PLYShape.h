@@ -86,9 +86,9 @@ protected:
     const Shape* box;
     ObjCollection<PLYPrimitive> shapes;
 #ifdef OpenCL
-    SmartPointer<OpenCLKernel> hit_kernel,nrm_kernel;
+    SmartPointer<OpenCLKernel> adj_kernel,hit_kernel,nrm_kernel;
     Collection<int> box_buffId;
-    int hit_buffId[3],nrm_buffId[3];
+    int adj_buffId[6],hit_buffId[3],nrm_buffId[3];
 #endif
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;

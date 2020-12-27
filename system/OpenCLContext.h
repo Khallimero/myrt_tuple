@@ -28,6 +28,7 @@ public:
     {
         return (void*)&buffers[bufferId];
     }
+    void releaseBuffer(int bufferId);
 
 public:
     static void printError(const char* fct,cl_int ret);
