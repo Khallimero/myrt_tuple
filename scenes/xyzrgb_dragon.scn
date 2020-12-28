@@ -65,6 +65,7 @@ void setCamera(Camera& cam)
     Vector y=Vector(0,1,0).projOrthoTo(z).norm();
     cam=Camera(c,z,Enumeration<Vector>(1280,x*.0024),Enumeration<Vector>(720,y*.0024));
     //cam=Camera(c,z,Enumeration<Vector>(1920,x*.0016),Enumeration<Vector>(1080,y*.0016));
+    //cam=Camera(c,z,Enumeration<Vector>(3840,x*.0008),Enumeration<Vector>(2160,y*.0008));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)
