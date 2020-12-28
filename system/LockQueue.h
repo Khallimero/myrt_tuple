@@ -35,6 +35,11 @@ public:
         }
         locked=true;
     }
+    void lock()
+    {
+        lockable->lock();
+        locked=true;
+    }
     void unlock()
     {
         if(locked)

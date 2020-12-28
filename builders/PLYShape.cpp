@@ -38,6 +38,17 @@ PLYShape::~PLYShape()
     {
         delete boxes[i].box;
     }
+
+#ifdef OpenCL
+    for(int i=0; i<box_buffId._count(); i++)
+        OpenCLContext::openCLcontext->releaseBuffer(box_buffId[i]);
+
+    for(int i=0; i<3; i++)
+        OpenCLContext::openCLcontext->releaseBuffer(hit_buffId[i]);
+
+    for(int i=0; i<3; i++)
+        OpenCLContext::openCLcontext->releaseBuffer(nrm_buffId[i]);
+#endif
 }
 
 Hit PLYShape::_getHit(const Ray& r)const
