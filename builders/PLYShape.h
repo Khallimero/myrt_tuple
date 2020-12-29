@@ -54,11 +54,14 @@ protected:
     {
         Sphere* box;
         Collection<const PLYBox*> boxes;
+#ifdef OpenCL
+        int cnt;
+#endif
     };
 
 protected:
     virtual Hit _getHit(const Ray& r)const;
-    virtual Hit __getHit(const Ray& r,bool intersect=false,const PLYPrimitive** p=NULL,const PLYBox** b=NULL,int *bufferId=NULL)const;
+    virtual Hit __getHit(const Ray& r,bool intersect=false,const PLYPrimitive** p=NULL,const PLYBox** b=NULL)const;
 
 protected:
     bool getNextBox(int* n);
@@ -86,9 +89,9 @@ protected:
     const Shape* box;
     ObjCollection<PLYPrimitive> shapes;
 #ifdef OpenCL
-    SmartPointer<OpenCLKernel> adj_kernel,hit_kernel,nrm_kernel;
+    SmartPointer<OpenCLKernel> adj_kernel,hit_kernel;
     Collection<int> box_buffId;
-    int adj_buffId[6],hit_buffId[3],nrm_buffId[3];
+    int adj_buffId[6],hit_buffId[3];
 #endif
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;

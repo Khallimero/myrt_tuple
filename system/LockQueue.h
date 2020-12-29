@@ -48,6 +48,11 @@ public:
             lockable->unlock();
         }
     }
+    void abort()
+    {
+        if(N==0)lockable->unlock();
+        else lckTab[0].unlock();
+    }
 
 protected:
     const Lockable *lockable;
