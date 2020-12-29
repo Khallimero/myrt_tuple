@@ -96,7 +96,6 @@ Hit PLYShape::__getHit(const Ray& r,bool intersect,const PLYPrimitive** p,const 
     {
         double dMin=-1.0;
 #ifdef OpenCL
-        int buffId=0;
         double k_r[2*TREBLE_SIZE];
         for(int i=0; i<TREBLE_SIZE; i++)
             k_r[i]=(double)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(double)r.getVector().get(i);
@@ -185,9 +184,6 @@ Hit PLYShape::__getHit(const Ray& r,bool intersect,const PLYPrimitive** p,const 
                         }
                     }
             }
-#ifdef OpenCL
-            buffId+=largeBoxes[i]->boxes._count();
-#endif
         }
     }
 
