@@ -106,10 +106,10 @@ Hit PLYShape::__getHit(const Ray& r,bool intersect,const PLYPrimitive** p,const 
             if(largeBoxes[i]->box->intersect(r))
             {
                 int boxId=-1;
+#ifdef OpenCL
                 for(int j=0; boxId<0&&j<largeBoxes[i]->boxes._count(); j++)
                     if(largeBoxes[i]->boxes[j]->box->intersect(r))boxId=j;
-                                
-#ifdef OpenCL                
+
                 if(boxId!=-1&&OpenCLContext::openCLQueue.tryEnqueueLock()==0)
                 {
                     int nb=0;
