@@ -40,10 +40,7 @@ PLYShape::~PLYShape()
     }
 
 #ifdef OpenCL
-    for(int i=0; i<box_buffId._count(); i++)
-        OpenCLContext::openCLcontext->releaseBuffer(box_buffId[i]);
-
-    for(int i=0; i<3; i++)
+    for(int i=0; i<4; i++)
         OpenCLContext::openCLcontext->releaseBuffer(hit_buffId[i]);
 #endif
 }
@@ -94,58 +91,60 @@ Hit PLYShape::__getHit(const Ray& r,bool intersect,const PLYPrimitive** p,const 
 
     if(box==NULL||box->intersect(r))
     {
-        double dMin=-1.0;
-#ifdef OpenCL
-        double k_r[2*TREBLE_SIZE];
-        for(int i=0; i<TREBLE_SIZE; i++)
-            k_r[i]=(double)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(double)r.getVector().get(i);
-#endif
+        int nbShapes=0;
+        SmartPointer<int> bCnt=(int*)malloc((1+boxes._count())*sizeof(int));
+        bCnt[0]=0;
         for(int i=0; i<largeBoxes._count(); i++)
         {
             if(largeBoxes[i]->box->intersect(r))
             {
-                bool flg=false;
-                int nbShapes=0;
-                SmartPointer<int> bCnt=(int*)malloc((1+largeBoxes[i]->boxes._count())*sizeof(int));
-                bCnt[0]=0;
                 for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
                 {
                     int cnt=largeBoxes[i]->boxes[j]->ht._count();
-                    if(largeBoxes[i]->boxes[j]->box->intersect(r))flg|=true,nbShapes+=cnt;
+                    if(largeBoxes[i]->boxes[j]->box->intersect(r))nbShapes+=cnt;
                     else cnt*=-1;
-                    bCnt[1+j]=cnt;
+                    if(ZSIGN(bCnt[bCnt[0]])!=ZSIGN(cnt))bCnt[++bCnt[0]]=0;
+                    bCnt[bCnt[0]]+=cnt;
                 }
+            }
+            else
+            {
+                if(SIGN(bCnt[bCnt[0]])>0)bCnt[++bCnt[0]]=0;
+                bCnt[bCnt[0]]-=largeBoxes[i]->cntHt;
+            }
+        }
 
 #ifdef OpenCL
-                if(flg&&nbShapes>this->shapes._count()/1000&&OpenCLContext::openCLQueue.tryEnqueueLock()==0)
+        if(nbShapes>this->shapes._count()/1000&&OpenCLContext::openCLQueue.tryEnqueueLock()==0)
+        {
+            double k_r[2*TREBLE_SIZE];
+            for(int i=0; i<TREBLE_SIZE; i++)
+                k_r[i]=(double)r.getPoint().get(i),k_r[TREBLE_SIZE+i]=(double)r.getVector().get(i);
+            int nb=0;
+
+            OpenCLContext::openCLQueue.waitLock();
+            OpenCLContext::openCLcontext->writeBuffer(hit_buffId[1],1+bCnt[0],sizeof(int),bCnt.getPointer());
+            OpenCLContext::openCLcontext->writeBuffer(hit_buffId[2],2*TREBLE_SIZE,sizeof(double),k_r);
+            OpenCLContext::openCLcontext->writeBuffer(hit_buffId[3],1,sizeof(int),&nb);
+
+            this->hit_kernel->runKernel(nbShapes);
+
+            OpenCLContext::openCLcontext->readBuffer(hit_buffId[3],1,sizeof(int),&nb);
+            if(nb>0)
+            {
+                SmartPointer<int> ind=(int*)malloc((1+nb)*sizeof(int));
+                OpenCLContext::openCLcontext->readBuffer(hit_buffId[3],1+nb,sizeof(int),ind);
+                OpenCLContext::openCLcontext->flush();
+                OpenCLContext::openCLQueue.unlock();
+
+                double dMin=-1.0;
+                for(int k=1; k<=nb; k++)
                 {
-                    int nb=0;
-                    for(int j=1; j<=largeBoxes[i]->boxes._count(); j++)
+                    int id=ind[k];
+                    for(int i=0; id>=0&&i<largeBoxes._count(); i++)
                     {
-                        int cnt=bCnt[j];
-                        if(ZSIGN(bCnt[bCnt[0]])!=ZSIGN(cnt))bCnt[++bCnt[0]]=0;
-                        bCnt[bCnt[0]]+=cnt;
-                    }
-
-                    OpenCLContext::openCLQueue.waitLock();
-                    this->hit_kernel->setArg(0, OpenCLContext::openCLcontext->getBuffer(box_buffId[i]));
-                    OpenCLContext::openCLcontext->writeBuffer(hit_buffId[0],1+bCnt[0],sizeof(int),bCnt.getPointer());
-                    OpenCLContext::openCLcontext->writeBuffer(hit_buffId[1],2*TREBLE_SIZE,sizeof(double),k_r);
-                    OpenCLContext::openCLcontext->writeBuffer(hit_buffId[2],1,sizeof(int),&nb);
-
-                    this->hit_kernel->runKernel(nbShapes);
-
-                    OpenCLContext::openCLcontext->readBuffer(hit_buffId[2],1,sizeof(int),&nb);
-                    if(nb>0)
-                    {
-                        SmartPointer<int> ind=(int*)malloc((1+nb)*sizeof(int));
-                        OpenCLContext::openCLcontext->readBuffer(hit_buffId[2],1+nb,sizeof(int),ind);
-                        OpenCLContext::openCLcontext->flush();
-                        OpenCLContext::openCLQueue.unlock();
-
-                        for(int k=1; k<=nb; k++)
+                        if(id<largeBoxes[i]->cntHt)
                         {
-                            int id=ind[k];
                             for(int j=0; id>=0&&j<largeBoxes[i]->boxes._count(); j++)
                             {
                                 if(id<largeBoxes[i]->boxes[j]->ht._count())
@@ -167,40 +166,58 @@ Hit PLYShape::__getHit(const Ray& r,bool intersect,const PLYPrimitive** p,const 
                                 id-=largeBoxes[i]->boxes[j]->ht._count();
                             }
                         }
+                        else id-=largeBoxes[i]->cntHt;
+                    }
+                }
+            }
+            else
+            {
+                OpenCLContext::openCLcontext->flush();
+                OpenCLContext::openCLQueue.unlock();
+            }
+        }
+        else
+#endif
+            if(nbShapes>0)
+            {
+                double dMin=-1.0;
+                int id=1;
+                for(int i=0; i<largeBoxes._count(); i++)
+                {
+                    if(bCnt[id]<0&&abs(bCnt[id])>=largeBoxes[i]->cntHt)
+                    {
+                        bCnt[id]+=largeBoxes[i]->cntHt;
+                        if(bCnt[id]==0)id++;
                     }
                     else
                     {
-                        OpenCLContext::openCLcontext->flush();
-                        OpenCLContext::openCLQueue.unlock();
-                    }
-
-                }
-                else
-#endif
-                    for(int j=0; flg&&j<largeBoxes[i]->boxes._count(); j++)
-                    {
-                        if(bCnt[j+1]>0)
+                        for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
                         {
-                            for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++)
+                            if(bCnt[id]>0)
                             {
-                                Hit ht=Triangle::getTriangleHit(r,this,largeBoxes[i]->boxes[j]->ht[k]->pt);
-                                if(!(ht.isNull()))
+                                for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++)
                                 {
-                                    double d=r.getPoint().dist(ht.getPoint());
-                                    if((h.isNull())||(d<dMin))
+                                    Hit ht=Triangle::getTriangleHit(r,this,largeBoxes[i]->boxes[j]->ht[k]->pt);
+                                    if(!(ht.isNull()))
                                     {
-                                        ht.setId(k);
-                                        if(p!=NULL)*p=largeBoxes[i]->boxes[j]->ht[k];
-                                        if(b!=NULL)*b=largeBoxes[i]->boxes[j];
-                                        if(intersect)return ht;
-                                        dMin=d,h=ht;
+                                        double d=r.getPoint().dist(ht.getPoint());
+                                        if((h.isNull())||(d<dMin))
+                                        {
+                                            ht.setId(k);
+                                            if(p!=NULL)*p=largeBoxes[i]->boxes[j]->ht[k];
+                                            if(b!=NULL)*b=largeBoxes[i]->boxes[j];
+                                            if(intersect)return ht;
+                                            dMin=d,h=ht;
+                                        }
                                     }
                                 }
                             }
+                            bCnt[id]-=largeBoxes[i]->boxes[j]->ht._count()*SIGN(bCnt[id]);
+                            if(bCnt[id]==0)id++;
                         }
                     }
+                }
             }
-        }
     }
 
     return h;
@@ -440,28 +457,24 @@ __kernel void adj_primitive(\
     }
 
 #ifdef OpenCL
-    int maxHt=0,maxBox=0;
+    hit_buffId[0]=OpenCLContext::openCLcontext->createBuffer(shapes._count()*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+    hit_buffId[1]=OpenCLContext::openCLcontext->createBuffer(1+boxes._count(),sizeof(int),CL_MEM_READ_ONLY);
+    hit_buffId[2]=OpenCLContext::openCLcontext->createBuffer(2*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+    hit_buffId[3]=OpenCLContext::openCLcontext->createBuffer(1+shapes._count(),sizeof(int),CL_MEM_READ_WRITE);
+
+    int nbShapes=0;
+    double *pt=(double*)malloc(shapes._count()*3*TREBLE_SIZE*sizeof(double));
     for(int i=0; i<largeBoxes._count(); i++)
     {
-        int cntHt=0,cnt=0;
-        for(int j=0; j<largeBoxes[i]->boxes._count(); j++)cntHt+=largeBoxes[i]->boxes[j]->ht._count();
-        int buffId=OpenCLContext::openCLcontext->createBuffer(cntHt*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-        box_buffId._add(buffId);
-        double *pt=(double*)malloc(cntHt*3*TREBLE_SIZE*sizeof(double));
-        for(int j=0; j<largeBoxes[i]->boxes._count(); cnt+=largeBoxes[i]->boxes[j++]->ht._count())
-            for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++)
+        largeBoxes[i]->cntHt=0;
+        for(int j=0; j<largeBoxes[i]->boxes._count(); largeBoxes[i]->cntHt+=largeBoxes[i]->boxes[j++]->ht._count())
+            for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++,nbShapes++)
                 for(int l=0; l<3; l++)
                     for(int m=0; m<TREBLE_SIZE; m++)
-                        pt[((((cnt+k)*3)+l)*TREBLE_SIZE)+m]=(double)largeBoxes[i]->boxes[j]->ht[k]->pt[l].get(m);
-        OpenCLContext::openCLcontext->writeBuffer(buffId,cntHt*3*TREBLE_SIZE,sizeof(double),pt);
-        free(pt);
-        maxHt=MAX(maxHt,cntHt);
-        maxBox=MAX(maxBox,largeBoxes[i]->boxes._count());
+                        pt[(((nbShapes*3)+l)*TREBLE_SIZE)+m]=(double)largeBoxes[i]->boxes[j]->ht[k]->pt[l].get(m);
     }
-
-    hit_buffId[0]=OpenCLContext::openCLcontext->createBuffer(1+maxBox,sizeof(int),CL_MEM_READ_ONLY);
-    hit_buffId[1]=OpenCLContext::openCLcontext->createBuffer(2*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-    hit_buffId[2]=OpenCLContext::openCLcontext->createBuffer(1+maxHt,sizeof(int),CL_MEM_READ_WRITE);
+    OpenCLContext::openCLcontext->writeBuffer(hit_buffId[0],shapes._count()*3*TREBLE_SIZE,sizeof(double),pt);
+    free(pt);
 
     this->hit_kernel=new OpenCLKernel("primitive_hit", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
 __kernel void primitive_hit(\
@@ -488,8 +501,8 @@ __kernel void primitive_hit(\
             k[atomic_inc(k)+1]=id;\
 }");
 
-    for(int i=0; i<3; i++)
-        this->hit_kernel->setArg(i+1, OpenCLContext::openCLcontext->getBuffer(hit_buffId[i]));
+    for(int i=0; i<4; i++)
+        this->hit_kernel->setArg(i, OpenCLContext::openCLcontext->getBuffer(hit_buffId[i]));
 #endif
 }
 

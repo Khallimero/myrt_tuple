@@ -54,6 +54,7 @@ protected:
     {
         Sphere* box;
         Collection<const PLYBox*> boxes;
+        int cntHt;
     };
 
 protected:
@@ -87,8 +88,7 @@ protected:
     ObjCollection<PLYPrimitive> shapes;
 #ifdef OpenCL
     SmartPointer<OpenCLKernel> adj_kernel,hit_kernel;
-    Collection<int> box_buffId;
-    int adj_buffId[6],hit_buffId[3];
+    int adj_buffId[6],hit_buffId[4];
 #endif
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;
