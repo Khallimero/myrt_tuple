@@ -105,24 +105,24 @@ Hit PLYShape::__getHit(const Ray& r,bool intersect,const PLYPrimitive** p,const 
             if(largeBoxes[i]->box->intersect(r))
             {
                 bool flg=false;
+                int nbShapes=0;
                 SmartPointer<int> bCnt=(int*)malloc((1+largeBoxes[i]->boxes._count())*sizeof(int));
                 bCnt[0]=0;
                 for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
                 {
                     int cnt=largeBoxes[i]->boxes[j]->ht._count();
-                    if(largeBoxes[i]->boxes[j]->box->intersect(r))flg|=true;
+                    if(largeBoxes[i]->boxes[j]->box->intersect(r))flg|=true,nbShapes+=cnt;
                     else cnt*=-1;
                     bCnt[1+j]=cnt;
                 }
 
 #ifdef OpenCL
-                if(flg&&OpenCLContext::openCLQueue.tryEnqueueLock()==0)
+                if(flg&&nbShapes>this->shapes._count()/1000&&OpenCLContext::openCLQueue.tryEnqueueLock()==0)
                 {
-                    int nbShapes=0,nb=0;
+                    int nb=0;
                     for(int j=1; j<=largeBoxes[i]->boxes._count(); j++)
                     {
                         int cnt=bCnt[j];
-                        if(cnt>0)nbShapes+=cnt;
                         if(ZSIGN(bCnt[bCnt[0]])!=ZSIGN(cnt))bCnt[++bCnt[0]]=0;
                         bCnt[bCnt[0]]+=cnt;
                     }

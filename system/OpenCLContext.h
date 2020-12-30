@@ -10,7 +10,7 @@
 #include <CL/cl.h>
 
 #ifndef OpenCL_Queue
-#define OpenCL_Queue 0
+#define OpenCL_Queue 2
 #endif
 
 class OpenCLContext:public Lockable
