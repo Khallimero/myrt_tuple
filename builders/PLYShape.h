@@ -54,9 +54,6 @@ protected:
     {
         Sphere* box;
         Collection<const PLYBox*> boxes;
-#ifdef OpenCL
-        int cnt;
-#endif
     };
 
 protected:

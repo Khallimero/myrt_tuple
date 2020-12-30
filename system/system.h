@@ -44,8 +44,20 @@ template<typename T> void SWAP(T& a,T& b)
     a=_b,b=_a;
 }
 
-#define SIGN(x) (x<0?-1:1)
 #define FCMP(a,b) (fabs((a)-(b))<=0.00000001)
 #define FZERO(a) (FCMP(a,0))
 #define RND ((double)rand()/RAND_MAX)
 #define IRND(x) (rand()%(x))
+
+//#define SIGN(x) (x<0?-1:1)
+//#define ZSIGN(x) ({typeof(x) _x=x;x==0?0:x<0?-1:1;})
+
+template<typename T> int SIGN(T x)
+{
+    return x<0?-1:1;
+}
+
+template<typename T> int ZSIGN(T x)
+{
+    return x==0?0:x<0?-1:1;
+}
