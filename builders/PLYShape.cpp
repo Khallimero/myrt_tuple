@@ -381,8 +381,12 @@ void PLYShape::buildBoxes(bool flgBox)
     for(int i=0; i<largeBoxes._count(); i++)
     {
         double dMax=-1.0;
+        largeBoxes[i]->cntHt=0;
         for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
+        {
             dMax=MAX(dMax,largeBoxes[i]->box->getMark().getOrig().dist(largeBoxes[i]->boxes[j]->box->getMark().getOrig())+largeBoxes[i]->boxes[j]->box->getRadius());
+            largeBoxes[i]->cntHt+=largeBoxes[i]->boxes[j]->ht._count();
+        }
         largeBoxes.getTab()[i]->box->setRadius(dMax+EPSILON);
     }
 
@@ -466,8 +470,7 @@ __kernel void adj_primitive(\
     double *pt=(double*)malloc(shapes._count()*3*TREBLE_SIZE*sizeof(double));
     for(int i=0; i<largeBoxes._count(); i++)
     {
-        largeBoxes[i]->cntHt=0;
-        for(int j=0; j<largeBoxes[i]->boxes._count(); largeBoxes[i]->cntHt+=largeBoxes[i]->boxes[j++]->ht._count())
+        for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
             for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++,nbShapes++)
                 for(int l=0; l<3; l++)
                     for(int m=0; m<TREBLE_SIZE; m++)
