@@ -115,7 +115,7 @@ Hit PLYShape::__getHit(const Ray& r,bool intersect,const PLYPrimitive** p,const 
         }
 
 #ifdef OpenCL
-        if(nbShapes>this->shapes._count()/1000&&OpenCLContext::openCLQueue.tryEnqueueLock()==0)
+        if(nbShapes>this->shapes._count()/this->boxes._count()&&OpenCLContext::openCLQueue.tryEnqueueLock()==0)
         {
             double k_r[2*TREBLE_SIZE];
             for(int i=0; i<TREBLE_SIZE; i++)
