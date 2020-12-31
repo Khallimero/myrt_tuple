@@ -396,26 +396,24 @@ void PLYShape::buildBoxes(bool flgBox)
     if(smoothNormal)
     {
 #ifdef OpenCL
-        int cnt=this->shapes._count();
+        int cnt=this->shapes._count(),maxHt=0;
+        for(int i=0; i<boxes._count(); i++)
+            maxHt=MAX(maxHt,this->boxes[i].ht._count());
+        adj_buffId[0]=OpenCLContext::openCLcontext->createBuffer(cnt*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+        adj_buffId[1]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+        adj_buffId[2]=OpenCLContext::openCLcontext->createBuffer(maxHt*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+        adj_buffId[3]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+        adj_buffId[4]=OpenCLContext::openCLcontext->createBuffer(TREBLE_SIZE+1,sizeof(double),CL_MEM_READ_ONLY);
+        adj_buffId[5]=OpenCLContext::openCLcontext->createBuffer(cnt,sizeof(int),CL_MEM_READ_WRITE);
+
         double *pt=(double*)malloc(cnt*3*TREBLE_SIZE*sizeof(double));
         for(int i=0; i<cnt; i++)
             for(int j=0; j<3; j++)
                 for(int k=0; k<TREBLE_SIZE; k++)
                     pt[(((i*3)+j)*TREBLE_SIZE)+k]=(double)this->shapes[i].pt[j].get(k);
-        adj_buffId[0]=OpenCLContext::openCLcontext->createBuffer(cnt*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
         OpenCLContext::openCLcontext->writeBuffer(adj_buffId[0],cnt*3*TREBLE_SIZE,sizeof(double),pt);
-        free(pt);
-
-        adj_buffId[1]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
         OpenCLContext::openCLcontext->writeBuffer(adj_buffId[1],1,sizeof(int),&cnt);
-
-        int maxHt=0;
-        for(int i=0; i<boxes._count(); i++)
-            maxHt=MAX(maxHt,this->boxes[i].ht._count());
-        adj_buffId[2]=OpenCLContext::openCLcontext->createBuffer(maxHt*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-        adj_buffId[3]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-        adj_buffId[4]=OpenCLContext::openCLcontext->createBuffer(TREBLE_SIZE+1,sizeof(double),CL_MEM_READ_ONLY);
-        adj_buffId[5]=OpenCLContext::openCLcontext->createBuffer(cnt,sizeof(int),CL_MEM_READ_WRITE);
+        free(pt);
 
         this->adj_kernel=new OpenCLKernel("adj_primitive", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
 __kernel void adj_primitive(\
@@ -469,13 +467,11 @@ __kernel void adj_primitive(\
     int nbShapes=0;
     double *pt=(double*)malloc(shapes._count()*3*TREBLE_SIZE*sizeof(double));
     for(int i=0; i<largeBoxes._count(); i++)
-    {
         for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
             for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++,nbShapes++)
                 for(int l=0; l<3; l++)
                     for(int m=0; m<TREBLE_SIZE; m++)
                         pt[(((nbShapes*3)+l)*TREBLE_SIZE)+m]=(double)largeBoxes[i]->boxes[j]->ht[k]->pt[l].get(m);
-    }
     OpenCLContext::openCLcontext->writeBuffer(hit_buffId[0],shapes._count()*3*TREBLE_SIZE,sizeof(double),pt);
     free(pt);
 
