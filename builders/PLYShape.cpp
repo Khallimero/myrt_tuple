@@ -547,23 +547,23 @@ void* boxThread(void* d)
 #ifdef OpenCL
         if(OpenCLContext::openCLQueue.tryEnqueueLock()==0)
         {
-            OpenCLContext::openCLQueue.waitLock();
             double *pt=(double*)malloc(s->boxes[i].ht._count()*3*TREBLE_SIZE*sizeof(double));
             for(int j=0; j<s->boxes[i].ht._count(); j++)
                 for(int k=0; k<3; k++)
                     for(int l=0; l<TREBLE_SIZE; l++)
                         pt[(((j*3)+k)*TREBLE_SIZE)+l]=(double)s->boxes[i].ht[j]->pt[k].get(l);
-            OpenCLContext::openCLcontext->writeBuffer(s->adj_buffId[2],s->boxes[i].ht._count()*3*TREBLE_SIZE,sizeof(double),pt);
-            free(pt);
-            int cnt=s->boxes[i].ht._count();
-            OpenCLContext::openCLcontext->writeBuffer(s->adj_buffId[3],1,sizeof(int),&cnt);
+            int cnt=s->boxes[i].ht._count(),nb=0;
             double bx[TREBLE_SIZE+1];
             for(int j=0; j<TREBLE_SIZE; j++)
                 bx[j]=(double)s->boxes[i].box->getMark().getOrig().get(j);
             bx[TREBLE_SIZE]=(double)s->boxes[i].box->getRadius();
+
+            OpenCLContext::openCLQueue.waitLock();
+            OpenCLContext::openCLcontext->writeBuffer(s->adj_buffId[2],s->boxes[i].ht._count()*3*TREBLE_SIZE,sizeof(double),pt);
+            OpenCLContext::openCLcontext->writeBuffer(s->adj_buffId[3],1,sizeof(int),&cnt);
             OpenCLContext::openCLcontext->writeBuffer(s->adj_buffId[4],TREBLE_SIZE+1,sizeof(double),bx);
-            int nb=0;
             OpenCLContext::openCLcontext->writeBuffer(s->adj_buffId[5],1,sizeof(int),&nb);
+            free(pt);
 
             s->adj_kernel->runKernel(s->shapes._count());
 
