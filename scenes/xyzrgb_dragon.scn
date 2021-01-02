@@ -51,7 +51,9 @@ void buildScene(Scene& world)
     world.addShape(plan);
 
     //world.addLight(new PointLight(Point(-500.,-2000.,-1500.),Color::White*.8));
-    world.addLight(new SphericLight(200,Point(-1000.,-2000.,-1000.),Color::White*.8));
+    SphericLight *light=new SphericLight(200,Point(-1000.,-2000.,-1000.),Color::White*.8);
+    light->setMitigation(light->dist(Point(0,0,1000)));
+    world.addLight(light);
     world.setAmbiant(Color::White*.2);
 }
 
@@ -71,7 +73,7 @@ void setCamera(Camera& cam)
 
 void setRendererQuality(RendererQuality& rendererQuality)
 {
-    //rendererQuality.setAliasing(3);
+    //rendererQuality.setAliasing(2);
     //rendererQuality.setShadow(25);
 }
 #endif
