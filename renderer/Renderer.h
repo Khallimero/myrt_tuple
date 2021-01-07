@@ -15,6 +15,7 @@
 #include "Lockable.h"
 #include "Thread.h"
 #include "SmartPointer.h"
+#include "Collection.h"
 
 #include <time.h>
 
@@ -48,6 +49,7 @@ protected:
     bool getNextPoint(IteratorElement<double>* a,IteratorElement<double>* b);
     Color renderPoint(const Vector& vct)const;
     Color computeRay(const Ray& r,int nbRef=0)const;
+    ObjCollection<Color> computeRays(const ObjCollection<Ray>& r,int nbRef=0)const;
     Color computeColor(const Hit& h,int nbRef)const;
     Color computeBeerCoeff(const Color& c,const Hit& h)const;
 

@@ -26,7 +26,28 @@ Hit ShapeCollection::getHit(const Ray& r)const
             }
         }
     }
+
     return h;
+}
+
+ObjCollection<Hit> ShapeCollection::getHit(const ObjCollection<Ray>& r)const
+{
+    ObjCollection<Hit> hc(r._count());
+    for(int i=0; i<r._count(); i++)
+        hc._add(Hit::null);
+
+    for(int k=0; k<nb; k++)
+    {
+        ObjCollection<Hit> h=tab[k]->getHit(r);
+        for(int i=0; i<h._count(); i++)
+        {
+            if(!h[i].isNull())
+                if(hc[i].isNull()||r[i].getPoint().dist(h[i].getPoint())<r[i].getPoint().dist(hc[i].getPoint()))
+                    hc.getTab()[i]=h[i];
+        }
+    }
+
+    return hc;
 }
 
 bool ShapeCollection::intersect(const Ray& r)const
@@ -39,6 +60,7 @@ bool ShapeCollection::intersect(const Ray& r)const
                 return true;
         }
     }
+
     return false;
 }
 
@@ -52,5 +74,6 @@ bool ShapeCollection::isInside(const Point& p,double e)const
                 return true;
         }
     }
+
     return false;
 }

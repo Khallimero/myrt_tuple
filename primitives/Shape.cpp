@@ -47,6 +47,19 @@ Color Shape::getColor(const Hit& h)const
 Hit Shape::getHit(const Ray& r)const
 {
     Hit h=_getHit(r);
+    return tamperHit(h,r);
+}
+
+ObjCollection<Hit> Shape::getHit(const ObjCollection<Ray>& r)const
+{
+    ObjCollection<Hit> hc(r._count());
+    for(int i=0; i<r._count(); i++)
+        hc._add(getHit(r[i]));
+    return hc;
+}
+
+Hit Shape::tamperHit(Hit& h, const Ray& r)const
+{
     if(!h.isNull())
     {
         const Shape* s=h.getShape();

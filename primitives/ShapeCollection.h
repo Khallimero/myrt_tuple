@@ -12,6 +12,7 @@ public:
 
 public:
     virtual Hit getHit(const Ray& r)const;
+    ObjCollection<Hit> getHit(const ObjCollection<Ray>& r)const;
     virtual bool intersect(const Ray& r)const;
     virtual bool isInside(const Point& p,double e=0.0)const;
 

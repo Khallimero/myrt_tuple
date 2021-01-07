@@ -87,45 +87,57 @@ bool Renderer::getNextPoint(IteratorElement<double>* a,IteratorElement<double>* 
 
 Color Renderer::computeRay(const Ray& r,int nbRef)const
 {
-    Color col=Color::Black;
+    ObjCollection<Ray> rc;
+    rc._add(r);
+    return computeRays(rc,nbRef)[0];
+}
 
-    Hit hr=sc->getHit(r);
-    if(!hr.isNull())
+ObjCollection<Color> Renderer::computeRays(const ObjCollection<Ray>& r,int nbRef)const
+{
+    ObjCollection<Color> cc(r._count());
+    ObjCollection<Hit> hr=sc->getHit(r);
+    for(int i=0; i<hr._count(); i++)
     {
-        col+=computeColor(hr,nbRef);
-
-        if(nbRef<NB_REF)
+        Color col=Color::Black;
+        if(!hr[i].isNull())
         {
-            double reflectCoeff=hr.getShape()->getReflectCoeff();
+            col+=computeColor(hr[i],nbRef);
 
-            if(hr.getShape()->getRefractCoeff()>0.0)
+            if(nbRef<NB_REF)
             {
-                double d1=sc->getDensity(hr.getPoint()-(r.getVector().norm()*EPSILON));
-                double d2=sc->getDensity(hr.getPoint()+(r.getVector().norm()*EPSILON));
+                double reflectCoeff=hr[i].getShape()->getReflectCoeff();
 
-                Ray refract=hr.getRefract(d1,d2);
-                if(refract.isNull())
+                if(hr[i].getShape()->getRefractCoeff()>0.0)
                 {
-                    reflectCoeff+=hr.getShape()->getRefractCoeff();
+                    double d1=sc->getDensity(hr[i].getPoint()-(r[i].getVector().norm()*EPSILON));
+                    double d2=sc->getDensity(hr[i].getPoint()+(r[i].getVector().norm()*EPSILON));
+
+                    Ray refract=hr[i].getRefract(d1,d2);
+                    if(refract.isNull())
+                    {
+                        reflectCoeff+=hr[i].getShape()->getRefractCoeff();
+                    }
+                    else
+                    {
+                        Color cr=computeRay(refract,nbRef+1);
+                        col+=cr*hr[i].getShape()->getColor(hr[i])*hr[i].getShape()->getRefractCoeff();
+                    }
                 }
-                else
+
+                if(reflectCoeff>0.0)
                 {
-                    Color cr=computeRay(refract,nbRef+1);
-                    col+=cr*hr.getShape()->getColor(hr)*hr.getShape()->getRefractCoeff();
+                    Color cr=computeRay(hr[i].getReflect(),nbRef+1);
+                    col+=cr*reflectCoeff;
                 }
             }
 
-            if(reflectCoeff>0.0)
-            {
-                Color cr=computeRay(hr.getReflect(),nbRef+1);
-                col+=cr*reflectCoeff;
-            }
+            col=computeBeerCoeff(col,hr[i]);
         }
 
-        col=computeBeerCoeff(col,hr);
+        cc._add(col);
     }
 
-    return col;
+    return cc;
 }
 
 Color Renderer::computeColor(const Hit& h,int nbRef)const
@@ -149,6 +161,7 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
 
         NestedIterator<double,2> *it=(nbRef<MAX_REF_SS?nestedItTab[k]:nestedItTab[sc->getNbLights()]);
         it->reset();
+        ObjCollection<Ray> rc;
         while(it->next())
         {
             Vector w=Vector(l+(u*it->getElement(0))+(v*it->getElement(1))).norm();
@@ -156,30 +169,38 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
             {
                 Hit hl=sc->getLight(k)->getBox()->getHit(Ray(h.getPoint(),w));
                 if(hl.isNull())continue;
-                lDst=p.dist(hl.getPoint());
+                //lDst=p.dist(hl.getPoint());
             }
+            rc._add(Ray(p,w));
+        }
 
-            Hit hr=sc->getHit(Ray(p,w));
-            double hDst=(hr.isNull()?-1:p.dist(hr.getPoint()));
+        int cntRay=rc._count();
+        for(int i=0; i<cntRay; i++)
+            if(h.getShape()->getRefractCoeff()>0&&
+                    SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))==SIGN(h.getNormal().cosAngle(rc[i].getVector())))
+                rc._add(Ray(pr,rc[i].getVector()));
+
+        ObjCollection<Hit> hc=sc->getHit(rc);
+        for(int i=0; i<cntRay; i++)
+        {
+            double hDst=(hc[i].isNull()?-1:p.dist(hc[i].getPoint()));
             if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
             {
-                double d=MAX(w.cosAngle(h.getNormal()),w.cosAngle(-h.getNormal()));
+                double d=MAX(rc[i].getVector().cosAngle(h.getNormal()),rc[i].getVector().cosAngle(-h.getNormal()));
                 ltCol+=sc->getLight(k)->getColor()*mtg*d;
 
-                double a=rf.cosAngle(w);
+                double a=rf.cosAngle(rc[i].getVector());
                 if(a>0)glCol+=sc->getLight(k)->getColor()*mtg*pow(a,h.getShape()->getGlareCoeff());
             }
+        }
 
-            if(h.getShape()->getRefractCoeff()>0&&
-                    SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))==SIGN(h.getNormal().cosAngle(w)))
+        for(int i=cntRay; i<hc._count(); i++)
+        {
+            double hDst=(hc[i].isNull()?-1:pr.dist(hc[i].getPoint()));
+            if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
             {
-                Hit hr=sc->getHit(Ray(pr,w));
-                double hDst=(hr.isNull()?-1:pr.dist(hr.getPoint()));
-                if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
-                {
-                    double d=MAX(w.cosAngle(h.getNormal()),w.cosAngle(-h.getNormal()));
-                    ltCol+=sc->getLight(k)->getColor()*mtg*d*h.getShape()->getRefractCoeff();
-                }
+                double d=MAX(rc[i].getVector().cosAngle(h.getNormal()),rc[i].getVector().cosAngle(-h.getNormal()));
+                ltCol+=sc->getLight(k)->getColor()*mtg*d*h.getShape()->getRefractCoeff();
             }
         }
 
@@ -320,6 +341,7 @@ Color Renderer::renderPoint(const Vector& vct)const
     int fct=0;
     Color col=Color::Black;
     Point p0=this->cam.getOrig()+(this->cam.getDir()+vct);
+    ObjCollection<Ray> rc;
     NestedIterator<double,2> aa(Iterator<double>(this->quality.getAliasing(),1.0/(double)this->quality.getAliasing()),2);
     while(aa.next())
     {
@@ -332,11 +354,13 @@ Color Renderer::renderPoint(const Vector& vct)const
         while(it.next())
         {
             Point pf=pa+(this->cam.getVaX().getElem()*it[0])+(this->cam.getVaY().getElem()*it[1]);
-            Ray r=Ray(pf,pf.getVectorTo(f));
-            col+=this->computeRay(r);
+            rc._add(Ray(pf,pf.getVectorTo(f)));
         }
         fct+=it.getActualSteps();
     }
+
+    ObjCollection<Color> cols=this->computeRays(rc);
+    for(int i=0; i<cols._count(); i++)col+=cols[i];
 
     return col/(double)fct;
 }

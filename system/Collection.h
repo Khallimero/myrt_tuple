@@ -222,7 +222,10 @@ private:
 template <typename T> class ObjCollection:public ICollection<T>
 {
 public:
-    ObjCollection() {}
+    ObjCollection(int n=0)
+    {
+        if(n>0)_resize(n);
+    }
     ObjCollection(const ObjCollection& that)
     {
         *this=that;

@@ -18,6 +18,10 @@ public:
     virtual Ray getReflect()const;
     virtual Ray getRefract(double d1,double d2)const;
     virtual bool isNull()const;
+    virtual bool operator==(const Hit& that)
+    {
+        return this->p==that.p;
+    }
 
 public:
     const Ray& getIncident()const

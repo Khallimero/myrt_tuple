@@ -10,6 +10,7 @@
 #include "BumpMap.h"
 #include "CarveMap.h"
 #include "SmartPointer.h"
+#include "Collection.h"
 
 #include <stdlib.h>
 
@@ -39,6 +40,7 @@ public:
     virtual Point getRelativePoint(const Hit& h,Mapping mp=Undefined)const;
     virtual Color getColor(const Hit& h)const;
     virtual Hit getHit(const Ray& r)const;
+    virtual ObjCollection<Hit> getHit(const ObjCollection<Ray>& r)const;
     virtual bool intersect(const Ray& r)const;
     virtual bool isInside(const Point&,double =0.0)const;
 
@@ -222,7 +224,8 @@ public:
     void setBeer(double sizeCoeff,double absorbCoeff,const Color& beerColor=Color::White);
 
 protected:
-    virtual Hit _getHit(const Ray&)const=0;
+    virtual Hit _getHit(const Ray& r)const=0;
+    virtual Hit tamperHit(Hit& h, const Ray& r)const;
 
 protected:
     int id;

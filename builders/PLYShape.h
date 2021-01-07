@@ -24,8 +24,8 @@ public:
     virtual ~PLYShape();
 
 public:
-    virtual bool intersect(const Ray& r)const;
     virtual bool isInside(const Point& p,double e=0.0)const;
+    virtual ObjCollection<Hit> getHit(const ObjCollection<Ray>& r)const;
 
 protected:
     struct PLYPrimitive
@@ -59,7 +59,9 @@ protected:
 
 protected:
     virtual Hit _getHit(const Ray& r)const;
-    virtual Hit __getHit(const Ray& r,bool intersect=false,const PLYPrimitive** p=NULL,const PLYBox** b=NULL)const;
+    ObjCollection<Hit> _getHit(const ObjCollection<Ray>& r)const;
+    ObjCollection<Hit> __getHit(const ObjCollection<Ray>& r,const PLYPrimitive*** p=NULL,const PLYBox*** b=NULL)const;
+    void _addHit(const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,const PLYBox* box,int id,const PLYPrimitive*** p=NULL,const PLYBox*** b=NULL)const;
 
 protected:
     bool getNextBox(int* n);
@@ -88,7 +90,8 @@ protected:
     ObjCollection<PLYPrimitive> shapes;
 #ifdef OpenCL
     SmartPointer<OpenCLKernel> adj_kernel,hit_kernel;
-    int adj_buffId[6],hit_buffId[4];
+    mutable int adj_buffId[6],hit_buffId[4];
+    mutable int nb_ray;
 #endif
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;
