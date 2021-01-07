@@ -61,7 +61,10 @@ protected:
     virtual Hit _getHit(const Ray& r)const;
     ObjCollection<Hit> _getHit(const ObjCollection<Ray>& r)const;
     ObjCollection<Hit> __getHit(const ObjCollection<Ray>& r,const PLYPrimitive*** p=NULL,const PLYBox*** b=NULL)const;
-    void _addHit(const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,const PLYBox* box,int id,const PLYPrimitive*** p=NULL,const PLYBox*** b=NULL)const;
+    void _addHit(const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,int k,const PLYBox* box,int id,const PLYPrimitive*** p=NULL,const PLYBox*** b=NULL)const;
+#ifdef OpenCL
+    void _runHitKernel(int nbShapes, const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,SmartPointer<int> bCnt,const PLYPrimitive*** p,const PLYBox*** b)const;
+#endif
 
 protected:
     bool getNextBox(int* n);
@@ -91,7 +94,7 @@ protected:
 #ifdef OpenCL
     SmartPointer<OpenCLKernel> adj_kernel,hit_kernel;
     mutable int adj_buffId[6],hit_buffId[4];
-    mutable int nb_ray;
+    mutable int nb_ray,nb_hit;
 #endif
     ObjCollection<PLYBox> boxes;
     Collection<PLYLargeBox*> largeBoxes;
