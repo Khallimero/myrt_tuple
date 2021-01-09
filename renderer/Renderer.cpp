@@ -180,7 +180,7 @@ Color Renderer::computeColor(const Hit& h,int nbRef)const
                     SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))==SIGN(h.getNormal().cosAngle(rc[i].getVector())))
                 rc._add(Ray(pr,rc[i].getVector()));
 
-        ObjCollection<Hit> hc=sc->getHit(rc);
+        ObjCollection<Hit> hc=sc->getIntersect(rc);
         for(int i=0; i<cntRay; i++)
         {
             double hDst=(hc[i].isNull()?-1:p.dist(hc[i].getPoint()));
@@ -270,17 +270,16 @@ Color Renderer::computeBeerCoeff(const Color& c,const Hit& h)const
     return col;
 }
 
-void Renderer::computePhoton(const Ray& r,const Color& col,int nbRef)
+void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
 {
     if(col.isNull())return;
 
-    Hit h=sc->getHit(r);
     if(!h.isNull())
     {
         Color c=computeBeerCoeff(col,h);
 
         if(nbRef>0&&(sc->getPhotonBoxOut()==NULL||sc->getPhotonBoxOut()->isInside(h.getPoint())))
-            photonMap.addPhotonHit(h.getShape()->getId(),PhotonHit(h.getPoint(),-r.getVector(),c));
+            photonMap.addPhotonHit(h.getShape()->getId(),PhotonHit(h.getPoint(),-h.getIncident().getVector(),c));
 
         if(nbRef<PHOTON_REF)
         {
@@ -292,17 +291,26 @@ void Renderer::computePhoton(const Ray& r,const Color& col,int nbRef)
                 double d1=sc->getDensity(h.getPoint()-(h.getIncident().getVector().norm()*EPSILON));
                 double d2=sc->getDensity(h.getPoint()+(h.getIncident().getVector().norm()*EPSILON));
                 if(h.getRefract(d1,d2).isNull())rCoeff+=h.getShape()->getRefractCoeff();
-                else computePhoton(h.getRefract(d1,d2),
+                else computePhoton(sc->getHit(h.getRefract(d1,d2)),
                                        c*h.getShape()->getRefractCoeff()*CAUSTIC_PHOTON_EXP,
                                        nbRef+1);
             }
 
-            double a=fabs(h.getNormal().cosAngle(r.getVector()));
+            double a=fabs(h.getNormal().cosAngle(h.getIncident().getVector()));
             rCoeff+=a*RADIANCE_PHOTON_EXP;//radiance
 
-            if(rCoeff>0)computePhoton(h.getReflect(),c*rCoeff,nbRef+1);
+            if(rCoeff>0)computePhoton(sc->getHit(h.getReflect()),c*rCoeff,nbRef+1);
         }
     }
+}
+
+void Renderer::computePhotons(const ObjCollection<Ray>& r,const Color& col,int nbRef)
+{
+    if(col.isNull())return;
+
+    ObjCollection<Hit> h=sc->getHit(r);
+    for(int i=0; i<h._count(); i++)
+        computePhoton(h[i],col,nbRef);
 }
 
 void* photonThread(void* d)
@@ -322,12 +330,11 @@ void* photonThread(void* d)
             Point bpt=rnd->sc->getPhotonBoxIn()->getPoint(rnd->sc->getLight(l)->getOrig(rnd->sc->getPhotonBoxIn(),o),i,j);
             NestedIterator<double,2> *itLight=rnd->nestedItTab[l];
             itLight->reset();
+            ObjCollection<Ray> rc;
             while(itLight->next())
-            {
-                Ray r=rnd->sc->getLight(l)->getRay(rnd->sc->getPhotonBoxIn(),bpt,o,itLight);
-                rnd->computePhoton(r,rnd->sc->getLight(l)->getColor()*(double)PHOTON_EXP*SQ(rnd->sc->getPhotonBoxIn()->getRadius())
-                                   /(SQ(PHOTON_RAD)*MAX(NB_PHOTON_IT,1)*(rnd->sc->getLight(l)->getBox()!=NULL?NB_PHOTON_LIGHT:1)));
-            }
+                rc._add(rnd->sc->getLight(l)->getRay(rnd->sc->getPhotonBoxIn(),bpt,o,itLight));
+            rnd->computePhotons(rc,rnd->sc->getLight(l)->getColor()*(double)PHOTON_EXP*SQ(rnd->sc->getPhotonBoxIn()->getRadius())
+                                /(SQ(PHOTON_RAD)*MAX(NB_PHOTON_IT,1)*(rnd->sc->getLight(l)->getBox()!=NULL?NB_PHOTON_LIGHT:1)));
         }
     }
 

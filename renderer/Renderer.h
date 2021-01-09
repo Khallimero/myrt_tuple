@@ -71,7 +71,8 @@ public:
 
 protected:
     bool getNextPhotonPoint(IteratorElement<double>* a,IteratorElement<double>* b);
-    void computePhoton(const Ray& r,const Color& col,int nbRef=0);
+    void computePhoton(const Hit& h,const Color& col,int nbRef=0);
+    void computePhotons(const ObjCollection<Ray>& r,const Color& col,int nbRef=0);
 
 protected:
     void setLightIterator(int n);
