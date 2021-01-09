@@ -32,13 +32,23 @@ Hit ShapeCollection::getHit(const Ray& r)const
 
 ObjCollection<Hit> ShapeCollection::getHit(const ObjCollection<Ray>& r)const
 {
+    return _getHit(r,&Shape::getHit);
+}
+
+ObjCollection<Hit> ShapeCollection::getIntersect(const ObjCollection<Ray>& r)const
+{
+    return _getHit(r,&Shape::getIntersect);
+}
+
+ObjCollection<Hit> ShapeCollection::_getHit(const ObjCollection<Ray>& r,ObjCollection<Hit> (Shape::*fct)(const ObjCollection<Ray>&)const)const
+{
     ObjCollection<Hit> hc(r._count());
     for(int i=0; i<r._count(); i++)
         hc._add(Hit::null);
 
     for(int k=0; k<nb; k++)
     {
-        ObjCollection<Hit> h=tab[k]->getHit(r);
+        ObjCollection<Hit> h=(tab[k]->*fct)(r);
         for(int i=0; i<h._count(); i++)
         {
             if(!h[i].isNull())

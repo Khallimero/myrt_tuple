@@ -58,6 +58,11 @@ ObjCollection<Hit> Shape::getHit(const ObjCollection<Ray>& r)const
     return hc;
 }
 
+ObjCollection<Hit> Shape::getIntersect(const ObjCollection<Ray>& r)const
+{
+    return getHit(r);
+}
+
 Hit Shape::tamperHit(Hit& h, const Ray& r)const
 {
     if(!h.isNull())

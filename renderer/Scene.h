@@ -38,6 +38,7 @@ public:
     bool intersectShape(const Ray& r)const;
     Hit getHit(const Ray& r)const;
     ObjCollection<Hit> getHit(const ObjCollection<Ray>& r)const;
+    ObjCollection<Hit> getIntersect(const ObjCollection<Ray>& r)const;
     double getDensity(const Point& p)const;
 
 public:

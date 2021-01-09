@@ -26,6 +26,7 @@ public:
 public:
     virtual bool isInside(const Point& p,double e=0.0)const;
     virtual ObjCollection<Hit> getHit(const ObjCollection<Ray>& r)const;
+    virtual ObjCollection<Hit> getIntersect(const ObjCollection<Ray>& r)const;
 
 protected:
     struct PLYPrimitive

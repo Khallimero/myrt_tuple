@@ -164,7 +164,7 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
             }
             OpenCLContext::openCLcontext->writeBuffer(hit_buffId[2],r._count()*2*TREBLE_SIZE,sizeof(double),k_r);
             free(k_r);
-            
+
             _runHitKernel(nbShapes,r,hc,bCnt,p,b);
         }
         else
@@ -265,6 +265,11 @@ void PLYShape::_addHit(const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,int k,
             hc.getTab()[k]=ht;
         }
     }
+}
+
+ObjCollection<Hit> PLYShape::getIntersect(const ObjCollection<Ray>& r)const
+{
+    return __getHit(r);
 }
 
 bool PLYShape::isInside(const Point& p,double e)const

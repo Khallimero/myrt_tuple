@@ -41,6 +41,7 @@ public:
     virtual Color getColor(const Hit& h)const;
     virtual Hit getHit(const Ray& r)const;
     virtual ObjCollection<Hit> getHit(const ObjCollection<Ray>& r)const;
+    virtual ObjCollection<Hit> getIntersect(const ObjCollection<Ray>& r)const;
     virtual bool intersect(const Ray& r)const;
     virtual bool isInside(const Point&,double =0.0)const;
 

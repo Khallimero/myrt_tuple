@@ -45,9 +45,15 @@ Hit Scene::getHit(const Ray& r)const
 {
     return shapes.getHit(r);
 }
+
 ObjCollection<Hit> Scene::getHit(const ObjCollection<Ray>& r)const
 {
     return shapes.getHit(r);
+}
+
+ObjCollection<Hit> Scene::getIntersect(const ObjCollection<Ray>& r)const
+{
+    return shapes.getIntersect(r);
 }
 
 double Scene::getDensity(const Point& p)const
