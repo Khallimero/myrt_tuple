@@ -223,16 +223,24 @@ void PLYShape::_runHitKernel(int nbShapes, const ObjCollection<Ray>& r,ObjCollec
 
         for(int n=0; n<nb; n++)
         {
-            int k=ind[1+(n*2)];
-            int id=ind[1+(n*2)+1];
-            for(int i=0; id>=0&&i<largeBoxes._count(); i++)
+            int shapeId=ind[1+(n*2)+1];
+            for(int i=0,id=shapeId; id>=0&&i<largeBoxes._count(); i++)
             {
                 if(id<largeBoxes[i]->cntHt)
                 {
                     for(int j=0; id>=0&&j<largeBoxes[i]->boxes._count(); j++)
                     {
                         if(id<largeBoxes[i]->boxes[j]->ht._count())
-                            _addHit(r,hc,k,largeBoxes[i]->boxes[j],id,p,b);
+                        {
+                            for(int k=n; k<nb; k++)
+                            {
+                                if(shapeId==ind[1+(k*2)+1])
+                                {
+                                    _addHit(r,hc,ind[1+(k*2)],largeBoxes[i]->boxes[j],id,p,b);
+                                    ind[1+(k*2)+1]=-1;
+                                }
+                            }
+                        }
                         id-=largeBoxes[i]->boxes[j]->ht._count();
                     }
                 }
