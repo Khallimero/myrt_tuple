@@ -169,6 +169,7 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
         }
         else
 #endif
+        {
             if(nbShapes>0)
             {
                 int id=1;
@@ -193,6 +194,7 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
                     }
                 }
             }
+        }
     }
 
     return hc;
@@ -490,7 +492,7 @@ __kernel void adj_primitive(\
                         if(length(vload3((id*3)+k,prm)-vload3((j*3)+l,ht))==0)n++;\
                 nb=max(nb,n);\
             }\
-            if(nb>0&&nb<3)h[atomic_inc(h)+1]=id;\
+            if(nb>0&&nb<3)h[1+atomic_inc(h)]=id;\
             return;\
         }\
 }");
@@ -646,6 +648,7 @@ void* boxThread(void* d)
         }
         else
 #endif
+        {
             for(int j=0; j<s->shapes._count(); j++)
             {
                 bool flg=false;
@@ -666,6 +669,7 @@ void* boxThread(void* d)
                         s->boxes.getTab()[i].prm._add(&s->shapes[j]);
                 }
             }
+        }
 
         s->boxes.getTab()[i].prm.trim();
     }

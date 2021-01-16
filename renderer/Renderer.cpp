@@ -94,16 +94,13 @@ Color Renderer::computeRay(const Ray& r,int nbRef)const
 
 ObjCollection<Color> Renderer::computeRays(const ObjCollection<Ray>& r,int nbRef)const
 {
-    ObjCollection<Color> cc(r._count());
     ObjCollection<Hit> hr=sc->getHit(r);
-    for(int i=0; i<hr._count(); i++)
+    ObjCollection<Color> cc=computeColors(hr,nbRef);
+    if(nbRef<NB_REF)
     {
-        Color col=Color::Black;
-        if(!hr[i].isNull())
+        for(int i=0; i<hr._count(); i++)
         {
-            col+=computeColor(hr[i],nbRef);
-
-            if(nbRef<NB_REF)
+            if(!hr[i].isNull())
             {
                 double reflectCoeff=hr[i].getShape()->getReflectCoeff();
 
@@ -120,133 +117,137 @@ ObjCollection<Color> Renderer::computeRays(const ObjCollection<Ray>& r,int nbRef
                     else
                     {
                         Color cr=computeRay(refract,nbRef+1);
-                        col+=cr*hr[i].getShape()->getColor(hr[i])*hr[i].getShape()->getRefractCoeff();
+                        cc.getTab()[i]+=cr*hr[i].getShape()->getColor(hr[i])*hr[i].getShape()->getRefractCoeff();
                     }
                 }
 
                 if(reflectCoeff>0.0)
                 {
                     Color cr=computeRay(hr[i].getReflect(),nbRef+1);
-                    col+=cr*reflectCoeff;
+                    cc.getTab()[i]+=cr*reflectCoeff;
                 }
             }
 
-            col=computeBeerCoeff(col,hr[i]);
+            cc.getTab()[i]=computeBeerCoeff(cc[i],hr[i]);
         }
-
-        cc._add(col);
     }
 
     return cc;
 }
 
-Color Renderer::computeColor(const Hit& h,int nbRef)const
+ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nbRef)const
 {
-    Color ltSum=Color::Black,glSum=Color::Black,dlSum=Color::Black,phSum=Color::Black;
-    Vector rf=h.getIncident().getVector().reflect(h.getNormal());
+    ObjCollection<Color> cc(hc._count());
 
-    Vector n=Vector(h.getNormal()*SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))).norm()*EPSILON;
-    Point p=h.getPoint()-n;
-    Point pr=h.getPoint()+n;
-
-    for(int k=0; k<sc->getNbLights(); k++)
+    for(int c=0; c<hc._count(); c++)
     {
-        Color ltCol=Color::Black,glCol=Color::Black;
-
-        double lDst=sc->getLight(k)->dist(p);
-        double mtg=sc->getLight(k)->getMitigation(lDst);
-        Vector l=sc->getLight(k)->getVectorTo(p);
-        Vector u=l.getOrtho();
-        Vector v=l.prodVect(u).norm();
-
-        NestedIterator<double,2> *it=(nbRef<MAX_REF_SS?nestedItTab[k]:nestedItTab[sc->getNbLights()]);
-        it->reset();
-        ObjCollection<Ray> rc;
-        while(it->next())
+        Color cl=Color::Black;
+        const Hit& h=hc[c];
+        if(!h.isNull())
         {
-            Vector w=Vector(l+(u*it->getElement(0))+(v*it->getElement(1))).norm();
-            if(sc->getLight(k)->getBox()!=NULL)
+            Color ltSum=Color::Black,glSum=Color::Black,phSum=Color::Black;
+            Vector rf=h.getIncident().getVector().reflect(h.getNormal());
+
+            Vector n=Vector(h.getNormal()*SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))).norm()*EPSILON;
+            Point p=h.getPoint()-n;
+            Point pr=h.getPoint()+n;
+
+            for(int k=0; k<sc->getNbLights(); k++)
             {
-                Hit hl=sc->getLight(k)->getBox()->getHit(Ray(h.getPoint(),w));
-                if(hl.isNull())continue;
-                //lDst=p.dist(hl.getPoint());
-            }
-            rc._add(Ray(p,w));
-        }
+                Color ltCol=Color::Black,glCol=Color::Black;
 
-        int cntRay=rc._count();
-        for(int i=0; i<cntRay; i++)
-            if(h.getShape()->getRefractCoeff()>0&&
-                    SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))==SIGN(h.getNormal().cosAngle(rc[i].getVector())))
-                rc._add(Ray(pr,rc[i].getVector()));
+                double lDst=sc->getLight(k)->dist(p);
+                double mtg=sc->getLight(k)->getMitigation(lDst);
+                Vector l=sc->getLight(k)->getVectorTo(p);
+                Vector u=l.getOrtho();
+                Vector v=l.prodVect(u).norm();
 
-        ObjCollection<Hit> hc=sc->getIntersect(rc);
-        for(int i=0; i<cntRay; i++)
-        {
-            double hDst=(hc[i].isNull()?-1:p.dist(hc[i].getPoint()));
-            if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
-            {
-                double d=MAX(rc[i].getVector().cosAngle(h.getNormal()),rc[i].getVector().cosAngle(-h.getNormal()));
-                ltCol+=sc->getLight(k)->getColor()*mtg*d;
-
-                double a=rf.cosAngle(rc[i].getVector());
-                if(a>0)glCol+=sc->getLight(k)->getColor()*mtg*pow(a,h.getShape()->getGlareCoeff());
-            }
-        }
-
-        for(int i=cntRay; i<hc._count(); i++)
-        {
-            double hDst=(hc[i].isNull()?-1:pr.dist(hc[i].getPoint()));
-            if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
-            {
-                double d=MAX(rc[i].getVector().cosAngle(h.getNormal()),rc[i].getVector().cosAngle(-h.getNormal()));
-                ltCol+=sc->getLight(k)->getColor()*mtg*d*h.getShape()->getRefractCoeff();
-            }
-        }
-
-        ltSum+=ltCol/(double)it->getActualSteps();
-        glSum+=glCol/(double)it->getActualSteps();
-    }
-
-    ltSum+=sc->getAmbiant()*(.5+fabs(h.getNormal().cosAngle(h.getThNormal()))/2.)*(.5+fabs(h.getNormal().cosAngle(h.getIncident().getVector()))/2.);
-
-    if(sc->getPhotonBoxIn()!=NULL)
-    {
-        int s1=SIGN(h.getNormal().cosAngle(-h.getIncident().getVector()));
-        NestedIterator<int,TREBLE_SIZE> pbIt;
-        TUPLE_IDX(i,TREBLE_SIZE)
-        pbIt.add(Iterator<int>(PhotonBox::getInd(h.getPoint().get(i)-PHOTON_RAD),
-                               PhotonBox::getInd(h.getPoint().get(i)+PHOTON_RAD)),i>=2);
-        while(pbIt.next())
-        {
-            const ObjCollection<PhotonHit>* phc=photonMap.getPhotonHitCollection(h.getShape()->getId(),PhotonBox(pbIt.getTuple()));
-            if(phc!=NULL)
-            {
-                for(int ph=0; ph<phc->_count(); ph++)
+                NestedIterator<double,2> *it=(nbRef<MAX_REF_SS?nestedItTab[k]:nestedItTab[sc->getNbLights()]);
+                it->reset();
+                ObjCollection<Ray> rc;
+                while(it->next())
                 {
-                    if(h.getPoint().dist((*phc)[ph].getPoint())<PHOTON_RAD)
+                    Vector w=Vector(l+(u*it->getElement(0))+(v*it->getElement(1))).norm();
+                    if(sc->getLight(k)->getBox()!=NULL)
                     {
-                        Color cl=(*phc)[ph].getColor();
-                        Vector rp=(*phc)[ph].getVector();
-                        double a=rf.cosAngle(rp);
-                        if(a>0)glSum+=cl*pow(a,h.getShape()->getGlareCoeff());
+                        Hit hl=sc->getLight(k)->getBox()->getHit(Ray(h.getPoint(),w));
+                        if(hl.isNull())continue;
+                        //lDst=p.dist(hl.getPoint());
+                    }
+                    rc._add(Ray(p,w));
+                }
 
-                        a=h.getNormal().cosAngle(rp);
-                        int s2=SIGN(a);
-                        if(s1!=s2)cl*=h.getShape()->getRefractCoeff();
-                        if(!cl.isNull())phSum+=cl*fabs(a);
+                int cntRay=rc._count();
+                for(int i=0; i<cntRay; i++)
+                    if(h.getShape()->getRefractCoeff()>0&&
+                            SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))==SIGN(h.getNormal().cosAngle(rc[i].getVector())))
+                        rc._add(Ray(pr,rc[i].getVector()));
+
+                ObjCollection<Hit> hc=sc->getIntersect(rc);
+                for(int i=0; i<cntRay; i++)
+                {
+                    double hDst=(hc[i].isNull()?-1:p.dist(hc[i].getPoint()));
+                    if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
+                    {
+                        double d=MAX(rc[i].getVector().cosAngle(h.getNormal()),rc[i].getVector().cosAngle(-h.getNormal()));
+                        ltCol+=sc->getLight(k)->getColor()*mtg*d;
+
+                        double a=rf.cosAngle(rc[i].getVector());
+                        if(a>0)glCol+=sc->getLight(k)->getColor()*mtg*pow(a,h.getShape()->getGlareCoeff());
                     }
                 }
+
+                for(int i=cntRay; i<hc._count(); i++)
+                {
+                    double hDst=(hc[i].isNull()?-1:pr.dist(hc[i].getPoint()));
+                    if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
+                    {
+                        double d=MAX(rc[i].getVector().cosAngle(h.getNormal()),rc[i].getVector().cosAngle(-h.getNormal()));
+                        ltCol+=sc->getLight(k)->getColor()*mtg*d*h.getShape()->getRefractCoeff();
+                    }
+                }
+
+                ltSum+=ltCol/(double)it->getActualSteps();
+                glSum+=glCol/(double)it->getActualSteps();
             }
+
+            ltSum+=sc->getAmbiant()*(.5+fabs(h.getNormal().cosAngle(h.getThNormal()))/2.)*(.5+fabs(h.getNormal().cosAngle(h.getIncident().getVector()))/2.);
+
+            if(sc->getPhotonBoxIn()!=NULL)
+            {
+                NestedIterator<int,TREBLE_SIZE> pbIt;
+                TUPLE_IDX(i,TREBLE_SIZE)
+                pbIt.add(Iterator<int>(PhotonBox::getInd(h.getPoint().get(i)-PHOTON_RAD),
+                                       PhotonBox::getInd(h.getPoint().get(i)+PHOTON_RAD)),i>=2);
+                while(pbIt.next())
+                {
+                    ObjCollection<PhotonHit>* phc=photonMap.getPhotonHitCollection(h.getShape()->getId(),PhotonBox(pbIt.getTuple()));
+                    if(phc!=NULL)
+                        for(int ph=0; ph<phc->_count(); ph++)
+                            if(h.getPoint().dist((*phc)[ph].getPoint())<PHOTON_RAD)
+                            {
+                                const Color& cl=(*phc)[ph].getColor();
+                                const Vector& rp=(*phc)[ph].getVector();
+
+                                double a=rf.cosAngle(rp.reflect(h.getNormal()));
+                                if(a>0)glSum+=cl*pow(a,h.getShape()->getGlareCoeff());
+
+                                if(rp.cosAngle(h.getIncident().getVector())>0)
+                                    phSum+=cl;
+                            }
+                }
+                phSum*=h.getShape()->getDiffCoeff();
+            }
+
+            ltSum*=h.getShape()->getDiffCoeff();
+            glSum*=h.getShape()->getSpecCoeff();
+            cl+=(h.getShape()->getColor(h)*(ltSum+phSum))+glSum;
         }
-        phSum*=h.getShape()->getDiffCoeff();
+
+        cc._add(cl);
     }
 
-    ltSum*=h.getShape()->getDiffCoeff();
-    glSum*=h.getShape()->getSpecCoeff();
-    Color cl=(h.getShape()->getColor(h)*(ltSum+phSum))+glSum+dlSum;
-
-    return cl;
+    return cc;
 }
 
 Color Renderer::computeBeerCoeff(const Color& c,const Hit& h)const
@@ -279,7 +280,7 @@ void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
         Color c=computeBeerCoeff(col,h);
 
         if(nbRef>0&&(sc->getPhotonBoxOut()==NULL||sc->getPhotonBoxOut()->isInside(h.getPoint())))
-            photonMap.addPhotonHit(h.getShape()->getId(),PhotonHit(h.getPoint(),-h.getIncident().getVector(),c));
+            photonMap.addPhotonHit(h.getShape()->getId(),PhotonHit(h.getPoint(),h.getIncident().getVector(),c*fabs(h.getNormal().cosAngle(h.getIncident().getVector()))));
 
         if(nbRef<PHOTON_REF)
         {
