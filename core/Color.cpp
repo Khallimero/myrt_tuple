@@ -27,6 +27,8 @@ Color::Color(const unsigned int v):Treble<double>()
 
 Color::Color(double r,double g,double b):Treble<double>(r,g,b) {}
 
+Color::Color(const double* tab):Treble<double>(tab) {}
+
 Color::~Color() {}
 
 Color::Color(FILE* f,const char* fmt,int norm_value)

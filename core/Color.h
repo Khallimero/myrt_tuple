@@ -14,6 +14,7 @@ public:
     Color(const unsigned int v);
     Color(const Tuple<double,TREBLE_SIZE> &that);
     Color(double r,double g,double b);
+    Color(const double* tab);
     virtual ~Color();
 
 public:
