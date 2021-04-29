@@ -64,7 +64,7 @@ protected:
     ObjCollection<Hit> __getHit(const ObjCollection<Ray>& r,const PLYPrimitive*** p=NULL,const PLYBox*** b=NULL)const;
     void _addHit(const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,int k,const PLYBox* box,int id,const PLYPrimitive*** p=NULL,const PLYBox*** b=NULL)const;
 #ifdef OpenCL
-    void _runHitKernel(int nbShapes, const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,SmartPointer<int> bCnt,const PLYPrimitive*** p,const PLYBox*** b)const;
+    void _runHitKernel(int nbShapes, const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,SmartTabPointer<int> bCnt,const PLYPrimitive*** p,const PLYBox*** b)const;
 #endif
 
 protected:

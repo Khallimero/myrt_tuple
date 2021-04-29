@@ -2,34 +2,37 @@
 
 #include <stdlib.h>
 
-template <typename T> class SmartPointer
+template <typename T> class TSmartPointer
 {
 public:
-    SmartPointer(T* t=NULL)
+    TSmartPointer(T* t=NULL)
     {
         this->t=t;
         this->nb_ref=(t==NULL?NULL:new unsigned int(1));
     }
-    SmartPointer(const SmartPointer<T> &that)
+    TSmartPointer(const TSmartPointer<T> &that)
     {
         this->t=NULL;
         this->nb_ref=NULL;
         *this=that;
     }
-    ~SmartPointer()
+    virtual ~TSmartPointer()
     {
         if(nb_ref!=NULL)
         {
             if(--(*nb_ref)==0)
             {
                 delete nb_ref;
-                if(t!=NULL)delete t;
+                if(t!=NULL)_free();
             }
         }
     }
 
+protected:
+    virtual void _free() {}
+
 public:
-    SmartPointer<T>& operator=(const SmartPointer<T> &that)
+    TSmartPointer<T>& operator=(const TSmartPointer<T> &that)
     {
         detach();
 
@@ -53,7 +56,7 @@ public:
         return t;
     }
 
-    bool operator==(const SmartPointer<T>& that)const
+    bool operator==(const TSmartPointer<T>& that)const
     {
         return this->getPointer()==that.getPointer();
     }
@@ -91,4 +94,32 @@ public:
 protected:
     T* t;
     unsigned int* nb_ref;
+};
+
+template <typename T> class SmartPointer:public TSmartPointer<T>
+{
+public:
+    SmartPointer(T* t=NULL):TSmartPointer<T>(t)
+    {
+    }
+
+protected:
+    virtual void _free()
+    {
+        delete this->t;
+    }
+};
+
+template <typename T> class SmartTabPointer:public TSmartPointer<T>
+{
+public:
+    SmartTabPointer(T* t=NULL):TSmartPointer<T>(t)
+    {
+    }
+
+protected:
+    virtual void _free()
+    {
+        free(this->t);
+    }
 };

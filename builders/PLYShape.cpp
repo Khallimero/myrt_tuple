@@ -117,7 +117,7 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
     if(flgInter)
     {
         int nbShapes=0;
-        SmartPointer<int> bCnt=(int*)malloc((1+boxes._count()+2)*sizeof(int));
+        SmartTabPointer<int> bCnt=(int*)malloc((1+boxes._count()+2)*sizeof(int));
         bCnt[0]=0;
         for(int i=0; i<largeBoxes._count(); i++)
         {
@@ -201,7 +201,7 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
 }
 
 #ifdef OpenCL
-void PLYShape::_runHitKernel(int nbShapes, const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,SmartPointer<int> bCnt,const PLYPrimitive*** p,const PLYBox*** b)const
+void PLYShape::_runHitKernel(int nbShapes, const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,SmartTabPointer<int> bCnt,const PLYPrimitive*** p,const PLYBox*** b)const
 {
     int nb=0;
     bCnt[bCnt[0]+2]=nb_hit;
@@ -218,7 +218,7 @@ void PLYShape::_runHitKernel(int nbShapes, const ObjCollection<Ray>& r,ObjCollec
     }
     else if(nb<=nb_hit)
     {
-        SmartPointer<int> ind=(int*)malloc((1+(nb*2))*sizeof(int));
+        SmartTabPointer<int> ind=(int*)malloc((1+(nb*2))*sizeof(int));
         OpenCLContext::openCLcontext->readBuffer(hit_buffId[3],1+(nb*2),sizeof(int),ind);
         OpenCLContext::openCLcontext->flush();
         OpenCLContext::openCLQueue.unlock();
@@ -631,7 +631,7 @@ void* boxThread(void* d)
             OpenCLContext::openCLcontext->readBuffer(s->adj_buffId[5],1,sizeof(int),&nb);
             if(nb>0)
             {
-                SmartPointer<int> ind=(int*)malloc((1+nb)*sizeof(int));
+                SmartTabPointer<int> ind=(int*)malloc((1+nb)*sizeof(int));
                 OpenCLContext::openCLcontext->readBuffer(s->adj_buffId[5],1+nb,sizeof(int),ind);
 
                 OpenCLContext::openCLcontext->flush();
