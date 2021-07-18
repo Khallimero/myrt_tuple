@@ -2,42 +2,43 @@
 
 #include <stdlib.h>
 
-template <typename T> class TSmartPointer
+template <typename T> class SmartPointer
 {
 public:
-    TSmartPointer(T* t=NULL)
+    SmartPointer(T* t=NULL)
     {
         this->t=t;
         this->nb_ref=(t==NULL?NULL:new unsigned int(1));
+        this->_free=NULL;
     }
-    TSmartPointer(const TSmartPointer<T> &that)
+    SmartPointer(const SmartPointer<T> &that)
     {
         this->t=NULL;
         this->nb_ref=NULL;
+        this->_free=NULL;
         *this=that;
     }
-    virtual ~TSmartPointer()
+    virtual ~SmartPointer()
     {
         if(nb_ref!=NULL)
         {
             if(--(*nb_ref)==0)
             {
                 delete nb_ref;
-                if(t!=NULL)_free();
+                if(_free!=NULL) _free(t);
+                else delete t;
             }
         }
     }
 
-protected:
-    virtual void _free() {}
-
 public:
-    TSmartPointer<T>& operator=(const TSmartPointer<T> &that)
+    SmartPointer<T>& operator=(const SmartPointer<T> &that)
     {
         detach();
 
         this->t=that.t;
         this->nb_ref=that.nb_ref;
+        this->_free=that._free;
 
         if(nb_ref!=NULL)
             (*nb_ref)++;
@@ -56,7 +57,7 @@ public:
         return t;
     }
 
-    bool operator==(const TSmartPointer<T>& that)const
+    bool operator==(const SmartPointer<T>& that)const
     {
         return this->getPointer()==that.getPointer();
     }
@@ -94,32 +95,17 @@ public:
 protected:
     T* t;
     unsigned int* nb_ref;
+    void (*_free)(const void*);
 };
 
-template <typename T> class SmartPointer:public TSmartPointer<T>
+template <typename T> class SmartTabPointer:public SmartPointer<T>
 {
 public:
-    SmartPointer(T* t=NULL):TSmartPointer<T>(t)
+    SmartTabPointer(T* t=NULL):SmartPointer<T>(t)
     {
+        this->_free=(void (*)(const void*))::free;
     }
-
-protected:
-    virtual void _free()
+    virtual ~SmartTabPointer()
     {
-        delete this->t;
-    }
-};
-
-template <typename T> class SmartTabPointer:public TSmartPointer<T>
-{
-public:
-    SmartTabPointer(T* t=NULL):TSmartPointer<T>(t)
-    {
-    }
-
-protected:
-    virtual void _free()
-    {
-        free(this->t);
     }
 };
