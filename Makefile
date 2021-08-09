@@ -24,16 +24,14 @@ tar: clean
 
 tar_kdev: clean
 	wd=`basename $$PWD`;ver=`cat version.txt`;cd ..;$(TAR) -cf $${wd}_$${ver}_kdev.tar $${wd};$(COMPRESS) $${wd}_$${ver}_kdev.tar
-	
+
 strip: all
 	$(STRIP) $(TARGET)
-	
-$(TARGET): libs
+
+$(TARGET): $(LIB)
 	@$(MKDIR) $(dir $@)
 	$(eval $(REVERSELIB))
 	$(CXX) $(CXXFLAGS) $(INCPATH) $(addprefix -I./,$(LIBLIST)) $(SOURCE) -o $(TARGET) -L$(LIBDIR) $(LINKLIBS) $(addprefix -l,$(LIBORDER))
 
-libs: $(LIB)
-
-lib/%.a:
-	cd $(subst lib,,$(notdir $(@:.a=)));$(MAKE) $(MAKEFLAGS)
+$(LIBDIR)/%.a:
+	cd $(subst lib,,$(notdir $(@:.a=))) && $(MAKE)
