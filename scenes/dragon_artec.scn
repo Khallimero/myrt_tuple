@@ -10,11 +10,11 @@
 #define PHOTON_BOX_FCT 1.
 #define PHOTON_RAD 0.5
 #define PHOTON_REF 10
-#define NB_PHOTON_IT 10000000
+#define NB_PHOTON_IT 1000000
 #define NB_PHOTON_LIGHT (5*5)
-#define PHOTON_EXP 2.
-#define CAUSTIC_PHOTON_EXP 1.
-#define RADIANCE_PHOTON_EXP .2
+#define PHOTON_EXP 2.0
+#define CAUSTIC_PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0.2
 
 #ifdef SCENE
 #include "PLYShape.h"
@@ -35,6 +35,10 @@
 
 //#define RSEED 1578292148L
 //#define RSEED 1579033008L
+//#define RSEED 1616422691L
+//#define RSEED 1616422834L
+//#define RSEED 1616423108L
+//#define RSEED 1616423347L
 
 #define PORCELAIN (Color::White)
 #define WOOD (Color("432616"))
@@ -148,6 +152,6 @@ void setCamera(Camera& cam)
 void setRendererQuality(RendererQuality& rendererQuality)
 {
     //rendererQuality.setAliasing(3);
-    //rendererQuality.setShadow(50);
+    //rendererQuality.setShadow(100);
 }
 #endif
