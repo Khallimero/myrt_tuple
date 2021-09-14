@@ -3,7 +3,7 @@
 #define MAX_REC (250)
 #define ISO_STEP (.01)
 #define ISO_THRESHOLD (0.00000001)
-#define NB_REF 5
+#define NB_REF 3
 #define MAX_REF_SS 3
 #define PHOTON_EQ_DST .5
 #define PHOTON_EQ_ANG (M_PI/10.)
@@ -12,9 +12,9 @@
 #define PHOTON_REF 5
 #define NB_PHOTON_IT (15000)
 #define NB_PHOTON_LIGHT (15000)
-#define PHOTON_EXP 6.
-#define CAUSTIC_PHOTON_EXP 1.
-#define RADIANCE_PHOTON_EXP 0.
+#define PHOTON_EXP 5.0
+#define CAUSTIC_PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0.0
 
 #ifdef SCENE
 #include "SubShape.h"
@@ -74,7 +74,7 @@ void buildScene(Scene& world)
                                   new Sphere(sqrt(3)+EPSILON),
                                   Mark(ct));
     s->setTexture(new BasicTexture(Color::White),Undefined);
-    s->setDiffCoeff(.05);
+    s->setDiffCoeff(.075);
     s->setSpecCoeff(.8);
     s->setGlareCoeff(100);
     s->setReflectCoeff(.07);
@@ -113,7 +113,7 @@ void buildScene(Scene& world)
     p->setDiffCoeff(.6);
     world.addShape(p);
 
-    world.setAmbiant(LIGHTCOL*0.2);
+    world.setAmbiant(LIGHTCOL*0.25);
     SphericLight *light=new SphericLight(800,ct+vct*0.8,LIGHTCOL*1.0);
     light->setMitigation(light->dist(ct));
     world.addLight(light);
@@ -124,8 +124,8 @@ void buildScene(Scene& world)
     ls->setHitShape(CSGShape::second,false);
     world.addShape(ls);
 
-    //world.setPhotonBoxIn(new Sphere(size*sqrt(3),Mark(ct)));
-    //world.setPhotonBoxOut(new Sphere(size*20.,Mark(ct)));
+    world.setPhotonBoxIn(new Sphere(size*sqrt(3),Mark(ct)));
+    world.setPhotonBoxOut(new Sphere(size*20.,Mark(ct)));
 }
 
 void setCamera(Camera& cam)
