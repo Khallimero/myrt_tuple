@@ -16,7 +16,7 @@ libclean:
 format: libformat
 	$(FORMAT) $(SOURCE)
 
-libformat: format
+libformat:
 	$(foreach lib,$(LIBLIST) scenes,pushd $(lib);$(MAKE) format;popd;)
 
 tar: clean
