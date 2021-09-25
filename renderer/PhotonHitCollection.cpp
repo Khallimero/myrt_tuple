@@ -29,19 +29,16 @@ PhotonHitCollectionElement* PhotonHitCollection::addElement(PhotonHitCollectionE
     return c;
 }
 
-PhotonHitCollectionElement* PhotonHitCollection::getPhotonHitCollectionElement(const PhotonBox& pBox)
+PhotonHitCollectionElement* PhotonHitCollection::getPhotonHitCollectionElement(const PhotonBox& pBox)const
 {
     PhotonHitCollectionElement e(pBox);
-    AutoLock autolock(this);
-    return find(&e);
+    return cfind(&e);
 }
 
-ObjCollection<PhotonHit>* PhotonHitCollection::getPhotonHitCollection(const PhotonBox& pBox)
+ObjCollection<PhotonHit>* PhotonHitCollection::getPhotonHitCollection(const PhotonBox& pBox)const
 {
     PhotonHitCollectionElement e(pBox);
-    AutoLock autolock(this);
-    PhotonHitCollectionElement* c=find(&e);
-    autolock.unlock();
+    PhotonHitCollectionElement* c=cfind(&e);
     if(c==NULL)return NULL;
     return c->getPhotonHits();
 }

@@ -36,17 +36,15 @@ PhotonMapElement* PhotonMap::insertShapeId(int shapeId)
     return c;
 }
 
-PhotonHitCollectionElement* PhotonMap::getPhotonHitCollectionElement(int shapeId,const PhotonBox& pBox)
+PhotonHitCollectionElement* PhotonMap::getPhotonHitCollectionElement(int shapeId,const PhotonBox& pBox)const
 {
     PhotonMapElement e(shapeId);
-    AutoLock autolock(this);
-    PhotonMapElement* c=find(&e);
-    autolock.unlock();
+    PhotonMapElement* c=cfind(&e);
     if(c==NULL)return NULL;
     return c->getCollection().getPhotonHitCollectionElement(pBox);
 }
 
-ObjCollection<PhotonHit>* PhotonMap::getPhotonHitCollection(int shapeId,const PhotonBox& pBox)
+ObjCollection<PhotonHit>* PhotonMap::getPhotonHitCollection(int shapeId,const PhotonBox& pBox)const
 {
     PhotonHitCollectionElement* phce=getPhotonHitCollectionElement(shapeId, pBox);
     if(phce==NULL)return NULL;
