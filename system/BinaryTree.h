@@ -113,7 +113,7 @@ public:
         _BinaryTreeNode* _node=_find(t);
         return _node?_node->data():NULL;
     }
-    
+
     T* find(T* t)
     {
         _currentNode=_find(t);
