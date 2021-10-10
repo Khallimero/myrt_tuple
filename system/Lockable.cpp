@@ -13,9 +13,7 @@ Lockable::~Lockable()
 
 void Lockable::setThreadSafe(bool s)
 {
-    _lock();
     tsafe=s;
-    _unlock();
 }
 
 int Lockable::lock()const
