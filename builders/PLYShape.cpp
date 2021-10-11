@@ -550,10 +550,11 @@ __kernel void primitive_hit(\
         double3 t_vct=vload3(ir*2+1,r);\
         double d=dot(cross(t_v2,t_v1),t_vct);\
         double3 t_w=t_pt-t_o;\
-        double a=dot(cross(t_v2,t_w),t_vct)/d;\
-        double b=dot(cross(t_w,t_v1),t_vct)/d;\
-        if(a>=0.0 && a<=1.0 && b>=0.0 && b<=1.0 && (a+b)<=1.0)\
-            if(dot(cross(t_v1,t_v2),t_w)/d>0.0)\
+        if(dot(cross(t_v1,t_v2),t_w)/d>0.0)\
+        {\
+            double a=dot(cross(t_v2,t_w),t_vct)/d;\
+            double b=dot(cross(t_w,t_v1),t_vct)/d;\
+            if(a>=0.0 && b>=0.0 && (a+b)<=1.0)\
             {\
                 int ik=atomic_inc(k);\
                 if(ik<cnt[cnt[0]+2])\
@@ -562,6 +563,7 @@ __kernel void primitive_hit(\
                     k[1+(ik*2)+1]=id;\
                 }\
             }\
+        }\
     }\
 }");
 
