@@ -100,25 +100,21 @@ public:
 
     T* detach()
     {
-        if(nb_ref!=NULL)
-        {
-            if(--(*nb_ref)==0)
-                delete nb_ref;
-            nb_ref=NULL;
-        }
+        _free(false);
+        nb_ref=NULL;
 
         return _SmartPointer<T>::_detach();
     }
 
 protected:
-    void _free()
+    void _free(bool del=true)
     {
         if(nb_ref!=NULL)
         {
             if(--(*nb_ref)==0)
             {
                 delete nb_ref;
-                if(this->t!=NULL)
+                if(del && this->t!=NULL)
                     delete this->t;
             }
         }
