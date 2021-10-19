@@ -1,7 +1,8 @@
 #include "SphericIterator.h"
 
 SphericIterator::SphericIterator(int n,const Point& p,double r)
-    :steps(n),p(p),r(r)
-{}
+{
+    this->steps=n,this->p=p,this->r=r;
+}
 
 SphericIterator::~SphericIterator() {}

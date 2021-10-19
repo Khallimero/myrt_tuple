@@ -7,7 +7,7 @@ template class NestedIterator<int,TREBLE_SIZE>;
 
 INestedIterator::INestedIterator()
 {
-    this->nbIt=0;
+    this->nbIt=0,this->nb=0;
 }
 
 INestedIterator::~INestedIterator() {}

@@ -8,7 +8,7 @@ template <typename T> class Enumeration
 public:
     Enumeration()
     {
-        this->nb=1;
+        this->nb=1,this->elem=T();
     }
     Enumeration(int n,T e)
     {

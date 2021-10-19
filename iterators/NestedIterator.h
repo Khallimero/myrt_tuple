@@ -95,7 +95,7 @@ protected:
 
     void _init(const Iterator<T>& that,int n=1)
     {
-        nbIt=0;
+        nbIt=0,nb=0;
         while(n>0)
             add(that,(--n)==0);
     }

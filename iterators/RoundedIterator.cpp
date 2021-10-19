@@ -1,8 +1,9 @@
 #include "RoundedIterator.h"
 
-RoundedIterator::RoundedIterator():NestedIterator<double,2>()
+RoundedIterator::RoundedIterator()
+    :NestedIterator<double,2>()
 {
-    this->r=0;
+    this->r=0.0;
 }
 
 RoundedIterator::RoundedIterator(const Iterator<double>& it)
@@ -27,7 +28,7 @@ bool RoundedIterator::next()
 
 double RoundedIterator::getRadius()const
 {
-    double d=0;
+    double d=0.0;
     for(int i=0; i<nbIt; i++)
         d+=SQ(getElement(i).getVal());
     return sqrt(d);

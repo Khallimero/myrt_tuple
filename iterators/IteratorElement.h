@@ -5,8 +5,7 @@ template <typename T> class IteratorElement
 public:
     IteratorElement()
     {
-        id=-1;
-        val=T();
+        this->id=-1,this->val=T();
     }
     IteratorElement(int i,const T& v)
     {
