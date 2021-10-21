@@ -7,7 +7,7 @@ SOURCES       =	Arithmetic.cpp \
 		Color.cpp \
 		Complex.cpp \
 		Geometric.cpp \
-		Map.cpp \
+		Grid.cpp \
 		Mark.cpp \
 		Pair.cpp \
 		Picture.cpp \

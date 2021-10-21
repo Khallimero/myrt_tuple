@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BumpMap.h"
-#include "Map.h"
+#include "Grid.h"
 #include "Vector.h"
 
 class RandomBumpMap:public BumpMap
@@ -14,5 +14,5 @@ public:
     virtual Vector getVector(const Point& p)const;
 
 protected:
-    Map<Vector> m;
+    Grid<Vector> m;
 };

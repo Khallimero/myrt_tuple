@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Map.h"
+#include "Grid.h"
 #include "Color.h"
 
 #include <stdio.h>
 
-class Picture:public Map<Color>
+class Picture:public Grid<Color>
 {
 public:
     Picture(int w,int h);

@@ -6,20 +6,20 @@
 
 template <typename T> T bilinearFilter(T** tab,int w,int h,double x0,double y0);
 
-template <typename T> class Map
+template <typename T> class Grid
 {
 public:
-    Map()
+    Grid()
     {
         this->w=0,this->h=0;
         tab=NULL;
     }
-    Map(int w,int h)
+    Grid(int w,int h)
     {
         this->w=w,this->h=h;
         alloc();
     }
-    virtual ~Map()
+    virtual ~Grid()
     {
         if(tab!=NULL)
         {

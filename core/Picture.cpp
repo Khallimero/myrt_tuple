@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-Picture::Picture(int w,int h):Map<Color>(w,h) {}
+Picture::Picture(int w,int h):Grid<Color>(w,h) {}
 
-Picture::Picture(const char* fileName):Map<Color>()
+Picture::Picture(const char* fileName):Grid<Color>()
 {
     FILE* f;
     if((f=fopen(fileName,"r"))!=NULL)
@@ -22,7 +22,7 @@ Picture::Picture(const char* fileName):Map<Color>()
     }
 }
 
-Picture::Picture(FILE* f):Map<Color>()
+Picture::Picture(FILE* f):Grid<Color>()
 {
     buildFromFile(f);
 }
@@ -91,8 +91,8 @@ void Picture::buildFromFile(FILE* f)
     if(strcmp(fmt,"P3")==0||strcmp(fmt,"P6")==0)
     {
         int d;
-        fscanf(f,"%d %d %d\n",&(Map<Color>::w),&(Map<Color>::h),&d);
-        Map<Color>::alloc();
+        fscanf(f,"%d %d %d\n",&(Grid<Color>::w),&(Grid<Color>::h),&d);
+        Grid<Color>::alloc();
         for(int y=0; y<height(); y++)
             for(int x=0; x<width(); x++)
                 (*this)[x][y]=Color(f,fmt,d);
