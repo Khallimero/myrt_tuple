@@ -35,7 +35,7 @@ Hit QuadricShape::_getHit(const Ray& r)const
     if(u>0.0)
     {
         Point p=Point(rm.getPoint()/size)+(rm.getVector()*(u/size));
-        Vector n=mark.toRef(Vector(p*coeff*2.)).norm();
+        Vector n=mark.toRef(Vector(p*coeff*2.0)).norm();
         return Hit(r,this,r.getPoint()+(r.getVector()*u),n);
     }
     return Hit::null;

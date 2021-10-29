@@ -60,8 +60,8 @@ Hit Tore::_getHit(const Ray& r)const
         static const Tuple<double,TREBLE_SIZE> cf(Tore::Unit,_unit_unary_op);
 
         const Point p=rm.getPoint()+(rm.getVector()*u);
-        double d=4*(sumSq(p)-SQ(this->r2));
-        Vector v=cf*(4*SQ(this->r1))*p;
+        double d=4.0*(sumSq(p)-SQ(this->r2));
+        Vector v=cf*(4.0*SQ(this->r1))*p;
         Vector n=mark.toRef(Vector(p*d-v)).norm();
 
         return Hit(r,this,Point(r.getPoint()+(r.getVector()*u)),n);
