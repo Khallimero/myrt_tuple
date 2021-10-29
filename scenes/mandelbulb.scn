@@ -1,20 +1,20 @@
 #define EPSILON (0.001)
-#define PLAN_TAN (M_PI/1000.)
+#define PLAN_TAN (M_PI/1000.0)
 #define MAX_REC (250)
-#define ISO_STEP (.0001)
+#define ISO_STEP (0.0001)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 5
 #define MAX_REF_SS 1
-#define PHOTON_EQ_DST .5
-#define PHOTON_EQ_ANG (M_PI/10.)
-#define PHOTON_BOX_FCT 10.
-#define PHOTON_RAD 15.
+#define PHOTON_EQ_DST 0.5
+#define PHOTON_EQ_ANG (M_PI/10.0)
+#define PHOTON_BOX_FCT 10.0
+#define PHOTON_RAD 15.0
 #define PHOTON_REF 5
 #define NB_PHOTON_IT (0)
 #define NB_PHOTON_LIGHT (0)
-#define PHOTON_EXP 1.
-#define CAUSTIC_PHOTON_EXP 1.
-#define RADIANCE_PHOTON_EXP 0.
+#define PHOTON_EXP 1.0
+#define CAUSTIC_PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0.0
 
 #ifdef SCENE
 #include "BasicTexture.h"
@@ -46,26 +46,26 @@ void buildScene(Scene& world)
     //Shape* ft=new Mandelbulb(8,4.0,4,800,Mark(ct,Rotation::random()));
     Shape* ft=new Juliabulb(Point(-0.5,-0.5,-0.5),8,4.0,4,800,Mark(ct,Rotation::random()));
     ft->setTexture(new CustomTexture(ctex));
-    ft->setDiffCoeff(.8);
-    ft->setSpecCoeff(.6);
+    ft->setDiffCoeff(0.8);
+    ft->setSpecCoeff(0.6);
     ft->setGlareCoeff(100);
-    //ft->setReflectCoeff(.15);
+    //ft->setReflectCoeff(0.15);
     world.addShape(ft);
 
     Shape* plan=new Plan(5000,Point(0,0,0),
                          Mark(Point(0.2,0.5,1.0),Rotation::random()));
-    plan->setTexture(new CloudPattern(new BasicTexture(Color::White*.85),
-                                      new BasicTexture(Color::White*.9),
-                                      new BasicTexture(Color::White*.85),150),
+    plan->setTexture(new CloudPattern(new BasicTexture(Color::White*0.85),
+                                      new BasicTexture(Color::White*0.9),
+                                      new BasicTexture(Color::White*0.85),150),
                      Planar);
     plan->setBumpMap(new TextureBumpMap(new CustomPerlinPattern(new BasicTexture(Color::White),
-                                        new BasicTexture(Color::Black),6,3,5,100.),2.),
+                                        new BasicTexture(Color::Black),6,3,5,100.),2.0),
                      Planar);
-    plan->setDiffCoeff(.65);
+    plan->setDiffCoeff(0.65);
     world.addShape(plan);
 
-    world.addLight(new SphericLight(500,ct+Vector(.7,.45,1)*-10000,Color::White*.7));
-    world.setAmbiant(Color::White*.3);
+    world.addLight(new SphericLight(500,ct+Vector(0.7,0.45,1)*-10000,Color::White*0.7));
+    world.setAmbiant(Color::White*0.3);
 
     //world.setPhotonBoxIn(new Sphere(800,Mark(ct)));
     //world.setPhotonBoxOut(new Sphere(700*1.5*10,Mark(ct)));
@@ -74,11 +74,11 @@ void buildScene(Scene& world)
 void setCamera(Camera& cam)
 {
     cam=Camera(Point::null,Vector(0,0,100),
-               Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
-    //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
-    //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
-    //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
-    //Enumeration<Vector>(1280,Vector(.04,0,0)),Enumeration<Vector>(1024,Vector(0,.04,0)));
+               Enumeration<Vector>(512,Vector(0.2,0,0)),Enumeration<Vector>(384,Vector(0,0.2,0)));
+    //Enumeration<Vector>(1024,Vector(0.1,0,0)),Enumeration<Vector>(768,Vector(0,0.1,0)));
+    //Enumeration<Vector>(1280,Vector(0.08,0,0)),Enumeration<Vector>(1024,Vector(0,0.08,0)));
+    //Enumeration<Vector>(2048,Vector(0.05,0,0)),Enumeration<Vector>(1536,Vector(0,0.05,0)));
+    //Enumeration<Vector>(1280,Vector(0.04,0,0)),Enumeration<Vector>(1024,Vector(0,0.04,0)));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)

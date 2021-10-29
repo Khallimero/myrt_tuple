@@ -1,14 +1,14 @@
 #define EPSILON (0.01)
-#define PLAN_TAN (M_PI/1000.)
+#define PLAN_TAN (M_PI/1000.0)
 #define MAX_REC (250)
-#define ISO_STEP (.01)
+#define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 3
 #define MAX_REF_SS 3
-#define PHOTON_EQ_DST .5
-#define PHOTON_EQ_ANG (M_PI/10.)
-#define PHOTON_BOX_FCT 10.
-#define PHOTON_RAD 15.
+#define PHOTON_EQ_DST 0.5
+#define PHOTON_EQ_ANG (M_PI/10.0)
+#define PHOTON_BOX_FCT 10.0
+#define PHOTON_RAD 15.0
 #define PHOTON_REF 5
 #define NB_PHOTON_IT (15000)
 #define NB_PHOTON_LIGHT (15000)
@@ -28,7 +28,7 @@
 
 //#define RSEED 1400465025
 
-#define ORANGE (Color("FFA200")*.9)
+#define ORANGE (Color("FFA200")*0.9)
 #define LIGHTCOL Color::White
 
 double getValue(const Point& p)
@@ -74,11 +74,11 @@ void buildScene(Scene& world)
                                   new Sphere(sqrt(3)+EPSILON),
                                   Mark(ct));
     s->setTexture(new BasicTexture(Color::White),Undefined);
-    s->setDiffCoeff(.075);
-    s->setSpecCoeff(.8);
+    s->setDiffCoeff(0.075);
+    s->setSpecCoeff(0.8);
     s->setGlareCoeff(100);
-    s->setReflectCoeff(.07);
-    s->setRefractCoeff(.9);
+    s->setReflectCoeff(0.07);
+    s->setRefractCoeff(0.9);
 
     for(int i=0; i<80; i++)
     {
@@ -92,25 +92,25 @@ void buildScene(Scene& world)
                 return r;
             }
         } _unary_idx_op;
-        Mark m(ct+Vector(_unary_idx_op)*(size*RND*.9));
+        Mark m(ct+Vector(_unary_idx_op)*(size*RND*0.9));
         double r=(i<20?10.0+RND*15.0:3.0+RND*5.0);
         Shape *s1=new Bubble(r,new Sphere(2.0),m);
         s1->setTexture(new BasicTexture(Color::White),Undefined);
-        s1->setDiffCoeff(.05);
-        s1->setSpecCoeff(.5);
+        s1->setDiffCoeff(0.05);
+        s1->setSpecCoeff(0.5);
         s1->setGlareCoeff(10);
-        s1->setReflectCoeff(.2);
-        s1->setRefractCoeff(.95);
+        s1->setReflectCoeff(0.2);
+        s1->setRefractCoeff(0.95);
         s=new SubShape(s,s1,false);
     }
     s->setDensity(1.546);
-    s->setBeer(size/2.,2,ORANGE);
+    s->setBeer(size/2.0,2,ORANGE);
     world.addShape(s);
 
     Shape *p=new Plan(size+1,Point::null,
-                      Mark(Point(0.,0.,1.0)));
+                      Mark(Point(0,0,1)));
     p->setTexture(new BasicTexture(Color("E0FFFB")*.9),Undefined);
-    p->setDiffCoeff(.6);
+    p->setDiffCoeff(0.6);
     world.addShape(p);
 
     world.setAmbiant(LIGHTCOL*0.25);
@@ -118,8 +118,8 @@ void buildScene(Scene& world)
     light->setMitigation(light->dist(ct));
     world.addLight(light);
 
-    Shape *lc=new Cylinder(850,Mark(ct+vct*.8,Rotation(vct)));
-    Shape *lp=new Plan(Vector::UnitZ,Mark(ct+vct*.2));
+    Shape *lc=new Cylinder(850,Mark(ct+vct*0.8,Rotation(vct)));
+    Shape *lp=new Plan(Vector::UnitZ,Mark(ct+vct*0.2));
     CSGShape *ls=new SubShape(lc,lp,true);
     ls->setHitShape(CSGShape::second,false);
     world.addShape(ls);
@@ -134,12 +134,12 @@ void setCamera(Camera& cam)
     Point cp=Point(-1200,5000,-1500);
     Vector cv=cp.getVectorTo(sc).norm()*100;
 
-    Vector v1=Vector(1,.2,0).projOrthoTo(cv).norm();
+    Vector v1=Vector(1,0.2,0).projOrthoTo(cv).norm();
     Vector v2=cv.prodVect(v1).norm();
 
-    //cam=Camera(cp,cv,Enumeration<Vector>(640,v1*.056),Enumeration<Vector>(360,v2*.056));
-    cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.028),Enumeration<Vector>(720,v2*.028));
-    //cam=Camera(cp,cv,Enumeration<Vector>(1920,v1*(.028/1.5)),Enumeration<Vector>(1080,v2*(.028/1.5)));
+    //cam=Camera(cp,cv,Enumeration<Vector>(640,v1*0.056),Enumeration<Vector>(360,v2*0.056));
+    cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*0.028),Enumeration<Vector>(720,v2*0.028));
+    //cam=Camera(cp,cv,Enumeration<Vector>(1920,v1*(0.028/1.5)),Enumeration<Vector>(1080,v2*(0.028/1.5)));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)

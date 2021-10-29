@@ -1,13 +1,13 @@
 #define EPSILON (0.001)
-#define PLAN_TAN (M_PI/1000.)
+#define PLAN_TAN (M_PI/1000.0)
 #define MAX_REC (250)
-#define ISO_STEP (.01)
+#define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 5
 #define MAX_REF_SS 1
 #define PHOTON_EQ_DST 0.01
-#define PHOTON_EQ_ANG (M_PI/10.)
-#define PHOTON_BOX_FCT 1.
+#define PHOTON_EQ_ANG (M_PI/10.0)
+#define PHOTON_BOX_FCT 1.0
 #define PHOTON_RAD 0.5
 #define PHOTON_REF 10
 #define NB_PHOTON_IT 1000000
@@ -89,8 +89,8 @@ void buildScene(Scene& world)
                           new BasicTexture(WOOD*1.2),
                           15),
                       Volumic);
-    socle->setDiffCoeff(.75);
-    socle->setSpecCoeff(.25);
+    socle->setDiffCoeff(0.75);
+    socle->setSpecCoeff(0.25);
     socle->setGlareCoeff(500);
     world.addShape(socle);
 
@@ -101,8 +101,8 @@ void buildScene(Scene& world)
     cl->setDiffCoeff(0.01);
     cl->setSpecCoeff(0.5);
     cl->setGlareCoeff(100);
-    cl->setReflectCoeff(.1);
-    cl->setRefractCoeff(.95);
+    cl->setReflectCoeff(0.1);
+    cl->setRefractCoeff(0.95);
     cl->setDensity(1.2);
     cl->setBeer(1,5,Color::White*0.8);
     world.addShape(cl);
@@ -110,20 +110,20 @@ void buildScene(Scene& world)
     Shape* plan=new Plan(floor_height,Point(0,0,0),
                          Mark(Point(0,1,0)));
     plan->setTexture(new BasicTexture(Color("37B57B")));
-    plan->setDiffCoeff(.6);
-    plan->setSpecCoeff(.2);
+    plan->setDiffCoeff(0.6);
+    plan->setSpecCoeff(0.2);
     plan->setGlareCoeff(1000);
-    plan->setRadianceCoeff(.1);
+    plan->setRadianceCoeff(0.1);
     world.addShape(plan);
 
     Point lc(-500,-850,500);
     Point sc(10,floor_height,1050);
     Vector vct=sc.getVectorTo(lc);
 
-    SphericLight *light=new SphericLight(10,sc+vct*0.5,Color::White*.6);
+    SphericLight *light=new SphericLight(10,sc+vct*0.5,Color::White*0.6);
     light->setMitigation(light->dist(sc));
     world.addLight(light);
-    world.setAmbiant(Color::White*.4);
+    world.setAmbiant(Color::White*0.4);
 
     Shape *cyl=new Cylinder(12,Mark(sc,Rotation(vct.norm())));
     Shape *lp=new Plan(vct.norm()*-1,Mark(sc+vct*0.2));
@@ -143,10 +143,10 @@ void setCamera(Camera& cam)
     Vector z=c.getVectorTo(s).norm()*100;
     Vector x=Vector(1,0,0).projOrthoTo(z).norm();
     Vector y=Vector(0,1,0).projOrthoTo(z).norm();
-    //cam=Camera(c,z,Enumeration<Vector>(512,x*.006),Enumeration<Vector>(384,y*.006));
-    //cam=Camera(c,z,Enumeration<Vector>(1024,x*.003),Enumeration<Vector>(768,y*.003));
-    cam=Camera(c,z,Enumeration<Vector>(1280,x*.0024),Enumeration<Vector>(1024,y*.0024));
-    //cam=Camera(c,z,Enumeration<Vector>(1600,x*.00192),Enumeration<Vector>(1200,y*.00192));
+    //cam=Camera(c,z,Enumeration<Vector>(512,x*0.006),Enumeration<Vector>(384,y*0.006));
+    //cam=Camera(c,z,Enumeration<Vector>(1024,x*0.003),Enumeration<Vector>(768,y*0.003));
+    cam=Camera(c,z,Enumeration<Vector>(1280,x*0.0024),Enumeration<Vector>(1024,y*0.0024));
+    //cam=Camera(c,z,Enumeration<Vector>(1600,x*0.00192),Enumeration<Vector>(1200,y*0.00192));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)

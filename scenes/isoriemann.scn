@@ -1,20 +1,20 @@
 #define EPSILON (0.01)
-#define PLAN_TAN (M_PI/1000.)
+#define PLAN_TAN (M_PI/1000.0)
 #define MAX_REC (250)
-#define ISO_STEP (.01)
+#define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 9
 #define MAX_REF_SS 1
-#define PHOTON_EQ_DST 1.
-#define PHOTON_EQ_ANG (M_PI/10.)
-#define PHOTON_BOX_FCT 8.
-#define PHOTON_RAD 5.
+#define PHOTON_EQ_DST 1.0
+#define PHOTON_EQ_ANG (M_PI/10.0)
+#define PHOTON_BOX_FCT 8.0
+#define PHOTON_RAD 5.0
 #define PHOTON_REF 7
 #define NB_PHOTON_IT 50000
 #define NB_PHOTON_LIGHT (50*50)
-#define PHOTON_EXP 2.
-#define CAUSTIC_PHOTON_EXP 1.
-#define RADIANCE_PHOTON_EXP .5
+#define PHOTON_EXP 2.0
+#define CAUSTIC_PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0.5
 
 #ifdef SCENE
 #include "SubShape.h"
@@ -57,11 +57,11 @@ const double NrOfBands=4;
 const double GapSize=0.5;
 const double K=1.8;
 
-const double TwoPi=2.*M_PI;
-const double FourPi=4.*M_PI;
+const double TwoPi=2.0*M_PI;
+const double FourPi=4.0*M_PI;
 const double DivAngle=TwoPi/NrOfBands;
 const double GapAngle=DivAngle*GapSize;
-const double HalfGapAngle=GapAngle/2.;
+const double HalfGapAngle=GapAngle/2.0;
 
 double AdjFn(double x)
 {
@@ -70,7 +70,7 @@ double AdjFn(double x)
 
 double LogFn(double x)
 {
-    return log(2./(1.-x)-1.)/K;
+    return log(2.0/(1.0-x)-1.0)/K;
 }
 
 double ClampFn(double n,double mn,double mx)
@@ -106,60 +106,60 @@ double SphereSpiralsFunction(const Point& p)
 void buildScene(Scene& world)
 {
     Point ct(0,0,3000);
-    Rotation rot(-1.2,0,.4);
+    Rotation rot(-1.2,0,0.4);
 
     Shape* s=new CustomIsoSurface(SphereSpiralsFunction,size,
-                                  new SubShape(new Sphere(Rmajor+Rminor+EPSILON*2.),
-                                          new Sphere(Rmajor-Rminor-EPSILON*2.)),
+                                  new SubShape(new Sphere(Rmajor+Rminor+EPSILON*2.0),
+                                          new Sphere(Rmajor-Rminor-EPSILON*2.0)),
                                   Mark(ct,rot));
     //Shape *s=new Sphere((Rmajor+Rminor)*size,Mark(ct,rot));
-    s->setTexture(new CloudPattern(new BasicTexture(BRUN*.9),
+    s->setTexture(new CloudPattern(new BasicTexture(BRUN*0.9),
                                    new BasicTexture(Color::White),
-                                   new BasicTexture(BRUN*.9),80),Volumic);
+                                   new BasicTexture(BRUN*0.9),80),Volumic);
     s->setBumpMap(new TextureBumpMap(new MarblePattern(new BasicTexture(Color::White),
                                      new BasicTexture(Color::Black),50),1.3),Volumic);
-    s->setDiffCoeff(.45);
-    s->setSpecCoeff(.3);
+    s->setDiffCoeff(0.45);
+    s->setSpecCoeff(0.3);
     s->setGlareCoeff(1000);
     world.addShape(s);
 
-    Shape* sp=new Sphere(Rmajor*size*(.85),Mark(ct));
-    //sp->setTexture(new BasicTexture(Color::White*.95));
+    Shape* sp=new Sphere(Rmajor*size*(0.85),Mark(ct));
+    //sp->setTexture(new BasicTexture(Color::White*0.95));
     sp->setTexture(new BasicTexture(KHAKI));
     sp->setDiffCoeff(0.05);
-    sp->setSpecCoeff(.5);
+    sp->setSpecCoeff(0.5);
     sp->setGlareCoeff(100);
-    sp->setReflectCoeff(.2);
-    sp->setRefractCoeff(.8);
+    sp->setReflectCoeff(0.2);
+    sp->setRefractCoeff(0.8);
     sp->setDensity(1.1);
     world.addShape(sp);
 
     Shape* p=new Plan(3000+(Rmajor+Rminor)*size*1.3,Point(0,0,0),
                       Mark(Point(0.5,-0.2,1),Rotation::random()));
-    /*p->setTexture(new CloudPattern(new BasicTexture(KHAKI*.4),
-    			 new BasicTexture(KHAKI*.5),
-    			 new BasicTexture(KHAKI*.4),80),
+    /*p->setTexture(new CloudPattern(new BasicTexture(KHAKI*0.4),
+    			 new BasicTexture(KHAKI*0.5),
+    			 new BasicTexture(KHAKI*0.4),80),
     			 Planar);*/
-    p->setTexture(new CloudPattern(new BasicTexture(Color::White*.5),
-                                   new BasicTexture(Color::White*.6),
-                                   new BasicTexture(Color::White*.5),80),
+    p->setTexture(new CloudPattern(new BasicTexture(Color::White*0.5),
+                                   new BasicTexture(Color::White*0.6),
+                                   new BasicTexture(Color::White*0.5),80),
                   Planar);
     p->setBumpMap(new TextureBumpMap(new CustomPerlinPattern(new BasicTexture(Color::White),
-                                     new BasicTexture(Color::Black),6,3,5,50.),2.),
+                                     new BasicTexture(Color::Black),6,3,5,50.0),2.0),
                   Planar);
-    p->setDiffCoeff(.8);
-    p->setSpecCoeff(.1);
+    p->setDiffCoeff(0.8);
+    p->setSpecCoeff(0.1);
     p->setGlareCoeff(1000);
-    p->setReflectCoeff(.1);
+    p->setReflectCoeff(0.1);
     world.addShape(p);
 
-    SphericLight *light=new SphericLight(500,Point(0,0,3000)+Vector(.25,-.6,.3).norm()*-3500.,LIGHTCOL*1.6);
+    SphericLight *light=new SphericLight(500,Point(0,0,3000)+Vector(0.25,-0.6,0.3).norm()*-3500.0,LIGHTCOL*1.6);
     light->setMitigation(3500-(Rmajor+Rminor)*size);
     world.addLight(light);
-    world.setAmbiant(LIGHTCOL*.4);
+    world.setAmbiant(LIGHTCOL*0.4);
 
     world.setPhotonBoxIn(new Sphere(Rmajor*size,Mark(ct)));
-    world.setPhotonBoxOut(new Sphere(Rmajor*size*5.,Mark(ct)));
+    world.setPhotonBoxOut(new Sphere(Rmajor*size*5.0,Mark(ct)));
 }
 
 void setCamera(Camera& cam)
@@ -171,10 +171,10 @@ void setCamera(Camera& cam)
     Vector v1=Vector(1,1,0).projOrthoTo(cv).norm();
     Vector v2=cv.prodVect(v1).norm();
 
-    //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*.028*2.),Enumeration<Vector>(384,v2*.028*2.));
-    //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*.028),Enumeration<Vector>(768,v2*.028));
-    //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*.0224),Enumeration<Vector>(1024,v2*.0224));
-    cam=Camera(cp,cv,Enumeration<Vector>(1600,v1*.01792),Enumeration<Vector>(1200,v2*.01792));
+    //cam=Camera(cp,cv,Enumeration<Vector>(512,v1*0.028*2.0),Enumeration<Vector>(384,v2*0.028*2.0));
+    //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*0.028),Enumeration<Vector>(768,v2*0.028));
+    //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*0.0224),Enumeration<Vector>(1024,v2*0.0224));
+    cam=Camera(cp,cv,Enumeration<Vector>(1600,v1*0.01792),Enumeration<Vector>(1200,v2*0.01792));
 
     cam.setFocus(cp.dist(sc),250);
 }

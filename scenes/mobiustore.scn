@@ -1,20 +1,20 @@
 #define EPSILON (0.01)
-#define PLAN_TAN (M_PI/1000.)
+#define PLAN_TAN (M_PI/1000.0)
 #define MAX_REC (250)
-#define ISO_STEP (.01)
+#define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 5
 #define MAX_REF_SS 1
 #define PHOTON_EQ_DST 0.01
-#define PHOTON_EQ_ANG (M_PI/10.)
-#define PHOTON_BOX_FCT 8.
-#define PHOTON_RAD 5.
+#define PHOTON_EQ_ANG (M_PI/10.0)
+#define PHOTON_BOX_FCT 8.0
+#define PHOTON_RAD 5.0
 #define PHOTON_REF 3
 #define NB_PHOTON_IT (1500*1500)
 #define NB_PHOTON_LIGHT (5*5)
-#define PHOTON_EXP 1.
-#define CAUSTIC_PHOTON_EXP 1.
-#define RADIANCE_PHOTON_EXP 0.
+#define PHOTON_EXP 1.0
+#define CAUSTIC_PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0.0
 
 #ifdef SCENE
 #include "SmartPointer.h"
@@ -42,10 +42,10 @@ void buildScene(Scene& world)
     ShapeBuilder<2> sbm(300,1,Tuple<int,2>::Unit*360*4);
     Shape* mt=sbm.getInstance(Mark(ct,Rotation(-M_PI/2.0,-M_PI/2.0,0)),mtp);
     mt->setTexture(new BasicTexture(ORANGE));
-    mt->setDiffCoeff(.8);
-    mt->setSpecCoeff(.5);
+    mt->setDiffCoeff(0.8);
+    mt->setSpecCoeff(0.5);
     mt->setGlareCoeff(100);
-    mt->setReflectCoeff(.1);
+    mt->setReflectCoeff(0.1);
     world.addShape(mt);
 
     for(int i=0; i<2; i++)
@@ -53,11 +53,11 @@ void buildScene(Scene& world)
         Shape* tk=new ParametricIsoSurface(new TorusKnot(1,2,2),300,1,180,60,
                                            Mark(ct,Rotation(M_PI/2.0,M_PI/4.0*(double)(2*i-1),0)));
         tk->setTexture(new BasicTexture(BROWN));
-        tk->setDiffCoeff(.05);
-        tk->setSpecCoeff(.8);
+        tk->setDiffCoeff(0.05);
+        tk->setSpecCoeff(0.8);
         tk->setGlareCoeff(100);
-        tk->setReflectCoeff(.2);
-        tk->setRefractCoeff(.95);
+        tk->setReflectCoeff(0.2);
+        tk->setRefractCoeff(0.95);
         tk->setDensity(1.76);
         tk->setBeer(100,2,BROWN);
 
@@ -66,18 +66,18 @@ void buildScene(Scene& world)
 
     Shape* plan=new Plan(5000,Point(0,0,0),
                          Mark(Point(0.2,0.5,1.0),Rotation::random()));
-    plan->setTexture(new CloudPattern(new BasicTexture(KHAKI*.75),
-                                      new BasicTexture(KHAKI*.8),
-                                      new BasicTexture(KHAKI*.75),150),
+    plan->setTexture(new CloudPattern(new BasicTexture(KHAKI*0.75),
+                                      new BasicTexture(KHAKI*0.8),
+                                      new BasicTexture(KHAKI*0.75),150),
                      Planar);
     plan->setBumpMap(new TextureBumpMap(new CustomPerlinPattern(new BasicTexture(Color::White),
-                                        new BasicTexture(Color::Black),6,3,5,100.),2.),
+                                        new BasicTexture(Color::Black),6,3,5,100.),2.0),
                      Planar);
-    plan->setDiffCoeff(.8);
+    plan->setDiffCoeff(0.8);
     world.addShape(plan);
 
-    world.addLight(new SphericLight(500,ct+Vector(.7,.45,1)*-10000,Color::White*.8));
-    world.setAmbiant(Color::White*.2);
+    world.addLight(new SphericLight(500,ct+Vector(0.7,0.45,1)*-10000,Color::White*0.8));
+    world.setAmbiant(Color::White*0.2);
 
     //world.setPhotonBoxIn(new Sphere(1000,Mark(ct)));
     //world.setPhotonBoxOut(new Sphere(1000,Mark(ct)));
@@ -86,10 +86,10 @@ void buildScene(Scene& world)
 void setCamera(Camera& cam)
 {
     cam=Camera(Point::null,Vector(0,0,100),
-               //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
-               Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
-    //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
-    //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+               //Enumeration<Vector>(512,Vector(0.2,0,0)),Enumeration<Vector>(384,Vector(0,0.2,0)));
+               Enumeration<Vector>(1024,Vector(0.1,0,0)),Enumeration<Vector>(768,Vector(0,0.1,0)));
+    //Enumeration<Vector>(1280,Vector(0.08,0,0)),Enumeration<Vector>(1024,Vector(0,0.08,0)));
+    //Enumeration<Vector>(2048,Vector(0.05,0,0)),Enumeration<Vector>(1536,Vector(0,0.05,0)));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)

@@ -1,20 +1,20 @@
 #define EPSILON (0.01)
-#define PLAN_TAN (M_PI/1000.)
+#define PLAN_TAN (M_PI/1000.0)
 #define MAX_REC (250)
-#define ISO_STEP (10.)
+#define ISO_STEP (10.0)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 9
 #define MAX_REF_SS 1
-#define PHOTON_EQ_DST 1.
-#define PHOTON_EQ_ANG (M_PI/10.)
-#define PHOTON_BOX_FCT 8.
-#define PHOTON_RAD 5.
+#define PHOTON_EQ_DST 1.0
+#define PHOTON_EQ_ANG (M_PI/10.0)
+#define PHOTON_BOX_FCT 8.0
+#define PHOTON_RAD 5.0
 #define PHOTON_REF 9
 #define NB_PHOTON_IT (500*500)
 #define NB_PHOTON_LIGHT (10*10)
-#define PHOTON_EXP 5.
-#define CAUSTIC_PHOTON_EXP 1.
-#define RADIANCE_PHOTON_EXP .1
+#define PHOTON_EXP 5.0
+#define CAUSTIC_PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0.1
 
 #ifdef SCENE
 #include "HyperCube.h"
@@ -42,25 +42,25 @@ void buildScene(Scene& world)
     Point ct=Point(-300,-150,3000);
 
     Shape* h1=new HyperCube(12,300,Mark(ct,rot));
-    h1->setTexture(new CloudPattern(new BasicTexture(EMERALD+Color::White*-.2),
-                                    new BasicTexture(EMERALD+Color::White*.2),
-                                    new BasicTexture(EMERALD+Color::White*-.1),.5),Volumic);
+    h1->setTexture(new CloudPattern(new BasicTexture(EMERALD+Color::White*-0.2),
+                                    new BasicTexture(EMERALD+Color::White*0.2),
+                                    new BasicTexture(EMERALD+Color::White*-0.1),0.5),Volumic);
     h1->setBumpMap(new TextureBumpMap(new MarblePattern(new BasicTexture(Color::White),
                                       new BasicTexture(Color::Black),50),2.0),
-                   Volumic,Vector::Unit*300.);
+                   Volumic,Vector::Unit*300.0);
     h1->setCarveMap(new TextureCarveMap(new CustomPerlinPattern(new BasicTexture(Color::White),
-                                        new BasicTexture(Color::Black),6,3,5,.2),.35),
+                                        new BasicTexture(Color::Black),6,3,5,0.2),0.35),
                     Volumic);
-    h1->setDiffCoeff(.8);
-    h1->setSpecCoeff(.5);
+    h1->setDiffCoeff(0.8);
+    h1->setSpecCoeff(0.5);
     h1->setGlareCoeff(250);
     world.addShape(h1);
 
     Shape* h2=new HyperCube(13,300,Mark(ct,rot));
-    h2->setTexture(new BasicTexture(RUBY*.8),Undefined);
-    h2->setBumpMap(new PerlinBumpMap(.05),Volumic,Vector::Unit*100.);
-    h2->setDiffCoeff(.05);
-    h2->setRefractCoeff(.95);
+    h2->setTexture(new BasicTexture(RUBY*0.8),Undefined);
+    h2->setBumpMap(new PerlinBumpMap(0.05),Volumic,Vector::Unit*100.0);
+    h2->setDiffCoeff(0.05);
+    h2->setRefractCoeff(0.95);
     h2->setDensity(1.2);
     h2->setBeer(1000,2,RUBY);
     world.addShape(h2);
@@ -70,13 +70,13 @@ void buildScene(Scene& world)
     //new BasicTexture(Color::White),2,4,3,1000),Planar);
     p->setTexture(new ChequeredPattern(new CustomPerlinPattern(new BasicTexture(Color::White),
                                        new BasicTexture(Color::Black),2,4,3,600),
-                                       new BasicTexture(Color::White),Vector::Unit/400.),Planar);
-    p->setDiffCoeff(.9);
+                                       new BasicTexture(Color::White),Vector::Unit/400.0),Planar);
+    p->setDiffCoeff(0.9);
     world.addShape(p);
 
-    //world.addLight(new PointLight(ct+Vector(1.,.35,1.3)*-10000,Color::White*.7));
-    world.addLight(new SphericLight(500,ct+Vector(1.,.35,1.3)*-10000,Color::White*.7));
-    world.setAmbiant(Color::White*.2);
+    //world.addLight(new PointLight(ct+Vector(1.0,0.35,1.3)*-10000,Color::White*0.7));
+    world.addLight(new SphericLight(500,ct+Vector(1.0,0.35,1.3)*-10000,Color::White*0.7));
+    world.setAmbiant(Color::White*0.2);
 
     world.setPhotonBoxIn(new Sphere(1200,Mark(ct)));
     world.setPhotonBoxOut(new Sphere(10000,Mark(ct)));
@@ -85,11 +85,11 @@ void buildScene(Scene& world)
 void setCamera(Camera& cam)
 {
     cam=Camera(Point(0,0,0),Vector(0,0,100),
-               //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
-               Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
-    //Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
-    //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
-    //Enumeration<Vector>(1920,Vector(.07,0,0)),Enumeration<Vector>(1080,Vector(0,.07,0)));
+               //Enumeration<Vector>(512,Vector(0.2,0,0)),Enumeration<Vector>(384,Vector(0,0.2,0)));
+               Enumeration<Vector>(1024,Vector(0.1,0,0)),Enumeration<Vector>(768,Vector(0,0.1,0)));
+    //Enumeration<Vector>(1280,Vector(0.08,0,0)),Enumeration<Vector>(1024,Vector(0,0.08,0)));
+    //Enumeration<Vector>(2048,Vector(0.05,0,0)),Enumeration<Vector>(1536,Vector(0,0.05,0)));
+    //Enumeration<Vector>(1920,Vector(0.07,0,0)),Enumeration<Vector>(1080,Vector(0,0.07,0)));
 
     cam.setFocus(2250,250);
 }

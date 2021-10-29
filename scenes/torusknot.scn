@@ -1,20 +1,20 @@
 #define EPSILON (0.01)
-#define PLAN_TAN (M_PI/1000.)
+#define PLAN_TAN (M_PI/1000.0)
 #define MAX_REC (250)
-#define ISO_STEP (10.)
+#define ISO_STEP (10.0)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 5
 #define MAX_REF_SS 1
-#define PHOTON_EQ_DST 1.
-#define PHOTON_EQ_ANG (M_PI/10.)
-#define PHOTON_BOX_FCT 8.
-#define PHOTON_RAD 5.
+#define PHOTON_EQ_DST 1.0
+#define PHOTON_EQ_ANG (M_PI/10.0)
+#define PHOTON_BOX_FCT 8.0
+#define PHOTON_RAD 5.0
 #define PHOTON_REF 5
 #define NB_PHOTON_IT 500000
 #define NB_PHOTON_LIGHT 9
-#define PHOTON_EXP 4.
-#define CAUSTIC_PHOTON_EXP 1.
-#define RADIANCE_PHOTON_EXP .1
+#define PHOTON_EXP 4.0
+#define CAUSTIC_PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0.1
 
 #ifdef SCENE
 #include "Tore.h"
@@ -35,14 +35,14 @@ void buildScene(Scene& world)
 {
     Point ct=Point(-300,-100,3000);
 
-    Shape* t=new Tore(600,180,Mark(ct,Rotation(-M_PI/2.,0,0)));
+    Shape* t=new Tore(600,180,Mark(ct,Rotation(-M_PI/2.0,0,0)));
     t->setTexture(new BasicTexture(RUBY),Undefined);
-    t->setBumpMap(new PerlinBumpMap(.2),Volumic,Vector::Unit/20.);
-    t->setDiffCoeff(.05);
-    t->setSpecCoeff(.5);
+    t->setBumpMap(new PerlinBumpMap(.2),Volumic,Vector::Unit/20.0);
+    t->setDiffCoeff(0.05);
+    t->setSpecCoeff(0.5);
     t->setGlareCoeff(1000);
-    t->setReflectCoeff(.15);
-    t->setRefractCoeff(.8);
+    t->setReflectCoeff(0.15);
+    t->setRefractCoeff(0.8);
     t->setDensity(1.58);
     t->setBeer(200,2,RUBY);
     world.addShape(t);
@@ -56,23 +56,23 @@ void buildScene(Scene& world)
                                            new BasicTexture(VERT),
                                            2,1,4,50),
                    Volumic);
-    tk->setDiffCoeff(.8);
-    tk->setSpecCoeff(.5);
+    tk->setDiffCoeff(0.8);
+    tk->setSpecCoeff(0.5);
     tk->setGlareCoeff(1000);
-    tk->setReflectCoeff(.1);
+    tk->setReflectCoeff(0.1);
     world.addShape(tk);
 
     Shape* plan=new Plan(5000,Point(0,0,0),
                          Mark(Point(0.2,0.5,1.0),Rotation::random()));
     plan->setTexture(new ChequeredPattern(new CustomPerlinPattern(new BasicTexture(Color::White),
                                           new BasicTexture(Color::Black),2,4,3,600),
-                                          new BasicTexture(Color::White),Vector::Unit/500.),
+                                          new BasicTexture(Color::White),Vector::Unit/500.0),
                      Planar);
-    plan->setDiffCoeff(.9);
+    plan->setDiffCoeff(0.9);
     world.addShape(plan);
 
-    world.addLight(new SphericLight(500,ct+Vector(.7,.45,1)*-10000,Color::White*.8));
-    world.setAmbiant(Color::White*.2);
+    world.addLight(new SphericLight(500,ct+Vector(0.7,0.45,1)*-10000,Color::White*0.8));
+    world.setAmbiant(Color::White*0.2);
 
     world.setPhotonBoxIn(new Sphere(800,Mark(ct)));
     world.setPhotonBoxOut(new Sphere(10000,Mark(ct)));
@@ -81,10 +81,10 @@ void buildScene(Scene& world)
 void setCamera(Camera& cam)
 {
     cam=Camera(Point::null,Vector(0,0,100),
-               //Enumeration<Vector>(512,Vector(.2,0,0)),Enumeration<Vector>(384,Vector(0,.2,0)));
-               //Enumeration<Vector>(1024,Vector(.1,0,0)),Enumeration<Vector>(768,Vector(0,.1,0)));
-               Enumeration<Vector>(1280,Vector(.08,0,0)),Enumeration<Vector>(1024,Vector(0,.08,0)));
-    //Enumeration<Vector>(2048,Vector(.05,0,0)),Enumeration<Vector>(1536,Vector(0,.05,0)));
+               //Enumeration<Vector>(512,Vector(0.2,0,0)),Enumeration<Vector>(384,Vector(0,0.2,0)));
+               //Enumeration<Vector>(1024,Vector(0.1,0,0)),Enumeration<Vector>(768,Vector(0,0.1,0)));
+               Enumeration<Vector>(1280,Vector(0.08,0,0)),Enumeration<Vector>(1024,Vector(0,0.08,0)));
+    //Enumeration<Vector>(2048,Vector(0.05,0,0)),Enumeration<Vector>(1536,Vector(0,0.05,0)));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)

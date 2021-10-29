@@ -1,20 +1,20 @@
 #define EPSILON (0.001)
-#define PLAN_TAN (M_PI/1000.)
+#define PLAN_TAN (M_PI/1000.0)
 #define MAX_REC (250)
-#define ISO_STEP (.01)
+#define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 5
 #define MAX_REF_SS 1
 #define PHOTON_EQ_DST 0.001
-#define PHOTON_EQ_ANG (M_PI/100.)
-#define PHOTON_BOX_FCT 2.
-#define PHOTON_RAD 5.
+#define PHOTON_EQ_ANG (M_PI/100.0)
+#define PHOTON_BOX_FCT 2.0
+#define PHOTON_RAD 5.0
 #define PHOTON_REF 1
 #define NB_PHOTON_IT 0
 #define NB_PHOTON_LIGHT 0
-#define PHOTON_EXP 1.
-#define CAUSTIC_PHOTON_EXP 1.
-#define RADIANCE_PHOTON_EXP .1
+#define PHOTON_EXP 1.0
+#define CAUSTIC_PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0.1
 
 #ifdef SCENE
 #include "PLYShape.h"
@@ -45,43 +45,43 @@ void buildScene(Scene& world)
 {
     SmartPointer<const Texture> tex=new CustomPerlinPattern(
         new BasicTexture(MARBRE),
-        new BasicTexture(MARBRE*.9),
+        new BasicTexture(MARBRE*0.9),
         4,3,2,2);
 
     PLYShape* s=new PLYShape("../ply/marianne.ply",true,0.05,
-                             Mark(Point(-3,3,1000),Rotation(M_PI/36.,0,-M_PI/13.)));
+                             Mark(Point(-3,3,1000),Rotation(M_PI/36.0,0,-M_PI/13.0)));
     s->setTexture(tex,Volumic);
-    s->setDiffCoeff(.75);
-    s->setSpecCoeff(.4);
+    s->setDiffCoeff(0.75);
+    s->setSpecCoeff(0.4);
     s->setGlareCoeff(100);
     world.addShape(s);
 
     Shape *c=new CustomIsoSurface(cube,3.5,
                                   new Sphere(3.5*sqrt(3)+EPSILON),
-                                  Mark(Point(-1.7,11.5,1035.5),Rotation(0,-M_PI/16.,M_PI/90.)));
+                                  Mark(Point(-1.7,11.5,1035.5),Rotation(0,-M_PI/16.0,M_PI/90.0)));
     c->setTexture(tex,Volumic);
-    c->setDiffCoeff(.75);
-    c->setSpecCoeff(.4);
+    c->setDiffCoeff(0.75);
+    c->setSpecCoeff(0.4);
     c->setGlareCoeff(100);
     world.addShape(c);
 
-    Shape* plan=new Plan(6.9+3.,Point(0,0,0),
+    Shape* plan=new Plan(6.9+3.0,Point(0,0,0),
                          Mark(Point(0,1,0)));
     plan->setTexture(new BasicTexture(Color("37B57B")));
-    plan->setDiffCoeff(.8);
-    plan->setSpecCoeff(.2);
+    plan->setDiffCoeff(0.8);
+    plan->setSpecCoeff(0.2);
     plan->setGlareCoeff(1000);
-    plan->setRadianceCoeff(.1);
+    plan->setRadianceCoeff(0.1);
     world.addShape(plan);
 
     Point lc(-500,-1000,-500);
     Point sc(-20,-30,1000);
     Vector vct=sc.getVectorTo(lc);
 
-    SphericLight* light=new SphericLight(10,sc+vct*0.5,Color::White*.8);
+    SphericLight* light=new SphericLight(10,sc+vct*0.5,Color::White*0.8);
     light->setMitigation(light->dist(sc));
     world.addLight(light);
-    world.setAmbiant(Color::White*.2);
+    world.setAmbiant(Color::White*0.2);
 
     Shape *cyl=new Cylinder(12,Mark(sc,Rotation(vct.norm())));
     Shape *lp=new Plan(vct.norm()*-1,Mark(sc+vct*0.2));
@@ -97,9 +97,9 @@ void setCamera(Camera& cam)
     Vector z=c.getVectorTo(s).norm()*100;
     Vector x=Vector(1,0,0).projOrthoTo(z).norm();
     Vector y=Vector(0,1,0).projOrthoTo(z).norm();
-    //cam=Camera(c,z,Enumeration<Vector>(512,x*.006),Enumeration<Vector>(384,y*.006));
-    //cam=Camera(c,z,Enumeration<Vector>(1024,x*.003),Enumeration<Vector>(768,y*.003));
-    cam=Camera(c,z,Enumeration<Vector>(1280,x*.0024),Enumeration<Vector>(1024,y*.0024));
+    //cam=Camera(c,z,Enumeration<Vector>(512,x*0.006),Enumeration<Vector>(384,y*0.006));
+    //cam=Camera(c,z,Enumeration<Vector>(1024,x*0.003),Enumeration<Vector>(768,y*0.003));
+    cam=Camera(c,z,Enumeration<Vector>(1280,x*0.0024),Enumeration<Vector>(1024,y*0.0024));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)
