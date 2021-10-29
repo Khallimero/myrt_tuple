@@ -1,20 +1,20 @@
 #define EPSILON (0.001)
-#define PLAN_TAN (M_PI/1000.)
+#define PLAN_TAN (M_PI/1000.0)
 #define MAX_REC (250)
-#define ISO_STEP (.01)
+#define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 5
 #define MAX_REF_SS 1
 #define PHOTON_EQ_DST 0.001
-#define PHOTON_EQ_ANG (M_PI/100.)
-#define PHOTON_BOX_FCT 2.
-#define PHOTON_RAD 5.
+#define PHOTON_EQ_ANG (M_PI/100.0)
+#define PHOTON_BOX_FCT 2.0
+#define PHOTON_RAD 5.0
 #define PHOTON_REF 1
 #define NB_PHOTON_IT 0
 #define NB_PHOTON_LIGHT 0
-#define PHOTON_EXP 1.
-#define CAUSTIC_PHOTON_EXP 1.
-#define RADIANCE_PHOTON_EXP .1
+#define PHOTON_EXP 1.0
+#define CAUSTIC_PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0.1
 
 #ifdef SCENE
 #include "SmartPointer.h"
@@ -40,21 +40,24 @@
 
 #define PIECE_TEXT_WHITE(s,f)						\
   s->setTexture(new CustomPerlinPattern(new BasicTexture(MARBRE),	\
-					new BasicTexture(MARBRE*.85),	\
+					new BasicTexture(MARBRE*0.85),	\
 					4,3,2,f),Volumic);		\
-  s->setDiffCoeff(.8);							\
-  s->setReflectCoeff(.2);						\
-  s->setSpecCoeff(.5);							\
+  s->setDiffCoeff(0.8);							\
+  s->setReflectCoeff(0.2);						\
+  s->setSpecCoeff(0.5);							\
   s->setGlareCoeff(100);
 
 #define PIECE_TEXT_BLACK(s,f)						\
-  s->setTexture(new CustomPerlinPattern(new BasicTexture(BLACK+Color::White*.05), \
-					new BasicTexture(BLACK+Color::White*.01), \
-					2,2,2,f*2.),Volumic);		\
-  s->setDiffCoeff(.85);							\
-  s->setReflectCoeff(.15);						\
-  s->setSpecCoeff(.8);							\
+  s->setTexture(new CustomPerlinPattern(new BasicTexture(BLACK+Color::White*0.05), \
+					new BasicTexture(BLACK+Color::White*0.01), \
+					2,2,2,f*2.0),Volumic);		\
+  s->setDiffCoeff(0.85);						\
+  s->setReflectCoeff(0.15);						\
+  s->setSpecCoeff(0.8);							\
   s->setGlareCoeff(80);
+
+enum color {white,black};
+enum crown {queen,king};
 
 Shape* Box(double r,double h,const Mark& mk,double size=1.0)
 {
@@ -146,18 +149,18 @@ Shape* Rook(const Mark& mk,double size=1.0)
     return s;
 }
 
-Shape* Knight(const Mark& mk,double size=1.0,bool white=true)
+Shape* Knight(color pc,const Mark& mk,double size=1.0)
 {
-    SmartPointer<const Shape> s1=new Plan(Mark(Point::null,Rotation((white?1.:-1.)*M_PI/6.,0,0)).toRef(Vector(0,1,0)),mk+Point(Point(0,-9.15,0)*size));
-    SmartPointer<const Shape> s2=new Plan(Mark(Point::null,Rotation((white?-1.:1.)*M_PI/9.,0,0)).toRef(Vector(0,0,1*(white?1.:-1.))),mk+Point(Point(0,-10.0,0)*size));
+    SmartPointer<const Shape> s1=new Plan(Mark(Point::null,Rotation((pc==white?1.0:-1.0)*M_PI/6.0,0,0)).toRef(Vector(0,1,0)),mk+Point(Point(0,-9.15,0)*size));
+    SmartPointer<const Shape> s2=new Plan(Mark(Point::null,Rotation((pc==white?-1.0:1.0)*M_PI/9.0,0,0)).toRef(Vector(0,0,1*(pc==white?1.0:-1.0))),mk+Point(Point(0,-10,0)*size));
     SmartPointer<const Shape> s3=new AddShape(s1,s2,true);
 
-    SmartPointer<const Shape> s4=new Plan(Mark(Point::null,Rotation((white?1.:-1.)*M_PI/6.,0,0)).toRef(Vector(0,-1,0)),mk+Point(Point(0,-7.15,0)*size));
-    SmartPointer<const Shape> s5=new Plan(Mark(Point::null,Rotation((white?1.:-1.)*M_PI/3.,0,0)).toRef(Vector(0,1,0)),mk+Point(Point(0,-7.3,0)*size));
+    SmartPointer<const Shape> s4=new Plan(Mark(Point::null,Rotation((pc==white?1.0:-1.0)*M_PI/6.0,0,0)).toRef(Vector(0,-1,0)),mk+Point(Point(0,-7.15,0)*size));
+    SmartPointer<const Shape> s5=new Plan(Mark(Point::null,Rotation((pc==white?1.0:-1.0)*M_PI/3.0,0,0)).toRef(Vector(0,1,0)),mk+Point(Point(0,-7.3,0)*size));
     SmartPointer<const Shape> s6=new AddShape(s4,s5,true);
 
-    SmartPointer<const Shape> s7=new Plan(Mark(Point::null,Rotation(0,(white?-1.:1.)*M_PI/4.,0)).toRef(Vector(0,1,0)),mk+Point(Point(0,-9.0,0)*size));
-    SmartPointer<const Shape> s8=new Plan(Mark(Point::null,Rotation(0,0,(white?1.:-1.)*M_PI/4.)).toRef(Vector(0,1,0)),mk+Point(Point(0,-9.0,0)*size));
+    SmartPointer<const Shape> s7=new Plan(Mark(Point::null,Rotation(0,(pc==white?-1.0:1.0)*M_PI/4.0,0)).toRef(Vector(0,1,0)),mk+Point(Point(0,-9.0,0)*size));
+    SmartPointer<const Shape> s8=new Plan(Mark(Point::null,Rotation(0,0,(pc==white?1.0:-1.0)*M_PI/4.0)).toRef(Vector(0,1,0)),mk+Point(Point(0,-9.0,0)*size));
     SmartPointer<const Shape> s9=new AddShape(s7,s8,true);
 
     SmartPointer<const Shape> s10=new Cylinder(Treble<double>(2,0,2),1.0,size,mk);
@@ -170,7 +173,7 @@ Shape* Knight(const Mark& mk,double size=1.0,bool white=true)
 
     SmartPointer<const Shape> s16=new Cylinder(Treble<double>(17.875,17.875,0),1.0,size,mk+Point(Point(-18.625,-7,0)*size));
     SmartPointer<const Shape> s17=new Cylinder(Treble<double>(17.875,17.875,0),1.0,size,mk+Point(Point(18.625,-7,0)*size));
-    SmartPointer<const Shape> s18=new Cylinder(Treble<double>(0,5.1,5.1),1.0,size,mk+Point(Point(0,-11.2,5.*(white?1.:-1.))*size));
+    SmartPointer<const Shape> s18=new Cylinder(Treble<double>(0,5.1,5.1),1.0,size,mk+Point(Point(0,-11.2,5.0*(pc==white?1.0:-1.0))*size));
     SmartPointer<const Shape> s19=new SubShape(s15,s16,true);
     SmartPointer<const Shape> s20=new SubShape(s19,s17,true);
     SmartPointer<const Shape> s21=new SubShape(s20,s18,true);
@@ -183,13 +186,13 @@ Shape* Knight(const Mark& mk,double size=1.0,bool white=true)
     return s;
 }
 
-Shape* Bishop(const Mark& mk,double size=1.0,bool white=true)
+Shape* Bishop(color pc,const Mark& mk,double size=1.0)
 {
     SmartPointer<const Shape> s1=new Sphere(0.4*size,mk+Point(Point(0,-10.8,0)*size));
 
-    SmartPointer<const Shape> s2=new Plan(Mark(Point::null,Rotation((white?1.:-1.)*M_PI/6.,0,0)).toRef(Vector(0,0,1)),mk+Point(Point(0,-8.5,0.25)*size));
-    SmartPointer<const Shape> s3=new Plan(Mark(Point::null,Rotation((white?1.:-1.)*M_PI/6.,0,0)).toRef(Vector(0,0,-1)),mk+Point(Point(0,-8.5,-0.25)*size));
-    SmartPointer<const Shape> s4=new Plan(Mark(Point::null,Rotation((white?1.:-1.)*M_PI/6.,0,0)).toRef(Vector(0,1,0)),mk+Point(Point(0,-8.5,0)*size));
+    SmartPointer<const Shape> s2=new Plan(Mark(Point::null,Rotation((pc==white?1.0:-1.0)*M_PI/6.0,0,0)).toRef(Vector(0,0,1)),mk+Point(Point(0,-8.5,0.25)*size));
+    SmartPointer<const Shape> s3=new Plan(Mark(Point::null,Rotation((pc==white?1.0:-1.0)*M_PI/6.0,0,0)).toRef(Vector(0,0,-1)),mk+Point(Point(0,-8.5,-0.25)*size));
+    SmartPointer<const Shape> s4=new Plan(Mark(Point::null,Rotation((pc==white?1.0:-1.0)*M_PI/6.0,0,0)).toRef(Vector(0,1,0)),mk+Point(Point(0,-8.5,0)*size));
     SmartPointer<const Shape> s5=new AddShape(s2,s3,true);
     SmartPointer<const Shape> s6=new AddShape(s4,s5,true);
 
@@ -216,17 +219,17 @@ Shape* Bishop(const Mark& mk,double size=1.0,bool white=true)
     return s;
 }
 
-Shape* QueenAndKing(const Mark& mk,double size=1.0,bool queen=true)
+Shape* QueenAndKing(crown cr,const Mark& mk,double size=1.0)
 {
     SmartPointer<const Shape> s1=new Sphere(1.5*size,mk+Point(Point(0,-10.5,0)*size));
 
     SmartPointer<const Shape> s2=new Cone(Treble<double>(1,3,1),size,mk+Point(Point(0,-5,0)*size));
     SmartPointer<const Shape> s3=NULL;
-    if(queen)
+    if(cr==crown::queen)
     {
         for(int i=0; i<12; i++)
         {
-            Point p=Point(1.75,-12,0).centerRotate(Point(0,-12,0),Rotation(0,M_PI/6.*(double)i,0));
+            Point p=Point(1.75,-12,0).centerRotate(Point(0,-12,0),Rotation(0,M_PI/6.0*(double)i,0));
             SmartPointer<const Shape> s=new Sphere(0.9*size,mk+Point(p*size));
             s2=new SubShape(s2,s,true);
         }
@@ -263,7 +266,7 @@ Shape* Queen(const Mark& mk,double size=1.0)
 {
     SmartPointer<const Shape> s1=new Sphere(0.4*size,mk+Point(Point(0,-12.3,0)*size));
 
-    CSGShape *s=new AddShape(QueenAndKing(mk,size),s1,true);
+    CSGShape *s=new AddShape(QueenAndKing(crown::queen,mk,size),s1);
     s->setBox(Box(2.6*1.2,12.7,mk,size));
     return s;
 }
@@ -294,7 +297,7 @@ Shape* King(const Mark& mk,double size=1.0)
     SmartPointer<const Shape> s18=new InterShape(s17,s12,true);
     SmartPointer<const Shape> s19=new InterShape(s18,s13,true);
 
-    CSGShape *s=new AddShape(s19,QueenAndKing(mk,size,false),true);
+    CSGShape *s=new AddShape(s19,QueenAndKing(crown::king,mk,size),true);
     s->setBox(Box(2.6*1.2,13.5,mk,size));
     return s;
 }
@@ -309,43 +312,43 @@ Shape* Board(const Mark& mk,double size=1.0)
     SmartPointer<const Shape> p6(new InterShape(p3,p4,true));
     SmartPointer<const Shape> p7=new InterShape(p5,p6,true);
 
-    SmartPointer<const Shape> s1=new Sphere(2.*size,mk+Point(Point(-4*8,-2,-4*8)*size));
-    SmartPointer<const Shape> s2=new Sphere(2.*size,mk+Point(Point(-4*8,-2,4*8)*size));
-    SmartPointer<const Shape> s3=new Sphere(2.*size,mk+Point(Point(4*8,-2,-4*8)*size));
-    SmartPointer<const Shape> s4=new Sphere(2.*size,mk+Point(Point(4*8,-2,4*8)*size));
+    SmartPointer<const Shape> s1=new Sphere(2.0*size,mk+Point(Point(-4*8,-2,-4*8)*size));
+    SmartPointer<const Shape> s2=new Sphere(2.0*size,mk+Point(Point(-4*8,-2,4*8)*size));
+    SmartPointer<const Shape> s3=new Sphere(2.0*size,mk+Point(Point(4*8,-2,-4*8)*size));
+    SmartPointer<const Shape> s4=new Sphere(2.0*size,mk+Point(Point(4*8,-2,4*8)*size));
     SmartPointer<const Shape> s5=new AddShape(s1,s2,true);
     SmartPointer<const Shape> s6=new AddShape(s3,s4,true);
     SmartPointer<const Shape> s7=new AddShape(s5,s6,true);
 
-    SmartPointer<const Shape> c1=new Cylinder(2.*size,Mark(mk.getOrig()+Point(Point(-4*8,-2,0)*size),Rotation(Vector(0,0,1))));
+    SmartPointer<const Shape> c1=new Cylinder(2.0*size,Mark(mk.getOrig()+Point(Point(-4*8,-2,0)*size),Rotation(Vector(0,0,1))));
     SmartPointer<const Shape> c2=new InterShape(c1,p6,true);
-    SmartPointer<const Shape> c3=new Cylinder(2.*size,Mark(mk.getOrig()+Point(Point(4*8,-2,0)*size),Rotation(Vector(0,0,1))));
+    SmartPointer<const Shape> c3=new Cylinder(2.0*size,Mark(mk.getOrig()+Point(Point(4*8,-2,0)*size),Rotation(Vector(0,0,1))));
     SmartPointer<const Shape> c4=new InterShape(c3,p6,true);
     SmartPointer<const Shape> c5=new AddShape(c2,c4,true);
 
-    SmartPointer<const Shape> c6=new Cylinder(2.*size,Mark(mk.getOrig()+Point(Point(0,-2,-4*8)*size),Rotation(Vector(1,0,0))));
+    SmartPointer<const Shape> c6=new Cylinder(2.0*size,Mark(mk.getOrig()+Point(Point(0,-2,-4*8)*size),Rotation(Vector(1,0,0))));
     SmartPointer<const Shape> c7=new InterShape(c6,p5,true);
-    SmartPointer<const Shape> c8=new Cylinder(2.*size,Mark(mk.getOrig()+Point(Point(0,-2,4*8)*size),Rotation(Vector(1,0,0))));
+    SmartPointer<const Shape> c8=new Cylinder(2.0*size,Mark(mk.getOrig()+Point(Point(0,-2,4*8)*size),Rotation(Vector(1,0,0))));
     SmartPointer<const Shape> c9=new InterShape(c8,p5,true);
     SmartPointer<const Shape> c10=new AddShape(c7,c9,true);
     SmartPointer<const Shape> c11=new AddShape(c5,c10,true);
 
     Shape *edge=new AddShape(s7,c11,true);
-    edge->setTexture(new BasicTexture(Color::White*.7));
+    edge->setTexture(new BasicTexture(Color::White*0.7));
     edge->setBumpMap(new TextureBumpMap(new CustomPerlinPattern(new BasicTexture(Color::White),
                                         new BasicTexture(Color::Black),
-                                        6,3,5,1),.1),Volumic,Vector::Unit*.5);
-    edge->setDiffCoeff(.8);
-    edge->setReflectCoeff(.3);
+                                        6,3,5,1),0.1),Volumic,Vector::Unit*0.5);
+    edge->setDiffCoeff(0.8);
+    edge->setReflectCoeff(0.3);
     edge->setSpecCoeff(.5);
     edge->setGlareCoeff(100);
 
-    Plan *p=new Plan(Vector(0,1,0),Mark(mk.getOrig()+Point(Point(0,-4+EPSILON,0)*size),Rotation(0,M_PI/4.,0)));
+    Plan *p=new Plan(Vector(0,1,0),Mark(mk.getOrig()+Point(Point(0,-4+EPSILON,0)*size),Rotation(0,M_PI/4.0,0)));
     p->setTexture(new ChequeredPattern(new MarblePattern(new BasicTexture(Color("150B03")*1.2),new BasicTexture(Color("150B03")),50),
                                        new MarblePattern(new BasicTexture(Color("E8D2B8")),new BasicTexture(Color("E8D2B8")*0.9),50),
-                                       Vector::Unit/(size*8.)),Planar);
-    p->setDiffCoeff(1.);
-    p->setSpecCoeff(.2);
+                                       Vector::Unit/(size*8.0)),Planar);
+    p->setDiffCoeff(1.0);
+    p->setSpecCoeff(0.2);
     p->setGlareCoeff(1000);
     CSGShape *shelf=new InterShape(p,p7,false);
 
@@ -357,130 +360,130 @@ void buildScene(Scene& world)
 {
     Point ct(0,0,1000);
 
-    double size=4.;
+    double size=4.0;
 
     Shape *p1=Rook(Mark(ct)+Treble<double>(3.5*8,-4,3.5*8)*size,size);
-    PIECE_TEXT_WHITE(p1,size*2.);
+    PIECE_TEXT_WHITE(p1,size*2.0);
     world.addShape(p1);
 
-    Shape *p2=Bishop(Mark(ct)+Treble<double>(1.5*8,-4,3.5*8)*size,size);
-    PIECE_TEXT_WHITE(p2,size*2.);
+    Shape *p2=Bishop(color::white,Mark(ct)+Treble<double>(1.5*8,-4,3.5*8)*size,size);
+    PIECE_TEXT_WHITE(p2,size*2.0);
     world.addShape(p2);
 
     Shape *p3=Queen(Mark(ct)+Treble<double>(0.5*8,-4,3.5*8)*size,size);
-    PIECE_TEXT_WHITE(p3,size*2.);
+    PIECE_TEXT_WHITE(p3,size*2.0);
     world.addShape(p3);
 
     Shape *p4=Rook(Mark(ct)+Treble<double>(-1.5*8,-4,3.5*8)*size,size);
-    PIECE_TEXT_WHITE(p4,size*2.);
+    PIECE_TEXT_WHITE(p4,size*2.0);
     world.addShape(p4);
 
     Shape *p5=Pawn(Mark(ct)+Treble<double>(3.5*8,-4,2.5*8)*size,size);
-    PIECE_TEXT_WHITE(p5,size*2.);
+    PIECE_TEXT_WHITE(p5,size*2.0);
     world.addShape(p5);
 
     Shape *p6=Pawn(Mark(ct)+Treble<double>(2.5*8,-4,2.5*8)*size,size);
-    PIECE_TEXT_WHITE(p6,size*2.);
+    PIECE_TEXT_WHITE(p6,size*2.0);
     world.addShape(p6);
 
-    Shape *p7=Knight(Mark(ct)+Treble<double>(-0.5*8,-4,2.5*8)*size,size);
-    PIECE_TEXT_WHITE(p7,size*2.);
+    Shape *p7=Knight(color::white,Mark(ct)+Treble<double>(-0.5*8,-4,2.5*8)*size,size);
+    PIECE_TEXT_WHITE(p7,size*2.0);
     world.addShape(p7);
 
     Shape *p8=King(Mark(ct)+Treble<double>(-2.5*8,-4,2.5*8)*size,size);
-    PIECE_TEXT_WHITE(p8,size*2.);
+    PIECE_TEXT_WHITE(p8,size*2.0);
     world.addShape(p8);
 
-    Shape *p9=Bishop(Mark(ct)+Treble<double>(-3.5*8,-4,2.5*8)*size,size,false);
-    PIECE_TEXT_BLACK(p9,size*2.);
+    Shape *p9=Bishop(color::black,Mark(ct)+Treble<double>(-3.5*8,-4,2.5*8)*size,size);
+    PIECE_TEXT_BLACK(p9,size*2.0);
     world.addShape(p9);
 
-    Shape *p10=Bishop(Mark(ct)+Treble<double>(0.5*8,-4,1.5*8)*size,size);
-    PIECE_TEXT_WHITE(p10,size*2.);
+    Shape *p10=Bishop(color::white,Mark(ct)+Treble<double>(0.5*8,-4,1.5*8)*size,size);
+    PIECE_TEXT_WHITE(p10,size*2.0);
     world.addShape(p10);
 
     Shape *p11=Pawn(Mark(ct)+Treble<double>(-0.5*8,-4,1.5*8)*size,size);
-    PIECE_TEXT_WHITE(p11,size*2.);
+    PIECE_TEXT_WHITE(p11,size*2.0);
     world.addShape(p11);
 
     Shape *p12=Pawn(Mark(ct)+Treble<double>(-2.5*8,-4,1.5*8)*size,size);
-    PIECE_TEXT_WHITE(p12,size*2.);
+    PIECE_TEXT_WHITE(p12,size*2.0);
     world.addShape(p12);
 
     Shape *p13=Pawn(Mark(ct)+Treble<double>(1.5*8,-4,0.5*8)*size,size);
-    PIECE_TEXT_WHITE(p13,size*2.);
+    PIECE_TEXT_WHITE(p13,size*2.0);
     world.addShape(p13);
 
     Shape *p14=Pawn(Mark(ct)+Treble<double>(0.5*8,-4,0.5*8)*size,size);
-    PIECE_TEXT_WHITE(p14,size*2.);
+    PIECE_TEXT_WHITE(p14,size*2.0);
     world.addShape(p14);
 
     Shape *p15=Pawn(Mark(ct)+Treble<double>(-1.5*8,-4,0.5*8)*size,size);
-    PIECE_TEXT_WHITE(p15,size*2.);
+    PIECE_TEXT_WHITE(p15,size*2.0);
     world.addShape(p15);
 
-    Shape *p16=Knight(Mark(ct)+Treble<double>(-2.5*8,-4,0.5*8)*size,size,false);
-    PIECE_TEXT_BLACK(p16,size*2.);
+    Shape *p16=Knight(color::black,Mark(ct)+Treble<double>(-2.5*8,-4,0.5*8)*size,size);
+    PIECE_TEXT_BLACK(p16,size*2.0);
     world.addShape(p16);
 
     Shape *p17=Pawn(Mark(ct)+Treble<double>(0.5*8,-4,-0.5*8)*size,size);
-    PIECE_TEXT_BLACK(p17,size*2.);
+    PIECE_TEXT_BLACK(p17,size*2.0);
     world.addShape(p17);
 
     Shape *p18=Pawn(Mark(ct)+Treble<double>(-1.5*8,-4,-0.5*8)*size,size);
-    PIECE_TEXT_BLACK(p18,size*2.);
+    PIECE_TEXT_BLACK(p18,size*2.0);
     world.addShape(p18);
 
-    Shape *p19=Knight(Mark(ct)+Treble<double>(-2.5*8,-4,-0.5*8)*size,size);
-    PIECE_TEXT_WHITE(p19,size*2.);
+    Shape *p19=Knight(color::white,Mark(ct)+Treble<double>(-2.5*8,-4,-0.5*8)*size,size);
+    PIECE_TEXT_WHITE(p19,size*2.0);
     world.addShape(p19);
 
     Shape *p20=Queen(Mark(ct)+Treble<double>(-3.5*8,-4,-0.5*8)*size,size);
-    PIECE_TEXT_BLACK(p20,size*2.);
+    PIECE_TEXT_BLACK(p20,size*2.0);
     world.addShape(p20);
 
     Shape *p21=Pawn(Mark(ct)+Treble<double>(1.5*8,-4,-1.5*8)*size,size);
-    PIECE_TEXT_BLACK(p21,size*2.);
+    PIECE_TEXT_BLACK(p21,size*2.0);
     world.addShape(p21);
 
     Shape *p22=Pawn(Mark(ct)+Treble<double>(-0.5*8,-4,-1.5*8)*size,size);
-    PIECE_TEXT_BLACK(p22,size*2.);
+    PIECE_TEXT_BLACK(p22,size*2.0);
     world.addShape(p22);
 
     Shape *p23=Pawn(Mark(ct)+Treble<double>(3.5*8,-4,-2.5*8)*size,size);
-    PIECE_TEXT_BLACK(p23,size*2.);
+    PIECE_TEXT_BLACK(p23,size*2.0);
     world.addShape(p23);
 
     Shape *p24=Pawn(Mark(ct)+Treble<double>(2.5*8,-4,-2.5*8)*size,size);
-    PIECE_TEXT_BLACK(p24,size*2.);
+    PIECE_TEXT_BLACK(p24,size*2.0);
     world.addShape(p24);
 
-    Shape *p25=Knight(Mark(ct)+Treble<double>(0.5*8,-4,-2.5*8)*size,size,false);
-    PIECE_TEXT_BLACK(p25,size*2.);
+    Shape *p25=Knight(color:: black,Mark(ct)+Treble<double>(0.5*8,-4,-2.5*8)*size,size);
+    PIECE_TEXT_BLACK(p25,size*2.0);
     world.addShape(p25);
 
     Shape *p26=Pawn(Mark(ct)+Treble<double>(-2.5*8,-4,-2.5*8)*size,size);
-    PIECE_TEXT_BLACK(p26,size*2.);
+    PIECE_TEXT_BLACK(p26,size*2.0);
     world.addShape(p26);
 
     Shape *p27=Pawn(Mark(ct)+Treble<double>(-3.5*8,-4,-2.5*8)*size,size);
-    PIECE_TEXT_BLACK(p27,size*2.);
+    PIECE_TEXT_BLACK(p27,size*2.0);
     world.addShape(p27);
 
     Shape *p28=Rook(Mark(ct)+Treble<double>(3.5*8,-4,-3.5*8)*size,size);
-    PIECE_TEXT_BLACK(p28,size*2.);
+    PIECE_TEXT_BLACK(p28,size*2.0);
     world.addShape(p28);
 
-    Shape *p29=Bishop(Mark(ct)+Treble<double>(2.5*8,-4,-3.5*8)*size,size,false);
-    PIECE_TEXT_BLACK(p29,size*2.);
+    Shape *p29=Bishop(color::black,Mark(ct)+Treble<double>(2.5*8,-4,-3.5*8)*size,size);
+    PIECE_TEXT_BLACK(p29,size*2.0);
     world.addShape(p29);
 
     Shape *p30=Rook(Mark(ct)+Treble<double>(-1.5*8,-4,-3.5*8)*size,size);
-    PIECE_TEXT_BLACK(p30,size*2.);
+    PIECE_TEXT_BLACK(p30,size*2.0);
     world.addShape(p30);
 
     Shape *p31=King(Mark(ct)+Treble<double>(-2.5*8,-4,-3.5*8)*size,size);
-    PIECE_TEXT_BLACK(p31,size*2.);
+    PIECE_TEXT_BLACK(p31,size*2.0);
     world.addShape(p31);
 
     Shape *board=Board(Mark(ct),size);
@@ -488,53 +491,54 @@ void buildScene(Scene& world)
 
     Shape *plan=new Plan(Vector(0,-1,0),Mark(ct));
     plan->setTexture(new CustomPerlinPattern(new BasicTexture(VERT),new BasicTexture(VERT*0.95),6,3,5,8));
-    plan->setDiffCoeff(.8);
+    plan->setDiffCoeff(0.8);
     world.addShape(plan);
 
     Shape* b=new Sphere(2000,Mark(ct));
-    b->setTexture(new BasicTexture(Color::White*.3));
-    b->setDiffCoeff(1.);
+    b->setTexture(new BasicTexture(Color::White*0.3));
+    b->setDiffCoeff(1.0);
     world.addShape(b);
 
     {
-        Point lc=Point(-500.,-450.,-500.);
+        Point lc=Point(-500,-450,-500);
         world.addLight(new SphericLight(20,lc,Color::White*0.45));
 
         Vector vct=Point(ct+Treble<double>(1*8,0,0)).getVectorTo(lc);
         Shape *cyl=new Cylinder(20,Mark(ct,Rotation(vct.norm())));
-        Shape *lp=new Plan(vct.norm()*-1,Mark(ct+vct*0.7));
+        Shape *lp=new Plan(vct.norm()*-1.0,Mark(ct+vct*0.7));
         CSGShape *ls=new SubShape(cyl,lp,true);
         ls->setHitShape(CSGShape::second,false);
         world.addShape(ls);
     }
 
     {
-        Point lc=Point(-500.,-750.,800.);
+        Point lc=Point(-500,-750,800);
         world.addLight(new SphericLight(25,lc,Color::White*0.35));
 
         Vector vct=ct.getVectorTo(lc);
         Shape *cyl=new Cylinder(25,Mark(ct,Rotation(vct.norm())));
-        Shape *lp=new Plan(vct.norm()*-1,Mark(ct+vct*0.8));
+        Shape *lp=new Plan(vct.norm()*-1.0,Mark(ct+vct*0.8));
         CSGShape *ls=new SubShape(cyl,lp,true);
         ls->setHitShape(CSGShape::second,false);
         world.addShape(ls);
     }
 
-    //world.addLight(new SphericLight(20,Point(-500.,-450.,-500.),Color::White*0.5));
-    //world.addLight(new SphericLight(25,Point(-500.,-750.,800.),Color::White*0.3));
-    world.setAmbiant(Color::White*.5);
+    //world.addLight(new SphericLight(20,Point(-500,-450,-500),Color::White*0.5));
+    //world.addLight(new SphericLight(25,Point(-500,-750,800),Color::White*0.3));
+
+    world.setAmbiant(Color::White*0.5);
 }
 
 void setCamera(Camera& cam)
 {
     Point c(-200,-130,700);
     Point s(-37,-27,1000);
-    Vector z=c.getVectorTo(s).norm()*10;
+    Vector z=c.getVectorTo(s).norm()*10.0;
     Vector x=Vector(1,0,0).projOrthoTo(z).norm();
     Vector y=z.prodVect(x).norm();
 
-    cam=Camera(c,z,Enumeration<Vector>(1024,x*.0046),Enumeration<Vector>(768,y*.0046));
-    //cam=Camera(c,z,Enumeration<Vector>(1280,x*.00368),Enumeration<Vector>(1024,y*.00368));
+    cam=Camera(c,z,Enumeration<Vector>(1024,x*0.0046),Enumeration<Vector>(768,y*0.0046));
+    //cam=Camera(c,z,Enumeration<Vector>(1280,x*0.00368),Enumeration<Vector>(1024,y*0.00368));
 
     cam.setFocus(s.dist(c)+(4*8)*0.5,750);
 }
