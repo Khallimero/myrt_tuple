@@ -67,8 +67,8 @@ void setAlarm(int timer=ALARM_TIMER);
 
 void alarmHandler(int sig)
 {
-    AutoLock autolock(&Renderer::Monitored,false);
-    if(autolock.isLocked())
+    AutoLock lock(&Renderer::Monitored,false);
+    if(lock.isLocked())
     {
         switch(sig)
         {
