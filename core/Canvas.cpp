@@ -1,4 +1,4 @@
-#include "Grid.h"
+#include "Canvas.h"
 #include "Color.h"
 #include "Vector.h"
 #include "Pair.h"
@@ -57,5 +57,5 @@ template <typename T> T bilinearFilter(T** tab,int w,int h,double x0,double y0)
 template Vector bilinearFilter<Vector>(Vector**,int,int,double,double);
 template Color bilinearFilter<Color>(Color**,int,int,double,double);
 
-template class Grid<Color>;
-template class Grid<Vector>;
+template class Canvas<Color>;
+template class Canvas<Vector>;

@@ -6,20 +6,20 @@
 
 template <typename T> T bilinearFilter(T** tab,int w,int h,double x0,double y0);
 
-template <typename T> class Grid
+template <typename T> class Canvas
 {
 public:
-    Grid()
+    Canvas()
     {
         this->w=0,this->h=0;
         tab=NULL;
     }
-    Grid(int w,int h)
+    Canvas(int w,int h)
     {
         this->w=w,this->h=h;
         alloc();
     }
-    virtual ~Grid()
+    virtual ~Canvas()
     {
         if(tab!=NULL)
         {

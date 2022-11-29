@@ -4,10 +4,10 @@ include ../myrt.mk
 TARGET        = ../$(LIBDIR)/libcore.a
 
 SOURCES       =	Arithmetic.cpp \
+		Canvas.cpp \
 		Color.cpp \
 		Complex.cpp \
 		Geometric.cpp \
-		Grid.cpp \
 		Mark.cpp \
 		Pair.cpp \
 		Picture.cpp \

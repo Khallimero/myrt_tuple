@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Grid.h"
+#include "Canvas.h"
 #include "Color.h"
 
 #include <stdio.h>
 
-class Picture:public Grid<Color>
+class Picture:public Canvas<Color>
 {
 public:
     Picture(int w,int h);
