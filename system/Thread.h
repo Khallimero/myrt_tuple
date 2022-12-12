@@ -4,8 +4,6 @@
 
 #include <pthread.h>
 
-#define NB_THREAD 8
-
 void* runThread(void*);
 
 class Thread

@@ -59,10 +59,27 @@ void Thread::kill()
 
 int Thread::nbThread()
 {
-    if(_nb_thread<0)
+    if(_nb_thread<=0)
     {
+#ifdef NB_THREAD
+        _nb_thread=NB_THREAD;
+#else
         cpu_set_t set;
-        _nb_thread=pthread_getaffinity_np(pthread_self(),sizeof(set),&set)==0?CPU_COUNT(&set):NB_THREAD;
+        if(pthread_getaffinity_np(pthread_self(),sizeof(set),&set)!=0)
+        {
+            fprintf(stderr,"CPU count error.\n");
+            fflush(stderr);
+            exit(1);
+        }
+        _nb_thread=CPU_COUNT(&set);
+#endif
+        fprintf(stdout,"CPU count : %d\n",_nb_thread);
+        fflush(stdout);
+#ifdef OpenCL
+        _nb_thread*=2;
+        fprintf(stdout,"Thread count : %d\n",_nb_thread);
+        fflush(stdout);
+#endif
     }
     return _nb_thread;
 }

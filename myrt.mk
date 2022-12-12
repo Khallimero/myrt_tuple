@@ -13,3 +13,6 @@ OBJ           = $(join $(addsuffix ./$(OBJDIR)/, $(dir $(SOURCES))), $(notdir $(
 ./$(OBJDIR)/%.o : %.cpp
 	@$(MKDIR) $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCDIR) $(INCPATH) -c $< -o $@
+
+NB_THREAD     = `$(NPROC)`
+OPENCL_QUEUE  = `expr \`$(NPROC)\` '/' 2`

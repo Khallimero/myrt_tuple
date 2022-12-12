@@ -1,6 +1,6 @@
 CXX           = g++
-DEFINES       = -O3 -Wall -ffast-math -pthread
-CXXFLAGS      = -m64 -mtune=970 $(DEFINES)
+DEFINES       = -DNB_THREAD=$(NB_THREAD)
+CXXFLAGS      = -m64 -mtune=970 -O3 -Wall -ffast-math -pthread $(DEFINES)
 INCDIR        = -I.
 LINKLIBS      = -lstdc++ -lm -lpthread
 STRIP         = strip

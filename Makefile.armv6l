@@ -1,6 +1,6 @@
 CXX           = g++
-DEFINES       = -O3 -Wall -ffast-math -pthread
-CXXFLAGS      = -march=armv6 -mfloat-abi=hard $(DEFINES)
+DEFINES       = -DNB_THREAD=$(NB_THREAD)
+CXXFLAGS      = -march=armv6 -mfloat-abi=hard -O3 -Wall -ffast-math -pthread $(DEFINES)
 INCDIR        = -I.
 LINKLIBS      = -lm -lpthread
 STRIP         = strip

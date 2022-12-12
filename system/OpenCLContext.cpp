@@ -10,22 +10,29 @@ OpenCLContext::OpenCLContext()
 {
     char buf[BUFSIZ];
 
+    cl_int ret;
     cl_platform_id platform_id;
     cl_uint ret_num_platforms;
-    if(clGetPlatformIDs(1, &platform_id, &ret_num_platforms)!=CL_SUCCESS)exit(1);
-    if(clGetPlatformInfo(platform_id, CL_PLATFORM_NAME, BUFSIZ, buf, NULL)!=CL_SUCCESS)exit(1);
+    ret=clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+    printError("clGetPlatformIDs",ret);
+    ret=clGetPlatformInfo(platform_id, CL_PLATFORM_NAME, BUFSIZ, buf, NULL);
+    printError("clGetPlatformInfo",ret);
     fprintf(stdout,"OpenCL platform : %s\n",buf);
 
     cl_uint ret_num_devices;
-    if(clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1,&device_id, &ret_num_devices)!=CL_SUCCESS) exit(1);
-    if(clGetDeviceInfo(device_id, CL_DEVICE_NAME, BUFSIZ, buf, NULL)!=CL_SUCCESS) exit(1);
+    ret=clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_DEFAULT, 1,&device_id, &ret_num_devices);
+    printError("clGetDeviceIDs",ret);
+    ret=clGetDeviceInfo(device_id, CL_DEVICE_NAME, BUFSIZ, buf, NULL);
+    printError("clGetDeviceInfo",ret);
     fprintf(stdout,"OpenCL device : %s\n",buf);
 
-    cl_int ret;
     context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &ret);
     printError("clCreateContext",ret);
     command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
     printError("clCreateCommandQueue",ret);
+
+    fprintf(stdout, "OpenCL queue length : %d\n", OPENCL_QUEUE);
+    fflush(stdout);
 }
 
 OpenCLContext::~OpenCLContext()
@@ -74,7 +81,7 @@ bool OpenCLContext::flush()const
     return clFlush(command_queue)==CL_SUCCESS;
 }
 
-#define ErrorCode(x) x: fprintf(stderr,"%s : %s\n",fct,#x);break
+#define ErrorCode(x) x: fprintf(stderr,"%s : %s\n",fct,#x);fflush(stderr);exit(1);break
 void OpenCLContext::printError(const char* fct, cl_int ret)
 {
     switch(ret)
@@ -140,10 +147,12 @@ void OpenCLContext::printError(const char* fct, cl_int ret)
     case ErrorCode(CL_INVALID_LINKER_OPTIONS);
     case ErrorCode(CL_INVALID_DEVICE_PARTITION_COUNT);
     default:
-        fprintf(stderr,"%s : Unknown error\n",fct);
+        fprintf(stderr,"%s : Unknown error %d\n",fct,ret);
+        fflush(stderr);
+        exit(1);
     }
 }
 
 SmartPointer<OpenCLContext> OpenCLContext::openCLcontext=new OpenCLContext();
-LockQueue<OpenCL_Queue> OpenCLContext::openCLQueue(OpenCLContext::openCLcontext);
+LockQueue<OPENCL_QUEUE> OpenCLContext::openCLQueue(OpenCLContext::openCLcontext);
 #endif

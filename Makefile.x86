@@ -1,6 +1,6 @@
 CXX           = g++
-DEFINES       = -O3 -Wall -ffast-math -pthread
-CXXFLAGS      = -m32 -mtune=native -march=native -malign-double $(DEFINES)
+DEFINES       = -DNB_THREAD=$(NB_THREAD)
+CXXFLAGS      = -m32 -mtune=native -march=native -malign-double -O3 -Wall -ffast-math -pthread $(DEFINES)
 INCDIR        = -I.
 LINKLIBS      = -lm -lpthread
 STRIP         = strip
