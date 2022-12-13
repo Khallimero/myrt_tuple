@@ -75,10 +75,10 @@ int Thread::nbThread()
 #endif
         fprintf(stdout,"CPU count : %d\n",_nb_thread);
         fflush(stdout);
-#ifdef OpenCL
-        _nb_thread*=2;
-        fprintf(stdout,"Thread count : %d\n",_nb_thread);
-        fflush(stdout);
+#ifdef OPENCL_QUEUE
+        //_nb_thread+=OPENCL_QUEUE;
+        //fprintf(stdout,"Thread count : %d\n",_nb_thread);
+        //fflush(stdout);
 #endif
     }
     return _nb_thread;
