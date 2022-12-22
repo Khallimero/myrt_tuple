@@ -209,18 +209,17 @@ void PLYShape::_runHitKernel(int nbShapes, const ObjCollection<Ray>& r,ObjCollec
     OpenCLContext::openCLcontext->writeBuffer(hit_buffId[3],1,sizeof(int),&nb);
 
     this->hit_kernel->runKernel(nbShapes);
+    OpenCLContext::openCLcontext->finish();
 
     OpenCLContext::openCLcontext->readBuffer(hit_buffId[3],1,sizeof(int),&nb);
     if(nb==0)
     {
-        OpenCLContext::openCLcontext->flush();
         OpenCLContext::openCLQueue.unlock();
     }
     else if(nb<=nb_hit)
     {
         LocalPointer<int> ind=(int*)malloc((1+(nb*2))*sizeof(int));
         OpenCLContext::openCLcontext->readBuffer(hit_buffId[3],1+(nb*2),sizeof(int),ind);
-        OpenCLContext::openCLcontext->flush();
         OpenCLContext::openCLQueue.unlock();
 
         for(int n=0; n<nb; n++)
@@ -629,6 +628,7 @@ void* boxThread(void* d)
             free(pt);
 
             s->adj_kernel->runKernel(s->shapes._count());
+            OpenCLContext::openCLcontext->finish();
 
             OpenCLContext::openCLcontext->readBuffer(s->adj_buffId[5],1,sizeof(int),&nb);
             if(nb>0)
@@ -636,7 +636,6 @@ void* boxThread(void* d)
                 LocalPointer<int> ind=(int*)malloc((1+nb)*sizeof(int));
                 OpenCLContext::openCLcontext->readBuffer(s->adj_buffId[5],1+nb,sizeof(int),ind);
 
-                OpenCLContext::openCLcontext->flush();
                 OpenCLContext::openCLQueue.unlock();
 
                 for(int j=1; j<=nb; j++)
@@ -644,7 +643,6 @@ void* boxThread(void* d)
             }
             else
             {
-                OpenCLContext::openCLcontext->flush();
                 OpenCLContext::openCLQueue.unlock();
             }
         }

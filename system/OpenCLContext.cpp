@@ -81,6 +81,11 @@ bool OpenCLContext::flush()const
     return clFlush(command_queue)==CL_SUCCESS;
 }
 
+bool OpenCLContext::finish()const
+{
+    return flush() && (clFinish(command_queue)==CL_SUCCESS);
+}
+
 #define ErrorCode(x) x: fprintf(stderr,"%s : %s\n",fct,#x);fflush(stderr);exit(1);break
 void OpenCLContext::printError(const char* fct, cl_int ret)
 {

@@ -43,6 +43,7 @@ public:
         return command_queue;
     }
     bool flush()const;
+    bool finish()const;
 
 public:
     static SmartPointer<OpenCLContext> openCLcontext;
