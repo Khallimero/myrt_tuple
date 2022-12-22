@@ -45,8 +45,6 @@ bool OpenCLKernel::runKernel(size_t nb)const
 
 OpenCLKernel::~OpenCLKernel()
 {
-    OpenCLContext::openCLcontext->flush();
-    clFinish(OpenCLContext::openCLcontext->getCommandQueue());
     clReleaseKernel(kernel);
 }
 #endif
