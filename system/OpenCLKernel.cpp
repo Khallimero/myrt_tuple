@@ -15,10 +15,12 @@ OpenCLKernel::OpenCLKernel(const char* name, const char* source, const char* opt
     OpenCLContext::printError("clCreateProgramWithSource",ret);
     if((ret=clBuildProgram(program, 1, &OpenCLContext::openCLcontext->getDeviceId(), options, NULL, NULL))!=CL_SUCCESS)
     {
+        if(clGetProgramBuildInfo(program, OpenCLContext::openCLcontext->getDeviceId(), CL_PROGRAM_BUILD_LOG, BUFSIZ, buf, NULL)==CL_SUCCESS)
+        {
+            fprintf(stderr, "%s\n", buf);
+            fflush(stderr);
+        }
         OpenCLContext::printError("clBuildProgram",ret);
-        ret = clGetProgramBuildInfo(program, OpenCLContext::openCLcontext->getDeviceId(), CL_PROGRAM_BUILD_LOG, BUFSIZ, buf, NULL);
-        if(ret==CL_SUCCESS)fprintf(stderr, "%s\n", buf);
-        exit(1);
     }
     kernel = clCreateKernel(program, name, &ret);
     OpenCLContext::printError("clCreateKernel",ret);
