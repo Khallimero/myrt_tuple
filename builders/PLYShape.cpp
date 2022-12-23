@@ -537,7 +537,7 @@ __kernel void primitive_hit(\
     __global int *k)\
 {\
     int id=get_global_id(0),sid=0;\
-    for(int i=1;sid<=id&&i<=cnt[0];sid+=abs(cnt[i++]))\
+    for(int i=1;i<=cnt[0]&&sid<=id;sid+=abs(cnt[i++]))\
         if(cnt[i]<0)id+=abs(cnt[i]);\
     if(id>=sid)return;\
     double3 t_o=vload3(id*3,prm);\
@@ -553,14 +553,11 @@ __kernel void primitive_hit(\
         {\
             double a=dot(cross(t_v2,t_w),t_vct)/d;\
             double b=dot(cross(t_w,t_v1),t_vct)/d;\
-            if(a>=0.0 && b>=0.0 && (a+b)<=1.0)\
+            if(a>=0.0&&b>=0.0&&(a+b)<=1.0)\
             {\
                 int ik=atomic_inc(k);\
                 if(ik<cnt[cnt[0]+2])\
-                {\
-                    k[1+(ik*2)]=ir;\
-                    k[1+(ik*2)+1]=id;\
-                }\
+                    vstore2((int2)(ir,id),ik,k+1);\
             }\
         }\
     }\
