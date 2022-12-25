@@ -146,13 +146,15 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
         }
 
 #ifdef OpenCL
-        if(nbShapes>this->shapes._count()/this->boxes._count()&&OpenCLContext::openCLQueue.tryEnqueueLock()==0)
+        if((nbShapes>>2)>this->shapes._count()/this->boxes._count()&&OpenCLContext::openCLQueue.tryEnqueueLock()==0)
         {
             bCnt[bCnt[0]+1]=r._count();
             double *k_r=(double*)malloc(r._count()*2*TREBLE_SIZE*sizeof(double));
             for(int i=0; i<r._count(); i++)
-                for(int j=0; j<TREBLE_SIZE; j++)
-                    k_r[(i*2*TREBLE_SIZE)+j]=(double)r[i].getPoint().get(j),k_r[(((i*2)+1)*TREBLE_SIZE)+j]=(double)r[i].getVector().get(j);
+            {
+                memcpy(&k_r[i*2*TREBLE_SIZE],r[i].getPoint()._getTab(),TREBLE_SIZE*sizeof(double));
+                memcpy(&k_r[((i*2)+1)*TREBLE_SIZE],r[i].getVector()._getTab(),TREBLE_SIZE*sizeof(double));
+            }
 
             OpenCLContext::openCLQueue.waitLock();
             if(r._count()>nb_ray)
@@ -462,8 +464,7 @@ void PLYShape::buildBoxes(bool flgBox)
         double *pt=(double*)malloc(cnt*3*TREBLE_SIZE*sizeof(double));
         for(int i=0; i<cnt; i++)
             for(int j=0; j<3; j++)
-                for(int k=0; k<TREBLE_SIZE; k++)
-                    pt[(((i*3)+j)*TREBLE_SIZE)+k]=(double)this->shapes[i].pt[j].get(k);
+                memcpy(&pt[((i*3)+j)*TREBLE_SIZE],this->shapes[i].pt[j]._getTab(),TREBLE_SIZE*sizeof(double));
         OpenCLContext::openCLcontext->writeBuffer(adj_buffId[0],cnt*3*TREBLE_SIZE,sizeof(double),pt);
         OpenCLContext::openCLcontext->writeBuffer(adj_buffId[1],1,sizeof(int),&cnt);
         free(pt);
@@ -524,8 +525,7 @@ __kernel void adj_primitive(\
         for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
             for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++,nbShapes++)
                 for(int l=0; l<3; l++)
-                    for(int m=0; m<TREBLE_SIZE; m++)
-                        pt[(((nbShapes*3)+l)*TREBLE_SIZE)+m]=(double)largeBoxes[i]->boxes[j]->ht[k]->pt[l].get(m);
+                    memcpy(&pt[((nbShapes*3)+l)*TREBLE_SIZE],Vector(largeBoxes[i]->boxes[j]->ht[k]->pt[l]-(l==0?Point::null:largeBoxes[i]->boxes[j]->ht[k]->pt[0]))._getTab(),TREBLE_SIZE*sizeof(double));
     OpenCLContext::openCLcontext->writeBuffer(hit_buffId[0],shapes._count()*3*TREBLE_SIZE,sizeof(double),pt);
     free(pt);
 
@@ -541,14 +541,14 @@ __kernel void primitive_hit(\
         if(cnt[i]<0)id+=abs(cnt[i]);\
     if(id>=sid)return;\
     double3 t_o=vload3(id*3,prm);\
-    double3 t_v1=vload3((id*3)+1,prm)-t_o;\
-    double3 t_v2=vload3((id*3)+2,prm)-t_o;\
+    double3 t_v1=vload3((id*3)+1,prm);\
+    double3 t_v2=vload3((id*3)+2,prm);\
     for(int ir=0;ir<cnt[cnt[0]+1];ir++)\
     {\
         double3 t_pt=vload3(ir*2,r);\
         double3 t_vct=vload3(ir*2+1,r);\
-        double d=dot(cross(t_v2,t_v1),t_vct);\
         double3 t_w=t_pt-t_o;\
+        double d=dot(cross(t_v2,t_v1),t_vct);\
         if(dot(cross(t_v1,t_v2),t_w)/d>0.0)\
         {\
             double a=dot(cross(t_v2,t_w),t_vct)/d;\
@@ -609,13 +609,11 @@ void* boxThread(void* d)
             double *pt=(double*)malloc(s->boxes[i].ht._count()*3*TREBLE_SIZE*sizeof(double));
             for(int j=0; j<s->boxes[i].ht._count(); j++)
                 for(int k=0; k<3; k++)
-                    for(int l=0; l<TREBLE_SIZE; l++)
-                        pt[(((j*3)+k)*TREBLE_SIZE)+l]=(double)s->boxes[i].ht[j]->pt[k].get(l);
+                    memcpy(&pt[((j*3)+k)*TREBLE_SIZE],s->boxes[i].ht[j]->pt[k]._getTab(),TREBLE_SIZE*sizeof(double));
             int cnt=s->boxes[i].ht._count(),nb=0;
             double bx[TREBLE_SIZE+1];
-            for(int j=0; j<TREBLE_SIZE; j++)
-                bx[j]=(double)s->boxes[i].box->getMark().getOrig().get(j);
-            bx[TREBLE_SIZE]=(double)s->boxes[i].box->getRadius();
+            memcpy(bx,s->boxes[i].box->getMark().getOrig()._getTab(),TREBLE_SIZE*sizeof(double));
+            bx[TREBLE_SIZE]=s->boxes[i].box->getRadius();
 
             OpenCLContext::openCLQueue.waitLock();
             OpenCLContext::openCLcontext->writeBuffer(s->adj_buffId[2],s->boxes[i].ht._count()*3*TREBLE_SIZE,sizeof(double),pt);
