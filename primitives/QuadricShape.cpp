@@ -11,7 +11,7 @@ QuadricShape::~QuadricShape() {}
 bool QuadricShape::isInside(const Point& h,double e)const
 {
     Point p=mark.fromRef(h)/size;
-    return Geometric(p*p).prodScal(this->coeff)<=SQ(radius)+e;
+    return Geometric(p*p).prodScal(this->coeff)<SQ(radius)+e;
 }
 
 Point QuadricShape::getRelativePoint(const Hit& h,Mapping mp)const

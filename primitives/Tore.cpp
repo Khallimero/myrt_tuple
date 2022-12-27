@@ -33,7 +33,7 @@ bool Tore::isInside(const Point& p,double e)const
     if(d>r1+r2+e||d<r1-r2-e)return false;
     Point a=mark.fromRef(p);
     Point o=Vector(a*Tore::Unit).norm()*r1;
-    return o.dist(a)<=r2+e;
+    return o.dist(a)<r2+e;
 }
 
 bool Tore::intersect(const Ray& r)const

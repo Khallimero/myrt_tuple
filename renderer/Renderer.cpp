@@ -253,8 +253,9 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
 Color Renderer::computeBeerCoeff(const Color& c,const Hit& h)const
 {
     Color col=c;
-    const Point& p1=h.getIncident().getPoint();
-    Point p2=h.getPoint()-(h.getIncident().getVector().norm()*EPSILON);
+    const Vector vct=h.getIncident().getVector().norm()*EPSILON;
+    const Point p1=h.getIncident().getPoint()+vct;
+    const Point p2=h.getPoint()-vct;
     double dst=p1.dist(p2);
 
     for(int i=0; i<sc->getNbShapes(); i++)
