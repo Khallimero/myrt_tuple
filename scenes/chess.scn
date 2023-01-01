@@ -29,12 +29,14 @@
 #include "Cone.h"
 #include "CustomPerlinPattern.h"
 #include "ChequeredPattern.h"
+#include "WoodPattern.h"
 #include "MarblePattern.h"
 #include "BasicTexture.h"
 #include "TextureBumpMap.h"
 #include "SphericLight.h"
 
 #define VERT Color("37B57B")
+#define WOOD (Color("432616"))
 #define MARBRE Color::White
 #define BLACK Color::Black
 
@@ -334,12 +336,12 @@ Shape* Board(const Mark& mk,double size=1.0)
     SmartPointer<const Shape> c11=new AddShape(c5,c10,true);
 
     Shape *edge=new AddShape(s7,c11,true);
-    edge->setTexture(new BasicTexture(Color::White*0.7));
+    edge->setTexture(new WoodPattern(new BasicTexture(WOOD*0.75),new BasicTexture(WOOD*0.95),new BasicTexture(WOOD*1.2),15),Volumic);
     edge->setBumpMap(new TextureBumpMap(new CustomPerlinPattern(new BasicTexture(Color::White),
                                         new BasicTexture(Color::Black),
                                         6,3,5,1),0.1),Volumic,Vector::Unit*0.5);
     edge->setDiffCoeff(0.8);
-    edge->setReflectCoeff(0.3);
+    edge->setReflectCoeff(0.25);
     edge->setSpecCoeff(.5);
     edge->setGlareCoeff(100);
 

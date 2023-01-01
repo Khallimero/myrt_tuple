@@ -31,7 +31,7 @@
 #include "ParametricIsoSurface.h"
 
 #define KHAKI Color("9F9F5F")
-#define ORANGE Color("FFCC99")
+#define PEACH Color("FFCC99")
 #define BROWN Color("F4A460")
 
 void buildScene(Scene& world)
@@ -41,7 +41,7 @@ void buildScene(Scene& world)
     SmartPointer<ParametricPrimitive<2>> mtp=new MobiusTore(2,1,2);
     ShapeBuilder<2> sbm(300,1,Tuple<int,2>::Unit*360*4);
     Shape* mt=sbm.getInstance(Mark(ct,Rotation(-M_PI/2.0,-M_PI/2.0,0)),mtp);
-    mt->setTexture(new BasicTexture(ORANGE));
+    mt->setTexture(new BasicTexture(PEACH));
     mt->setDiffCoeff(0.8);
     mt->setSpecCoeff(0.5);
     mt->setGlareCoeff(100);
