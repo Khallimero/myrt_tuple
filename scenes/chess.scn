@@ -35,6 +35,8 @@
 #include "TextureBumpMap.h"
 #include "SphericLight.h"
 
+//#define RSEED 1672852454L
+
 #define VERT Color("37B57B")
 #define WOOD (Color("432616"))
 #define MARBRE Color::White
@@ -503,11 +505,11 @@ void buildScene(Scene& world)
 
     {
         Point lc=Point(-500,-450,-500);
-        world.addLight(new SphericLight(20,lc,Color::White*0.45));
+        world.addLight(new SphericLight(20,lc,Color::White*0.95));
 
         Vector vct=Point(ct+Treble<double>(1*8,0,0)).getVectorTo(lc);
         Shape *cyl=new Cylinder(20,Mark(ct,Rotation(vct.norm())));
-        Shape *lp=new Plan(vct.norm()*-1.0,Mark(ct+vct*0.7));
+        Shape *lp=new Plan(vct.norm()*-1.0,Mark(ct+vct*0.75));
         CSGShape *ls=new SubShape(cyl,lp,true);
         ls->setHitShape(CSGShape::second,false);
         world.addShape(ls);
@@ -515,11 +517,11 @@ void buildScene(Scene& world)
 
     {
         Point lc=Point(-500,-750,800);
-        world.addLight(new SphericLight(25,lc,Color::White*0.35));
+        world.addLight(new SphericLight(25,lc,Color::White*0.55));
 
         Vector vct=ct.getVectorTo(lc);
         Shape *cyl=new Cylinder(25,Mark(ct,Rotation(vct.norm())));
-        Shape *lp=new Plan(vct.norm()*-1.0,Mark(ct+vct*0.8));
+        Shape *lp=new Plan(vct.norm()*-1.0,Mark(ct+vct*0.85));
         CSGShape *ls=new SubShape(cyl,lp,true);
         ls->setHitShape(CSGShape::second,false);
         world.addShape(ls);
@@ -528,7 +530,7 @@ void buildScene(Scene& world)
     //world.addLight(new SphericLight(20,Point(-500,-450,-500),Color::White*0.5));
     //world.addLight(new SphericLight(25,Point(-500,-750,800),Color::White*0.3));
 
-    world.setAmbiant(Color::White*0.5);
+    world.setAmbiant(Color::White*0.15);
 }
 
 void setCamera(Camera& cam)
@@ -539,8 +541,8 @@ void setCamera(Camera& cam)
     Vector x=Vector(1,0,0).projOrthoTo(z).norm();
     Vector y=z.prodVect(x).norm();
 
-    cam=Camera(c,z,Enumeration<Vector>(1024,x*0.0046),Enumeration<Vector>(768,y*0.0046));
-    //cam=Camera(c,z,Enumeration<Vector>(1280,x*0.00368),Enumeration<Vector>(1024,y*0.00368));
+    //cam=Camera(c,z,Enumeration<Vector>(1024,x*0.0046),Enumeration<Vector>(768,y*0.0046));
+    cam=Camera(c,z,Enumeration<Vector>(1280,x*0.00368),Enumeration<Vector>(1024,y*0.00368));
     //cam=Camera(c,z,Enumeration<Vector>(2048,x*0.0023),Enumeration<Vector>(1536,y*0.0023));
     
     cam.setFocus(s.dist(c)+(4*8)*0.5,750);
