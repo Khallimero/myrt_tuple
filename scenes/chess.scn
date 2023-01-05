@@ -527,9 +527,6 @@ void buildScene(Scene& world)
         world.addShape(ls);
     }
 
-    //world.addLight(new SphericLight(20,Point(-500,-450,-500),Color::White*0.5));
-    //world.addLight(new SphericLight(25,Point(-500,-750,800),Color::White*0.3));
-
     world.setAmbiant(Color::White*0.15);
 }
 
