@@ -34,13 +34,11 @@ Hit InterShape::__getHit(const Ray& r)const
             if(shapes[CSGShape::second].hit&&shapes[CSGShape::first].s->isInside(h2.getPoint()))return h2;
             h=h2;
         }
-        if(h.isNull())return Hit::null;
+        if(h.isNull()||h1.isNull()||h2.isNull())return Hit::null;
 
         rr=Ray(h.getPoint()+(rr.getVector().norm()*EPSILON),rr.getVector());
     }
     while(++n<MAX_REC);
 
-    fprintf(stderr,"Stack overflow\n");
-    fflush(stderr);
     return Hit::null;
 }
