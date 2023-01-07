@@ -28,7 +28,6 @@
 #include "TextureBumpMap.h"
 #include "InfiniteLight.h"
 #include "SphericLight.h"
-#include "SubShape.h"
 
 //#define RSEED 1378512438L
 //#define RSEED 0
