@@ -39,7 +39,7 @@ Hit SubShape::__getHit(const Ray& r)const
 
         rr=Ray(h.getPoint()+(rr.getVector().norm()*EPSILON),rr.getVector());
     }
-    while(++n<MAX_REC);
+    while(++n<CSG_MAX_REC);
 
     return Hit::null;
 }

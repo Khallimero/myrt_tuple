@@ -1,6 +1,5 @@
 #define EPSILON (0.01)
 #define PLAN_TAN (M_PI/1000.0)
-#define MAX_REC (250)
 #define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 9

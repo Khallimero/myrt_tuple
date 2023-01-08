@@ -3,8 +3,8 @@
 #include "Shape.h"
 #include "SmartPointer.h"
 
-#ifndef MAX_REC
-#define MAX_REC 250
+#ifndef CSG_MAX_REC
+#define CSG_MAX_REC 100
 #endif
 
 class CSGShape:public Shape
