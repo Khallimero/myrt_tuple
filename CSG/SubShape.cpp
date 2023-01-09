@@ -18,7 +18,7 @@ Hit SubShape::__getHit(const Ray& r)const
     do
     {
         Hit h2=shapes[CSGShape::second].s->getHit(rr);
-        if(h2.isNull()&&shapes[CSGShape::second].s->isInside(rr.getPoint()))return Hit::null;
+        if(h2.isNull()&&shapes[CSGShape::second].s->isInside(rr.getPoint()))break;
         Hit h1=shapes[CSGShape::first].s->getHit(rr);
 
         double d1=(h1.isNull()?-1:rr.getPoint().dist(h1.getPoint()));
@@ -28,14 +28,14 @@ Hit SubShape::__getHit(const Ray& r)const
         if((!(h1.isNull()))&&(h2.isNull()||d1<d2))
         {
             if(shapes[CSGShape::first].hit&&!(shapes[CSGShape::second].s->isInside(h1.getPoint())))return h1;
-            h=h1;
+            else h=h1;
         }
         if((!(h2.isNull()))&&(h1.isNull()||d2<d1))
         {
             if(shapes[CSGShape::second].hit&&shapes[CSGShape::first].s->isInside(h2.getPoint()))return h2;
-            h=h2;
+            else h=h2;
         }
-        if(h.isNull()||h1.isNull()||h2.isNull())return Hit::null;
+        if(h.isNull()||h1.isNull()||h2.isNull())break;
 
         rr=Ray(h.getPoint()+(rr.getVector().norm()*EPSILON),rr.getVector());
     }
