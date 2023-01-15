@@ -10,10 +10,23 @@
 #define PHOTON_RAD 5.0
 #define PHOTON_REF 5
 #define NB_PHOTON_IT 500000
-#define NB_PHOTON_LIGHT (25*25)
-#define PHOTON_EXP 2.0
 #define CAUSTIC_PHOTON_EXP 1.0
 #define RADIANCE_PHOTON_EXP 0.2
+
+#if 1
+#define NB_PHOTON_LIGHT (1)
+#define PHOTON_EXP 1.2
+#endif
+
+#if 0
+#define NB_PHOTON_LIGHT (25)
+#define PHOTON_EXP 1.6
+#endif
+
+#if 0
+#define NB_PHOTON_LIGHT (25*25)
+#define PHOTON_EXP 2.0
+#endif
 
 #ifdef SCENE
 #include "SmartPointer.h"
@@ -25,14 +38,15 @@
 #include "CustomPerlinPattern.h"
 #include "SphericLight.h"
 
-#define ORANGE (Color("FFA200")*0.9)
+#define ORANGE Color("FFA200")
 #define YELLOW Color("FFFFC0")
+#define GREEN (Color("80FF80")*0.8)
 #define ARGENT Color("C0C0C0")
 #define LIGHTCOL Color::White
 
 #define VIL_MAT(s,col)					\
   s->setTexture(new BasicTexture(col),Undefined);	\
-  s->setDiffCoeff(0.65);				\
+  s->setDiffCoeff(0.68);				\
   s->setSpecCoeff(0.1);					\
   s->setGlareCoeff(500);				\
   s->setReflectCoeff(0.02)
@@ -42,10 +56,10 @@
   s->setDiffCoeff(0.02);					\
   s->setSpecCoeff(1);						\
   s->setGlareCoeff(1000);					\
-  s->setReflectCoeff(0.15);					\
-  s->setRefractCoeff(0.85);					\
+  s->setReflectCoeff(0.2);					\
+  s->setRefractCoeff(0.8);					\
   s->setDensity(1.8);						\
-  s->setBeer(7,2,ORANGE)
+  s->setBeer(17,5,ORANGE)
 
 void buildScene(Scene& world)
 {
@@ -93,7 +107,13 @@ void buildScene(Scene& world)
         TOR_MAT(s53);
         world.addShape(s53);
     }
-
+    
+    SmartPointer<Shape> s97=new Plan(-3000,Point(0,0,0),
+                                     Mark(Point(0,0,1),Rotation::random()));
+    s97->setTexture(new BasicTexture(GREEN),Undefined);
+    s97->setDiffCoeff(0.35);
+    world.addShape(s97);
+    
     SmartPointer<Shape> s99=new Plan(3000+r2,Point(0,0,0),
                                      Mark(Point(0,0,1),Rotation::random()));
     s99->setTexture(new BasicTexture(Color::White),Undefined);
@@ -101,10 +121,10 @@ void buildScene(Scene& world)
     s99->setReflectCoeff(0.05);
     world.addShape(s99);
 
-    SphericLight *light=new SphericLight(500,sc+Vector(0.35,-0.8,0.3).norm()*-10000,LIGHTCOL);
+    SphericLight *light=new SphericLight(500,sc+Vector(0.35,-0.8,0.3).norm()*-10000,LIGHTCOL*1.35);
     //light->setMitigation(light->dist(sc),1.2);
     world.addLight(light);
-    world.setAmbiant(LIGHTCOL*0.6);
+    world.setAmbiant(LIGHTCOL*0.5);
 
     world.setPhotonBoxIn(new Sphere(r1+r2+10.0,Mark(sc)));
     world.setPhotonBoxOut(new Sphere(10000,Mark(sc)));
@@ -123,6 +143,7 @@ void setCamera(Camera& cam)
     //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*0.028),Enumeration<Vector>(768,v2*0.028));
     cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*0.0224),Enumeration<Vector>(1024,v2*0.0224));
     //cam=Camera(cp,cv,Enumeration<Vector>(1600,v1*0.01792),Enumeration<Vector>(1200,v2*0.01792));
+    //cam=Camera(cp,cv,Enumeration<Vector>(2048,v1*0.014),Enumeration<Vector>(1536,v2*0.014));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)
