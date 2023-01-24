@@ -139,6 +139,8 @@ void setCamera(Camera& cam)
     //cam=Camera(cp,cv,Enumeration<Vector>(640,v1*0.056),Enumeration<Vector>(360,v2*0.056));
     cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*0.028),Enumeration<Vector>(720,v2*0.028));
     //cam=Camera(cp,cv,Enumeration<Vector>(1920,v1*(0.028/1.5)),Enumeration<Vector>(1080,v2*(0.028/1.5)));
+    //cam=Camera(cp,cv,Enumeration<Vector>(2560,v1*0.014),Enumeration<Vector>(1440,v2*0.014));
+    //cam=Camera(cp,cv,Enumeration<Vector>(3840,v1*(0.028/3.0)),Enumeration<Vector>(2160,v2*(0.028/3.0)));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)
