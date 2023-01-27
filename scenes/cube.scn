@@ -25,7 +25,10 @@
 #include "SphericLight.h"
 #include "PerlinNoise.h"
 
-//#define RSEED 1400465025
+//#define RSEED 1674778828L
+//#define RSEED 1674782341L
+//#define RSEED 1674783565L
+//#define RSEED 1674786923L
 
 #define ORANGE (Color("FFA200")*0.9)
 #define LIGHTCOL Color::White
@@ -85,13 +88,10 @@ void buildScene(Scene& world)
         {
             virtual double operator()(const tuple_idx<TREBLE_SIZE>&)const
             {
-                double r=0.0;
-                while(fabs(r)<0.2)
-                    r=(RND-0.5)*2.0;
-                return r;
+                return (RND-0.5)*2.0;
             }
         } _unary_idx_op;
-        Mark m(ct+Vector(_unary_idx_op)*(size*RND*0.9));
+        Mark m(ct+Vector(_unary_idx_op)*(size*0.9));
         double r=(i<20?10.0+RND*15.0:3.0+RND*5.0);
         Shape *s1=new Bubble(r,new Sphere(2.0),m);
         s1->setTexture(new BasicTexture(Color::White),Undefined);
@@ -123,8 +123,8 @@ void buildScene(Scene& world)
     ls->setHitShape(CSGShape::second,false);
     world.addShape(ls);
 
-    world.setPhotonBoxIn(new Sphere(size*sqrt(3),Mark(ct)));
-    world.setPhotonBoxOut(new Sphere(size*20.,Mark(ct)));
+    //world.setPhotonBoxIn(new Sphere(size*sqrt(3),Mark(ct)));
+    //world.setPhotonBoxOut(new Sphere(size*20.,Mark(ct)));
 }
 
 void setCamera(Camera& cam)
@@ -137,9 +137,9 @@ void setCamera(Camera& cam)
     Vector v2=cv.prodVect(v1).norm();
 
     //cam=Camera(cp,cv,Enumeration<Vector>(640,v1*0.056),Enumeration<Vector>(360,v2*0.056));
-    cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*0.028),Enumeration<Vector>(720,v2*0.028));
+    //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*0.028),Enumeration<Vector>(720,v2*0.028));
     //cam=Camera(cp,cv,Enumeration<Vector>(1920,v1*(0.028/1.5)),Enumeration<Vector>(1080,v2*(0.028/1.5)));
-    //cam=Camera(cp,cv,Enumeration<Vector>(2560,v1*0.014),Enumeration<Vector>(1440,v2*0.014));
+    cam=Camera(cp,cv,Enumeration<Vector>(2560,v1*0.014),Enumeration<Vector>(1440,v2*0.014));
     //cam=Camera(cp,cv,Enumeration<Vector>(3840,v1*(0.028/3.0)),Enumeration<Vector>(2160,v2*(0.028/3.0)));
 }
 
