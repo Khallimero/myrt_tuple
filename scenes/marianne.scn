@@ -96,10 +96,9 @@ void setCamera(Camera& cam)
     Vector z=c.getVectorTo(s).norm()*100;
     Vector x=Vector(1,0,0).projOrthoTo(z).norm();
     Vector y=Vector(0,1,0).projOrthoTo(z).norm();
-    //cam=Camera(c,z,Enumeration<Vector>(512,x*0.006),Enumeration<Vector>(384,y*0.006));
-    //cam=Camera(c,z,Enumeration<Vector>(1024,x*0.003),Enumeration<Vector>(768,y*0.003));
+    //cam=Camera(c,z,Enumeration<Vector>(1024,x*0.0032),Enumeration<Vector>(768,y*0.0032));
     cam=Camera(c,z,Enumeration<Vector>(1280,x*0.0024),Enumeration<Vector>(1024,y*0.0024));
-    //cam=Camera(c,z,Enumeration<Vector>(2048,x*0.0015),Enumeration<Vector>(1536,y*0.0015));
+    //cam=Camera(c,z,Enumeration<Vector>(2048,x*0.0016),Enumeration<Vector>(1536,y*0.0016));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)
