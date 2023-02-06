@@ -3,7 +3,7 @@
 #define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 3
-#define MAX_REF_SS 3
+#define MAX_REF_SS 1
 #define PHOTON_EQ_DST 0.5
 #define PHOTON_EQ_ANG (M_PI/10.0)
 #define PHOTON_BOX_FCT 10.0
@@ -11,7 +11,7 @@
 #define PHOTON_REF 5
 #define NB_PHOTON_IT (15000)
 #define NB_PHOTON_LIGHT (15000)
-#define PHOTON_EXP 5.0
+#define PHOTON_EXP 1.0
 #define CAUSTIC_PHOTON_EXP 1.0
 #define RADIANCE_PHOTON_EXP 0.0
 
@@ -25,10 +25,7 @@
 #include "SphericLight.h"
 #include "PerlinNoise.h"
 
-//#define RSEED 1674778828L
-//#define RSEED 1674782341L
-//#define RSEED 1674783565L
-//#define RSEED 1674786923L
+//#define RSEED 0L
 
 #define ORANGE (Color("FFA200")*0.9)
 #define LIGHTCOL Color::White
@@ -113,7 +110,7 @@ void buildScene(Scene& world)
     world.addShape(p);
 
     world.setAmbiant(LIGHTCOL*0.25);
-    SphericLight *light=new SphericLight(800,ct+vct*0.8,LIGHTCOL*1.0);
+    SphericLight *light=new SphericLight(800,ct+vct*0.8,LIGHTCOL*2.0);
     light->setMitigation(light->dist(ct));
     world.addLight(light);
 
