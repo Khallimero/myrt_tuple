@@ -72,12 +72,11 @@ void buildScene(Scene& world)
 
 void setCamera(Camera& cam)
 {
-    cam=Camera(Point::null,Vector(0,0,100),
-               Enumeration<Vector>(512,Vector(0.2,0,0)),Enumeration<Vector>(384,Vector(0,0.2,0)));
-    //Enumeration<Vector>(1024,Vector(0.1,0,0)),Enumeration<Vector>(768,Vector(0,0.1,0)));
-    //Enumeration<Vector>(1280,Vector(0.08,0,0)),Enumeration<Vector>(1024,Vector(0,0.08,0)));
-    //Enumeration<Vector>(2048,Vector(0.05,0,0)),Enumeration<Vector>(1536,Vector(0,0.05,0)));
-    //Enumeration<Vector>(1280,Vector(0.04,0,0)),Enumeration<Vector>(1024,Vector(0,0.04,0)));
+    cam=Camera(Point::null,Vector(0,0,100),Enumeration<Vector>(512,Vector(0.2,0,0)),Enumeration<Vector>(384,Vector(0,0.2,0)));
+    //cam=Camera(Point::null,Vector(0,0,100),Enumeration<Vector>(1024,Vector(0.1,0,0)),Enumeration<Vector>(768,Vector(0,0.1,0)));
+    //cam=Camera(Point::null,Vector(0,0,100),Enumeration<Vector>(1280,Vector(0.08,0,0)),Enumeration<Vector>(1024,Vector(0,0.08,0)));
+    //cam=Camera(Point::null,Vector(0,0,100),Enumeration<Vector>(2048,Vector(0.05,0,0)),Enumeration<Vector>(1536,Vector(0,0.05,0)));
+    //cam=Camera(Point::null,Vector(0,0,100),Enumeration<Vector>(1280,Vector(0.04,0,0)),Enumeration<Vector>(1024,Vector(0,0.04,0)));
 }
 
 void setRendererQuality(RendererQuality& rendererQuality)
