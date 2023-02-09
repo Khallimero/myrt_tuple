@@ -3,7 +3,7 @@
 #define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 3
-#define MAX_REF_SS 1
+#define MAX_REF_SS 3
 #define PHOTON_EQ_DST 0.5
 #define PHOTON_EQ_ANG (M_PI/10.0)
 #define PHOTON_BOX_FCT 10.0
@@ -106,11 +106,11 @@ void buildScene(Scene& world)
     Shape *p=new Plan(size+1,Point::null,
                       Mark(Point(0,0,1)));
     p->setTexture(new BasicTexture(Color("E0FFFB")*.9),Undefined);
-    p->setDiffCoeff(0.6);
+    p->setDiffCoeff(0.55);
     world.addShape(p);
 
-    world.setAmbiant(LIGHTCOL*0.25);
-    SphericLight *light=new SphericLight(800,ct+vct*0.8,LIGHTCOL*2.0);
+    world.setAmbiant(LIGHTCOL*0.15);
+    SphericLight *light=new SphericLight(800,ct+vct*0.8,LIGHTCOL*2.65);
     light->setMitigation(light->dist(ct));
     world.addLight(light);
 
