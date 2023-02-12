@@ -3,7 +3,7 @@
 #define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 3
-#define MAX_REF_SS 3
+#define MAX_REF_SS 4
 #define PHOTON_EQ_DST 0.5
 #define PHOTON_EQ_ANG (M_PI/10.0)
 #define PHOTON_BOX_FCT 10.0
@@ -143,6 +143,6 @@ void setCamera(Camera& cam)
 void setRendererQuality(RendererQuality& rendererQuality)
 {
     //rendererQuality.setAliasing(2);
-    //rendererQuality.setShadow(50);
+    //rendererQuality.setShadow(75);
 }
 #endif
