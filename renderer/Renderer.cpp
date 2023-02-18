@@ -229,11 +229,11 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                                 const Color& cl=(*phc)[ph].getColor();
                                 const Vector& rp=(*phc)[ph].getVector();
 
-                                double a=rf.cosAngle(rp.reflect(h.getNormal()));
+                                double a=rp.reflect(h.getNormal()).cosAngle(-h.getIncident().getVector());
                                 if(a>0)glSum+=cl*pow(a,h.getShape()->getGlareCoeff());
 
                                 if(rp.cosAngle(h.getIncident().getVector())>0)
-                                    phSum+=cl;
+                                    phSum+=cl*fabs(rp.cosAngle(h.getNormal()));
                             }
                 }
                 phSum*=h.getShape()->getDiffCoeff();
@@ -281,7 +281,7 @@ void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
         Color c=computeBeerCoeff(col,h);
 
         if(nbRef>0&&(sc->getPhotonBoxOut()==NULL||sc->getPhotonBoxOut()->isInside(h.getPoint())))
-            photonMap.addPhotonHit(h.getShape()->getId(),PhotonHit(h.getPoint(),h.getIncident().getVector(),c*fabs(h.getNormal().cosAngle(h.getIncident().getVector()))));
+            photonMap.addPhotonHit(h.getShape()->getId(),PhotonHit(h.getPoint(),h.getIncident().getVector(),c));
 
         if(nbRef<PHOTON_REF)
         {
