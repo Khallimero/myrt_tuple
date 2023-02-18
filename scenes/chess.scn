@@ -542,7 +542,7 @@ void setCamera(Camera& cam)
     //cam=Camera(c,z,Enumeration<Vector>(1024,x*0.0046),Enumeration<Vector>(768,y*0.0046));
     cam=Camera(c,z,Enumeration<Vector>(1280,x*0.00368),Enumeration<Vector>(1024,y*0.00368));
     //cam=Camera(c,z,Enumeration<Vector>(2048,x*0.0023),Enumeration<Vector>(1536,y*0.0023));
-    
+
     cam.setFocus(s.dist(c)+(4*8)*0.5,750);
 }
 

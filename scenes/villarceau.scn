@@ -107,13 +107,13 @@ void buildScene(Scene& world)
         TOR_MAT(s53);
         world.addShape(s53);
     }
-    
+
     SmartPointer<Shape> s97=new Plan(-3000,Point(0,0,0),
                                      Mark(Point(0,0,1),Rotation::random()));
     s97->setTexture(new BasicTexture(GREEN),Undefined);
     s97->setDiffCoeff(0.35);
     world.addShape(s97);
-    
+
     SmartPointer<Shape> s99=new Plan(3000+r2,Point(0,0,0),
                                      Mark(Point(0,0,1),Rotation::random()));
     s99->setTexture(new BasicTexture(Color::White),Undefined);
