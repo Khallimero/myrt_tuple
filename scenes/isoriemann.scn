@@ -174,7 +174,8 @@ void setCamera(Camera& cam)
     //cam=Camera(cp,cv,Enumeration<Vector>(1024,v1*0.028),Enumeration<Vector>(768,v2*0.028));
     //cam=Camera(cp,cv,Enumeration<Vector>(1280,v1*0.0224),Enumeration<Vector>(1024,v2*0.0224));
     cam=Camera(cp,cv,Enumeration<Vector>(1600,v1*0.01792),Enumeration<Vector>(1200,v2*0.01792));
-
+    //cam=Camera(cp,cv,Enumeration<Vector>(2048,v1*0.014),Enumeration<Vector>(1536,v2*0.014));
+    
     cam.setFocus(cp.dist(sc),250);
 }
 

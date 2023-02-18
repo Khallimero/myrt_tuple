@@ -143,6 +143,6 @@ void setCamera(Camera& cam)
 void setRendererQuality(RendererQuality& rendererQuality)
 {
     //rendererQuality.setAliasing(2);
-    //rendererQuality.setShadow(75);
+    //rendererQuality.setShadow(100);
 }
 #endif
