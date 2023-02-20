@@ -48,14 +48,14 @@
   s->setTexture(new BasicTexture(col),Undefined);	\
   s->setDiffCoeff(0.68);				\
   s->setSpecCoeff(0.1);					\
-  s->setGlareCoeff(500);				\
+  s->setGlareCoeff(300);				\
   s->setReflectCoeff(0.02)
 
 #define TOR_MAT(s)						\
   s->setTexture(new BasicTexture(YELLOW),Undefined);		\
   s->setDiffCoeff(0.02);					\
   s->setSpecCoeff(1);						\
-  s->setGlareCoeff(1000);					\
+  s->setGlareCoeff(500);					\
   s->setReflectCoeff(0.2);					\
   s->setRefractCoeff(0.8);					\
   s->setDensity(1.8);						\

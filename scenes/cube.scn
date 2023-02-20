@@ -96,7 +96,7 @@ void buildScene(Scene& world)
         s1->setSpecCoeff(0.5);
         s1->setGlareCoeff(10);
         s1->setReflectCoeff(0.2);
-        s1->setRefractCoeff(0.95);
+        s1->setRefractCoeff(0.8);
         s=new SubShape(s,s1,false);
     }
     s->setDensity(1.546);
@@ -120,8 +120,8 @@ void buildScene(Scene& world)
     ls->setHitShape(CSGShape::second,false);
     world.addShape(ls);
 
-    //world.setPhotonBoxIn(new Sphere(size*sqrt(3),Mark(ct)));
-    //world.setPhotonBoxOut(new Sphere(size*20.,Mark(ct)));
+    world.setPhotonBoxIn(new Sphere(size*sqrt(3),Mark(ct)));
+    world.setPhotonBoxOut(new Sphere(size*20.,Mark(ct)));
 }
 
 void setCamera(Camera& cam)
