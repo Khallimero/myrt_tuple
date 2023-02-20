@@ -164,32 +164,23 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
 
                 NestedIterator<double,2> *it=(nbRef<MAX_REF_SS?nestedItTab[k]:nestedItTab[sc->getNbLights()]);
                 it->reset();
-                ObjCollection<Ray> rc;
+                ObjCollection<Ray> rc,rrc;
                 while(it->next())
                 {
                     Vector w=Vector(l+(u*it->getElement(0))+(v*it->getElement(1))).norm();
-                    if(sc->getLight(k)->getBox()!=NULL)
-                    {
-                        Hit hl=sc->getLight(k)->getBox()->getHit(Ray(h.getPoint(),w));
-                        if(hl.isNull())continue;
-                        //lDst=p.dist(hl.getPoint());
-                    }
-                    rc._add(Ray(p,w));
+                    if(sc->getLight(k)->getBox()==NULL||!sc->getLight(k)->getBox()->getHit(Ray(h.getPoint(),w)).isNull())
+                        rc._add(Ray(p,w));
+                    if(h.getShape()->getRefractCoeff()>0)
+                        rrc._add(Ray(pr,w));
                 }
 
-                int cntRay=rc._count();
-                for(int i=0; i<cntRay; i++)
-                    if(h.getShape()->getRefractCoeff()>0&&
-                            SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))==SIGN(h.getNormal().cosAngle(rc[i].getVector())))
-                        rc._add(Ray(pr,rc[i].getVector()));
-
-                ObjCollection<Hit> hc=sc->getIntersect(rc);
-                for(int i=0; i<cntRay; i++)
+                ObjCollection<Hit> hrc=sc->getIntersect(rc);
+                for(int i=0; i<rc._count(); i++)
                 {
-                    double hDst=(hc[i].isNull()?-1:p.dist(hc[i].getPoint()));
+                    double hDst=(hrc[i].isNull()?-1:p.dist(hrc[i].getPoint()));
                     if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
                     {
-                        double d=MAX(rc[i].getVector().cosAngle(h.getNormal()),rc[i].getVector().cosAngle(-h.getNormal()));
+                        double d=fabs(rc[i].getVector().cosAngle(h.getNormal()));
                         ltCol+=sc->getLight(k)->getColor()*mtg*d;
 
                         double a=rf.cosAngle(rc[i].getVector());
@@ -197,12 +188,13 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                     }
                 }
 
-                for(int i=cntRay; i<hc._count(); i++)
+                ObjCollection<Hit> hrrc=sc->getIntersect(rrc);
+                for(int i=0; i<hrrc._count(); i++)
                 {
-                    double hDst=(hc[i].isNull()?-1:pr.dist(hc[i].getPoint()));
+                    double hDst=(hrrc[i].isNull()?-1:pr.dist(hrrc[i].getPoint()));
                     if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
                     {
-                        double d=MAX(rc[i].getVector().cosAngle(h.getNormal()),rc[i].getVector().cosAngle(-h.getNormal()));
+                        double d=fabs(rrc[i].getVector().cosAngle(h.getNormal()));
                         ltCol+=sc->getLight(k)->getColor()*mtg*d*h.getShape()->getRefractCoeff();
                     }
                 }
@@ -211,7 +203,7 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                 glSum+=glCol/(double)it->getActualSteps();
             }
 
-            ltSum+=sc->getAmbiant()*(.5+fabs(h.getNormal().cosAngle(h.getThNormal()))/2.)*(.5+fabs(h.getNormal().cosAngle(h.getIncident().getVector()))/2.);
+            ltSum+=sc->getAmbiant()*(0.5+fabs(h.getNormal().cosAngle(h.getThNormal()))/2.0)*(0.5+fabs(h.getNormal().cosAngle(h.getIncident().getVector()))/2.0);
 
             if(sc->getPhotonBoxIn()!=NULL)
             {
@@ -232,8 +224,11 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                                 double a=rp.reflect(h.getNormal()).cosAngle(-h.getIncident().getVector());
                                 if(a>0)glSum+=cl*pow(a,h.getShape()->getGlareCoeff());
 
+                                Color phCol=cl*fabs(rp.cosAngle(h.getNormal()));
                                 if(rp.cosAngle(h.getIncident().getVector())>0)
-                                    phSum+=cl*fabs(rp.cosAngle(h.getNormal()));
+                                    phSum+=phCol;
+                                else if(h.getShape()->getRefractCoeff()>0)
+                                    phSum+=phCol*h.getShape()->getRefractCoeff();
                             }
                 }
                 phSum*=h.getShape()->getDiffCoeff();
