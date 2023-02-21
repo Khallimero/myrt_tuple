@@ -169,9 +169,11 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                 {
                     Vector w=Vector(l+(u*it->getElement(0))+(v*it->getElement(1))).norm();
                     if(sc->getLight(k)->getBox()==NULL||!sc->getLight(k)->getBox()->getHit(Ray(h.getPoint(),w)).isNull())
+                    {
                         rc._add(Ray(p,w));
-                    if(h.getShape()->getRefractCoeff()>0)
-                        rrc._add(Ray(pr,w));
+                        if(h.getShape()->getRefractCoeff()>0)
+                            rrc._add(Ray(pr,w));
+                    }
                 }
 
                 ObjCollection<Hit> hrc=sc->getIntersect(rc);
