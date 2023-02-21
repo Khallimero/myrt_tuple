@@ -220,13 +220,13 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                         for(int ph=0; ph<phc->_count(); ph++)
                             if(h.getPoint().dist((*phc)[ph].getPoint())<PHOTON_RAD)
                             {
-                                const Color& cl=(*phc)[ph].getColor();
+                                const Color& clp=(*phc)[ph].getColor();
                                 const Vector& rp=(*phc)[ph].getVector();
 
                                 double a=rp.reflect(h.getNormal()).cosAngle(-h.getIncident().getVector());
-                                if(a>0)glSum+=cl*pow(a,h.getShape()->getGlareCoeff());
+                                if(a>0)glSum+=clp*pow(a,h.getShape()->getGlareCoeff());
 
-                                Color phCol=cl*fabs(rp.cosAngle(h.getNormal()));
+                                Color phCol=clp*fabs(rp.cosAngle(h.getNormal()));
                                 if(rp.cosAngle(h.getIncident().getVector())>0)
                                     phSum+=phCol;
                                 else if(h.getShape()->getRefractCoeff()>0)
