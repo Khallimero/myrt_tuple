@@ -21,8 +21,8 @@ Ray Hit::getReflect()const
 
 Ray Hit::getRefract(double d1,double d2)const
 {
-    Vector r=incident.getVector().refract(normal,d1,d2);
-    return Ray(p+(r.norm()*EPSILON),r);
+    Vector r=incident.getVector().refract(normal,d1,d2).norm();
+    return Ray(p+(r*EPSILON),r);
 }
 
 bool Hit::isNull()const

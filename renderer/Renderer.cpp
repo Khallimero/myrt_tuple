@@ -106,8 +106,9 @@ ObjCollection<Color> Renderer::computeRays(const ObjCollection<Ray>& r,int nbRef
 
                 if(hr[i].getShape()->getRefractCoeff()>0.0)
                 {
-                    double d1=sc->getDensity(hr[i].getPoint()-(r[i].getVector().norm()*EPSILON));
-                    double d2=sc->getDensity(hr[i].getPoint()+(r[i].getVector().norm()*EPSILON));
+                    Vector n=Vector(hr[i].getNormal()*SIGN(hr[i].getNormal().cosAngle(hr[i].getIncident().getVector()))).norm()*EPSILON;
+                    double d1=sc->getDensity(hr[i].getPoint()-n);
+                    double d2=sc->getDensity(hr[i].getPoint()+n);
 
                     Ray refract=hr[i].getRefract(d1,d2);
                     if(refract.isNull())
@@ -128,7 +129,7 @@ ObjCollection<Color> Renderer::computeRays(const ObjCollection<Ray>& r,int nbRef
                 }
             }
 
-            cc.getTab()[i]=computeBeerCoeff(cc[i],hr[i]);
+            cc.getTab()[i]=computeBeerColor(cc[i],hr[i]);
         }
     }
 
@@ -247,7 +248,7 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
     return cc;
 }
 
-Color Renderer::computeBeerCoeff(const Color& c,const Hit& h)const
+Color Renderer::computeBeerColor(const Color& c,const Hit& h)const
 {
     Color col=c;
     Vector vct=h.getIncident().getVector().norm()*EPSILON;
@@ -266,6 +267,7 @@ Color Renderer::computeBeerCoeff(const Color& c,const Hit& h)const
             }
         }
     }
+
     return col;
 }
 
@@ -275,7 +277,7 @@ void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
 
     if(!h.isNull())
     {
-        Color c=computeBeerCoeff(col,h);
+        Color c=computeBeerCoolor(col,h);
 
         if(nbRef>0&&(sc->getPhotonBoxOut()==NULL||sc->getPhotonBoxOut()->isInside(h.getPoint())))
             photonMap.addPhotonHit(h.getShape()->getId(),PhotonHit(h.getPoint(),h.getIncident().getVector(),c));

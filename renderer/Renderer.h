@@ -51,7 +51,7 @@ protected:
     Color computeRay(const Ray& r,int nbRef=0)const;
     ObjCollection<Color> computeRays(const ObjCollection<Ray>& r,int nbRef=0)const;
     ObjCollection<Color> computeColors(const ObjCollection<Hit>& hc,int nbRef)const;
-    Color computeBeerCoeff(const Color& c,const Hit& h)const;
+    Color computeBeerColor(const Color& c,const Hit& h)const;
 
 public:
     const PhotonMap* getPhotonMap()const
