@@ -277,7 +277,7 @@ void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
 
     if(!h.isNull())
     {
-        Color c=computeBeerCoolor(col,h);
+        Color c=computeBeerColor(col,h);
 
         if(nbRef>0&&(sc->getPhotonBoxOut()==NULL||sc->getPhotonBoxOut()->isInside(h.getPoint())))
             photonMap.addPhotonHit(h.getShape()->getId(),PhotonHit(h.getPoint(),h.getIncident().getVector(),c));
