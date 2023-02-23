@@ -10,7 +10,6 @@
 #define PHOTON_RAD 5.0
 #define PHOTON_REF 5
 #define NB_PHOTON_IT 500000
-#define CAUSTIC_PHOTON_EXP 1.0
 #define RADIANCE_PHOTON_EXP 0.2
 
 #if 1
@@ -59,7 +58,7 @@
   s->setReflectCoeff(0.2);					\
   s->setRefractCoeff(0.8);					\
   s->setDensity(1.8);						\
-  s->setBeer(17,5,ORANGE)
+  s->setBeer(10,1,ORANGE)
 
 void buildScene(Scene& world)
 {

@@ -12,8 +12,6 @@
 #define NB_PHOTON_IT (15000)
 #define NB_PHOTON_LIGHT (15000)
 #define PHOTON_EXP 1.0
-#define CAUSTIC_PHOTON_EXP 1.0
-#define RADIANCE_PHOTON_EXP 0.0
 
 #ifdef SCENE
 #include "SubShape.h"
@@ -27,7 +25,7 @@
 
 //#define RSEED 0L
 
-#define ORANGE (Color("FFA200")*0.9)
+#define ORANGE Color("FF8000")
 #define LIGHTCOL Color::White
 
 double getValue(const Point& p)
@@ -77,7 +75,7 @@ void buildScene(Scene& world)
     s->setSpecCoeff(0.8);
     s->setGlareCoeff(100);
     s->setReflectCoeff(0.07);
-    s->setRefractCoeff(0.9);
+    s->setRefractCoeff(0.8);
 
     for(int i=0; i<80; i++)
     {
@@ -92,15 +90,15 @@ void buildScene(Scene& world)
         double r=(i<20?10.0+RND*15.0:3.0+RND*5.0);
         Shape *s1=new Bubble(r,new Sphere(2.0),m);
         s1->setTexture(new BasicTexture(Color::White),Undefined);
-        s1->setDiffCoeff(0.05);
-        s1->setSpecCoeff(0.5);
+        s1->setDiffCoeff(0.1);
+        s1->setSpecCoeff(0.4);
         s1->setGlareCoeff(10);
-        s1->setReflectCoeff(0.2);
-        s1->setRefractCoeff(0.8);
+        s1->setReflectCoeff(0.1);
+        s1->setRefractCoeff(0.7);
         s=new SubShape(s,s1,false);
     }
     s->setDensity(1.546);
-    s->setBeer(size/2.0,2,ORANGE);
+    s->setBeer(size/1.15,1.0,ORANGE);
     world.addShape(s);
 
     Shape *p=new Plan(size+1,Point::null,

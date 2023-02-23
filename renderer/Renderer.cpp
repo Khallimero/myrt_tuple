@@ -5,12 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef CAUSTIC_PHOTON_EXP
-#define CAUSTIC_PHOTON_EXP 1.0
-#endif
-
 #ifndef RADIANCE_PHOTON_EXP
-#define RADIANCE_PHOTON_EXP 0.1
+#define RADIANCE_PHOTON_EXP 0
 #endif
 
 __thread NestedIterator<double,2>** Renderer::nestedItTab;
@@ -262,7 +258,7 @@ Color Renderer::computeBeerColor(const Color& c,const Hit& h)const
         {
             if(sc->getShape(i)->isInside(p1)&&sc->getShape(i)->isInside(p2))
             {
-                double bc=pow(dst/sc->getShape(i)->getBeerSizeCoeff(),1.0/sc->getShape(i)->getBeerAbsorbCoeff());
+                double bc=1.0-(1.0/exp(pow(dst/sc->getShape(i)->getBeerSizeCoeff(),sc->getShape(i)->getBeerAbsorbCoeff())));
                 col*=sc->getShape(i)->getBeerColor().beer(bc);
             }
         }
@@ -292,15 +288,10 @@ void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
                 double d1=sc->getDensity(h.getPoint()-(h.getIncident().getVector().norm()*EPSILON));
                 double d2=sc->getDensity(h.getPoint()+(h.getIncident().getVector().norm()*EPSILON));
                 if(h.getRefract(d1,d2).isNull())rCoeff+=h.getShape()->getRefractCoeff();
-                else computePhoton(sc->getHit(h.getRefract(d1,d2)),
-                                       c*h.getShape()->getRefractCoeff()*CAUSTIC_PHOTON_EXP,
-                                       nbRef+1);
+                else computePhoton(sc->getHit(h.getRefract(d1,d2)),c*h.getShape()->getRefractCoeff(),nbRef+1);
             }
 
-            double a=fabs(h.getNormal().cosAngle(h.getIncident().getVector()));
-            rCoeff+=a*RADIANCE_PHOTON_EXP;//radiance
-
-            if(rCoeff>0)computePhoton(sc->getHit(h.getReflect()),c*rCoeff,nbRef+1);
+            computePhoton(sc->getHit(h.getReflect()),(c*rCoeff)/*+(c*h.getShape()->getColor(h)*(fabs(h.getNormal().cosAngle(h.getIncident().getVector()))*RADIANCE_PHOTON_EXP))*/,nbRef+1);
         }
     }
 }

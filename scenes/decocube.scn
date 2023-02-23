@@ -12,8 +12,6 @@
 #define NB_PHOTON_IT (500*500)
 #define NB_PHOTON_LIGHT (15*15)
 #define PHOTON_EXP 2.0
-#define CAUSTIC_PHOTON_EXP 1.0
-#define RADIANCE_PHOTON_EXP 0.0
 
 #ifdef SCENE
 #include "DecoCube.h"

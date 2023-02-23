@@ -12,7 +12,6 @@
 #define NB_PHOTON_IT 500000
 #define NB_PHOTON_LIGHT 9
 #define PHOTON_EXP 4.0
-#define CAUSTIC_PHOTON_EXP 1.0
 #define RADIANCE_PHOTON_EXP 0.1
 
 #ifdef SCENE

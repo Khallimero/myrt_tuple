@@ -169,7 +169,7 @@ Color Color::beer(double bCoeff)const
         }
         virtual double operator()(const volatile double& c)const
         {
-            return exp((c-1.0)*bCoeff);
+            return 1.0-((1.0-c)*bCoeff);
         }
         double bCoeff;
     };
