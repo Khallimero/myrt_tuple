@@ -254,7 +254,7 @@ Color Renderer::computeBeerColor(const Color& c,const Hit& h)const
         {
             if(sc->getShape(i)->isInside(p1)&&sc->getShape(i)->isInside(p2))
             {
-                double bc=1.0-(1.0/exp(pow(dst/sc->getShape(i)->getBeerSizeCoeff(),sc->getShape(i)->getBeerAbsorbCoeff())));
+                double bc=1.0-(1.0/exp(pow(dst/sc->getShape(i)->getBeerSizeCoeff(),sc->getShape(i)->getBeerSizeExp())));
                 col*=sc->getShape(i)->getBeerColor().beer(bc);
             }
         }

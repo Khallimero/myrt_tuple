@@ -206,13 +206,13 @@ public:
     {
         this->beerSizeCoeff=b;
     }
-    double getBeerAbsorbCoeff()const
+    double getBeerSizeExp()const
     {
-        return beerAbsorbCoeff;
+        return beerSizeExp;
     }
-    void setBeerAbsorbCoeff(double b)
+    void setBeerSizeExp(double b)
     {
-        this->beerAbsorbCoeff=b;
+        this->beerSizeExp=b;
     }
     const Color& getBeerColor()const
     {
@@ -222,7 +222,7 @@ public:
     {
         this->beerColor=c;
     }
-    void setBeer(double sizeCoeff,double absorbCoeff,const Color& beerColor=Color::White);
+    void setBeer(double sizeCoeff,double sizeExp,const Color& beerColor=Color::White);
 
 protected:
     virtual Hit _getHit(const Ray& r)const=0;
@@ -256,7 +256,7 @@ protected:
 
     bool shell;
     double beerSizeCoeff;
-    double beerAbsorbCoeff;
+    double beerSizeExp;
     Color beerColor;
 
 private:
