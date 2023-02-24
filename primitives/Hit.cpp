@@ -8,11 +8,8 @@ Hit::Hit()
 }
 
 Hit::Hit(const Ray& i,const Shape *s,const Point& p,const Vector& t,const Vector& n)
-    :s(s),p(p),incident(i),thNorm(t),id(-1)
-{
-    thNorm=Vector(thNorm*SIGN(thNorm.cosAngle(incident.getVector()))).norm();
-    normal=n==Vector::null?thNorm:Vector(n*SIGN(n.cosAngle(incident.getVector()))).norm();
-}
+    :s(s),p(p),incident(i),thNorm(t),normal(n==Vector::null?t:n),id(-1)
+{}
 
 Hit::~Hit() {}
 

@@ -98,7 +98,7 @@ ObjCollection<Color> Renderer::computeRays(const ObjCollection<Ray>& r,int nbRef
 
                 if(hr[i].getShape()->getRefractCoeff()>0.0)
                 {
-                    Vector n=hr[i].getNormal()*EPSILON;
+                    Vector n=Vector(hr[i].getNormal()*SIGN(hr[i].getNormal().cosAngle(hr[i].getIncident().getVector()))).norm()*EPSILON;
                     double d1=sc->getDensity(hr[i].getPoint()-n);
                     double d2=sc->getDensity(hr[i].getPoint()+n);
 
@@ -141,7 +141,7 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
             Color ltSum=Color::Black,glSum=Color::Black,phSum=Color::Black;
             Vector rf=h.getIncident().getVector().reflect(h.getNormal());
 
-            Vector n=h.getNormal()*EPSILON;
+            Vector n=Vector(h.getNormal()*SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))).norm()*EPSILON;
             Point p=h.getPoint()-n;
             Point pr=h.getPoint()+n;
 
@@ -281,7 +281,7 @@ void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
 
             if(h.getShape()->getRefractCoeff()>0)
             {
-                Vector n=h.getNormal()*EPSILON;
+                Vector n=Vector(h.getNormal()*SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))).norm()*EPSILON;
                 double d1=sc->getDensity(h.getPoint()-n);
                 double d2=sc->getDensity(h.getPoint()+n);
                 if(h.getRefract(d1,d2).isNull())rCoeff+=h.getShape()->getRefractCoeff();
