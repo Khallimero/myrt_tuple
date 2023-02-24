@@ -291,7 +291,7 @@ void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
                 else computePhoton(sc->getHit(h.getRefract(d1,d2)),c*h.getShape()->getRefractCoeff(),nbRef+1);
             }
 
-            computePhoton(sc->getHit(h.getReflect()),(c*rCoeff)/*+(c*h.getShape()->getColor(h)*(fabs(h.getNormal().cosAngle(h.getIncident().getVector()))*RADIANCE_PHOTON_EXP))*/,nbRef+1);
+            computePhoton(sc->getHit(h.getReflect()),(c*rCoeff)+(c*h.getShape()->getColor(h)*(fabs(h.getNormal().cosAngle(h.getIncident().getVector()))*RADIANCE_PHOTON_EXP)),nbRef+1);
         }
     }
 }
