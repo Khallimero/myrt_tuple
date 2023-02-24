@@ -12,6 +12,7 @@
 #define NB_PHOTON_IT (1500*1500)
 #define NB_PHOTON_LIGHT (5*5)
 #define PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0
 
 #ifdef SCENE
 #include "SmartPointer.h"

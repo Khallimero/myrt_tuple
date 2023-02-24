@@ -117,6 +117,7 @@ void buildScene(Scene& world)
                                      Mark(Point(0,0,1),Rotation::random()));
     s99->setTexture(new BasicTexture(Color::White),Undefined);
     s99->setDiffCoeff(0.85);
+    s99->setSpecCoeff(0.15);
     s99->setReflectCoeff(0.05);
     world.addShape(s99);
 

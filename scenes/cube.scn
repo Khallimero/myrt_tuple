@@ -12,6 +12,7 @@
 #define NB_PHOTON_IT (15000)
 #define NB_PHOTON_LIGHT (15000)
 #define PHOTON_EXP 1.0
+#define RADIANCE_PHOTON_EXP 0
 
 #ifdef SCENE
 #include "SubShape.h"

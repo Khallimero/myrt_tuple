@@ -5,10 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef RADIANCE_PHOTON_EXP
-#define RADIANCE_PHOTON_EXP 0
-#endif
-
 __thread NestedIterator<double,2>** Renderer::nestedItTab;
 Collection <const Renderer*> Renderer::Monitored;
 
@@ -102,7 +98,7 @@ ObjCollection<Color> Renderer::computeRays(const ObjCollection<Ray>& r,int nbRef
 
                 if(hr[i].getShape()->getRefractCoeff()>0.0)
                 {
-                    Vector n=Vector(hr[i].getNormal()*SIGN(hr[i].getNormal().cosAngle(hr[i].getIncident().getVector()))).norm()*EPSILON;
+                    Vector n=hr[i].getNormal()*EPSILON;
                     double d1=sc->getDensity(hr[i].getPoint()-n);
                     double d2=sc->getDensity(hr[i].getPoint()+n);
 
@@ -145,7 +141,7 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
             Color ltSum=Color::Black,glSum=Color::Black,phSum=Color::Black;
             Vector rf=h.getIncident().getVector().reflect(h.getNormal());
 
-            Vector n=Vector(h.getNormal()*SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))).norm()*EPSILON;
+            Vector n=h.getNormal()*EPSILON;
             Point p=h.getPoint()-n;
             Point pr=h.getPoint()+n;
 
@@ -285,13 +281,15 @@ void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
 
             if(h.getShape()->getRefractCoeff()>0)
             {
-                double d1=sc->getDensity(h.getPoint()-(h.getIncident().getVector().norm()*EPSILON));
-                double d2=sc->getDensity(h.getPoint()+(h.getIncident().getVector().norm()*EPSILON));
+                Vector n=h.getNormal()*EPSILON;
+                double d1=sc->getDensity(h.getPoint()-n);
+                double d2=sc->getDensity(h.getPoint()+n);
                 if(h.getRefract(d1,d2).isNull())rCoeff+=h.getShape()->getRefractCoeff();
                 else computePhoton(sc->getHit(h.getRefract(d1,d2)),c*h.getShape()->getRefractCoeff(),nbRef+1);
             }
 
-            computePhoton(sc->getHit(h.getReflect()),(c*rCoeff)+(c*h.getShape()->getColor(h)*(fabs(h.getNormal().cosAngle(h.getIncident().getVector()))*RADIANCE_PHOTON_EXP)),nbRef+1);
+            c*=rCoeff+(fabs(h.getNormal().cosAngle(h.getIncident().getVector()))*RADIANCE_PHOTON_EXP);
+            computePhoton(sc->getHit(h.getReflect()),c,nbRef+1);
         }
     }
 }
