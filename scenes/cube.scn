@@ -92,7 +92,7 @@ void buildScene(Scene& world)
         Shape *s1=new Bubble(r,new Sphere(2.0),m);
         s1->setTexture(new BasicTexture(Color::White),Undefined);
         s1->setDiffCoeff(0.1);
-        s1->setSpecCoeff(0.4);
+        s1->setSpecCoeff(0.45);
         s1->setGlareCoeff(10);
         s1->setReflectCoeff(0.1);
         s1->setRefractCoeff(0.7);

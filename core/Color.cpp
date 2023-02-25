@@ -173,6 +173,7 @@ Color Color::beer(double bCoeff)const
         }
         double bCoeff;
     };
+
     return Color(Tuple<double,TREBLE_SIZE>(*this,_beer(bCoeff)));
 }
 

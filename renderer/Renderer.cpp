@@ -119,9 +119,9 @@ ObjCollection<Color> Renderer::computeRays(const ObjCollection<Ray>& r,int nbRef
                     Color cr=computeRay(hr[i].getReflect(),nbRef+1);
                     cc.getTab()[i]+=cr*reflectCoeff;
                 }
-            }
 
-            cc.getTab()[i]=computeBeerColor(cc[i],hr[i]);
+                computeBeerColor(cc.getTab()[i],hr[i]);
+            }
         }
     }
 
@@ -240,9 +240,8 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
     return cc;
 }
 
-Color Renderer::computeBeerColor(const Color& c,const Hit& h)const
+void Renderer::computeBeerColor(Color& c,const Hit& h)const
 {
-    Color col=c;
     Vector vct=h.getIncident().getVector().norm()*EPSILON;
     Point p1=h.getIncident().getPoint()+vct;
     Point p2=h.getPoint()-vct;
@@ -255,12 +254,10 @@ Color Renderer::computeBeerColor(const Color& c,const Hit& h)const
             if(sc->getShape(i)->isInside(p1)&&sc->getShape(i)->isInside(p2))
             {
                 double bc=1.0-(1.0/exp(pow(dst/sc->getShape(i)->getBeerSizeCoeff(),sc->getShape(i)->getBeerSizeExp())));
-                col*=sc->getShape(i)->getBeerColor().beer(bc);
+                c*=sc->getShape(i)->getBeerColor().beer(bc);
             }
         }
     }
-
-    return col;
 }
 
 void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
@@ -269,7 +266,8 @@ void Renderer::computePhoton(const Hit& h,const Color& col,int nbRef)
 
     if(!h.isNull())
     {
-        Color c=computeBeerColor(col,h);
+        Color c=col;
+        computeBeerColor(c,h);
 
         if(nbRef>0&&(sc->getPhotonBoxOut()==NULL||sc->getPhotonBoxOut()->isInside(h.getPoint())))
             photonMap.addPhotonHit(h.getShape()->getId(),PhotonHit(h.getPoint(),h.getIncident().getVector(),c));
