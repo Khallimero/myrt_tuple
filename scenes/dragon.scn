@@ -2,7 +2,7 @@
 #define PLAN_TAN (M_PI/1000.0)
 #define ISO_STEP (0.01)
 #define ISO_THRESHOLD (0.00000001)
-#define NB_REF 5
+#define NB_REF 2
 #define MAX_REF_SS 1
 #define PHOTON_EQ_DST 0.001
 #define PHOTON_EQ_ANG (M_PI/100.0)
@@ -40,7 +40,6 @@ void buildScene(Scene& world)
     dragon->setDiffCoeff(0.7);
     dragon->setSpecCoeff(0.4);
     dragon->setGlareCoeff(100);
-    dragon->setRadianceCoeff(0.1);
     dragon->setReflectCoeff(0.07);
     world.addShape(dragon);
 
@@ -48,7 +47,6 @@ void buildScene(Scene& world)
                          Mark(Point(0,1,0)));
     plan->setTexture(new BasicTexture(ORANGE));
     plan->setDiffCoeff(1.);
-    plan->setRadianceCoeff(.2);
     world.addShape(plan);
 
     Point lc(-500,-2000,-1500);

@@ -10,8 +10,8 @@
 #define PHOTON_RAD 0.5
 #define PHOTON_REF 10
 #define NB_PHOTON_IT 1000000
-#define NB_PHOTON_LIGHT (5*5)
-#define PHOTON_EXP 2.0
+#define NB_PHOTON_LIGHT (25)
+#define PHOTON_EXP 1.0
 #define RADIANCE_PHOTON_EXP 0.2
 
 #ifdef SCENE
@@ -101,6 +101,7 @@ void buildScene(Scene& world)
     cl->setGlareCoeff(100);
     cl->setReflectCoeff(0.1);
     cl->setRefractCoeff(0.95);
+    cl->setTranslucencyCoeff(0.01);
     cl->setDensity(1.2);
     cl->setBeer(1,5,Color::White*0.8);
     world.addShape(cl);
@@ -111,7 +112,6 @@ void buildScene(Scene& world)
     plan->setDiffCoeff(0.6);
     plan->setSpecCoeff(0.2);
     plan->setGlareCoeff(1000);
-    plan->setRadianceCoeff(0.1);
     world.addShape(plan);
 
     Point lc(-500,-850,500);

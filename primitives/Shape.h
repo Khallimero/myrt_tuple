@@ -156,14 +156,6 @@ public:
     {
         this->glareCoeff=c;
     }
-    double getRadianceCoeff()const
-    {
-        return radianceCoeff;
-    }
-    void setRadianceCoeff(double c)
-    {
-        this->radianceCoeff=c;
-    }
     double getReflectCoeff()const
     {
         return reflectCoeff;
@@ -179,6 +171,14 @@ public:
     void setRefractCoeff(double c)
     {
         this->refractCoeff=c;
+    }
+    double getTranslucencyCoeff()const
+    {
+        return translucencyCoeff;
+    }
+    void setTranslucencyCoeff(double c)
+    {
+        this->translucencyCoeff=c;
     }
 
     double getDensity()const
@@ -222,7 +222,15 @@ public:
     {
         this->beerColor=c;
     }
-    void setBeer(double sizeCoeff,double sizeExp,const Color& beerColor=Color::White);
+    bool isBeerFading()const
+    {
+        return beerFading;
+    }
+    void setBeerFading(bool f)
+    {
+        this->beerFading=f;
+    }
+    void setBeer(double sizeCoeff,double sizeExp,const Color& beerColor=Color::White,bool fading=false);
 
 protected:
     virtual Hit _getHit(const Ray& r)const=0;
@@ -248,9 +256,9 @@ protected:
     double diffCoeff;
     double specCoeff;
     double glareCoeff;
-    double radianceCoeff;
     double reflectCoeff;
     double refractCoeff;
+    double translucencyCoeff;
 
     double density;
 
@@ -258,6 +266,7 @@ protected:
     double beerSizeCoeff;
     double beerSizeExp;
     Color beerColor;
+    bool beerFading;
 
 private:
     static int _id;

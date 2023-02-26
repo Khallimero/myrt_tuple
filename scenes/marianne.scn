@@ -69,7 +69,6 @@ void buildScene(Scene& world)
     plan->setDiffCoeff(0.8);
     plan->setSpecCoeff(0.2);
     plan->setGlareCoeff(1000);
-    plan->setRadianceCoeff(0.1);
     world.addShape(plan);
 
     Point lc(-500,-1000,-500);

@@ -77,6 +77,7 @@ void buildScene(Scene& world)
     s->setGlareCoeff(100);
     s->setReflectCoeff(0.07);
     s->setRefractCoeff(0.8);
+    s->setTranslucencyCoeff(0.05);
 
     for(int i=0; i<80; i++)
     {
@@ -96,6 +97,7 @@ void buildScene(Scene& world)
         s1->setGlareCoeff(10);
         s1->setReflectCoeff(0.1);
         s1->setRefractCoeff(0.7);
+        s1->setTranslucencyCoeff(0.1);
         s=new SubShape(s,s1,false);
     }
     s->setDensity(1.546);

@@ -56,6 +56,7 @@ void buildScene(Scene& world)
         tk->setGlareCoeff(100);
         tk->setReflectCoeff(0.2);
         tk->setRefractCoeff(0.95);
+        tk->setTranslucencyCoeff(0.05);
         tk->setDensity(1.76);
         tk->setBeer(100,2,BROWN);
 

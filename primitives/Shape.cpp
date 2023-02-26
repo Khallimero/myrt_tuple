@@ -15,15 +15,16 @@ Shape::Shape(const Mark& mk)
     setDiffCoeff(0);
     setSpecCoeff(0);
     setGlareCoeff(0);
-    setRadianceCoeff(0);
     setReflectCoeff(0);
     setRefractCoeff(0);
+    setTranslucencyCoeff(0);
     setDensity(1);
 
     setShell(true);
     setBeerSizeCoeff(1);
     setBeerSizeExp(1);
     setBeerColor(Color::White);
+    setBeerFading(false);
 }
 
 Shape::~Shape() {}
@@ -113,10 +114,11 @@ void Shape::setCarveMap(SmartPointer<const CarveMap> crvMap,Mapping m,const Vect
     setCarveMapSize(cmSize);
 }
 
-void Shape::setBeer(double sizeCoeff,double sizeExp,const Color& beerColor)
+void Shape::setBeer(double sizeCoeff,double sizeExp,const Color& beerColor,bool fading)
 {
     setShell(false);
     setBeerSizeCoeff(sizeCoeff);
     setBeerSizeExp(sizeExp);
     setBeerColor(beerColor);
+    setBeerFading(fading);
 }

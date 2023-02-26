@@ -138,7 +138,7 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
         const Hit& h=hc[c];
         if(!h.isNull())
         {
-            Color ltSum=Color::Black,glSum=Color::Black,phSum=Color::Black;
+            Color ltSum=Color::Black,ltrSum=Color::Black,glSum=Color::Black,phSum=Color::Black,phrSum=Color::Black;
             Vector rf=h.getIncident().getVector().reflect(h.getNormal());
 
             Vector n=Vector(h.getNormal()*SIGN(h.getNormal().cosAngle(h.getIncident().getVector()))).norm()*EPSILON;
@@ -147,7 +147,7 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
 
             for(int k=0; k<sc->getNbLights(); k++)
             {
-                Color ltCol=Color::Black,glCol=Color::Black;
+                Color ltCol=Color::Black,ltrCol=Color::Black,glCol=Color::Black;
 
                 double lDst=sc->getLight(k)->dist(p);
                 double mtg=sc->getLight(k)->getMitigation(lDst);
@@ -190,15 +190,17 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                     if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
                     {
                         double d=fabs(rrc[i].getVector().cosAngle(h.getNormal()));
-                        ltCol+=sc->getLight(k)->getColor()*mtg*d*h.getShape()->getRefractCoeff();
+                        ltrCol+=sc->getLight(k)->getColor()*mtg*d*h.getShape()->getRefractCoeff();
                     }
                 }
 
                 ltSum+=ltCol/(double)it->getActualSteps();
+                ltrSum+=ltrCol/(double)it->getActualSteps();
                 glSum+=glCol/(double)it->getActualSteps();
             }
 
             ltSum+=sc->getAmbiant()*(0.5+fabs(h.getNormal().cosAngle(h.getThNormal()))/2.0)*(0.5+fabs(h.getNormal().cosAngle(h.getIncident().getVector()))/2.0);
+            ltrSum+=sc->getAmbiant()*h.getShape()->getRefractCoeff();
 
             if(sc->getPhotonBoxIn()!=NULL)
             {
@@ -223,15 +225,18 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                                 if(rp.cosAngle(h.getIncident().getVector())>0)
                                     phSum+=phCol;
                                 else if(h.getShape()->getRefractCoeff()>0)
-                                    phSum+=phCol*h.getShape()->getRefractCoeff();
+                                    phrSum+=phCol*h.getShape()->getRefractCoeff();
                             }
                 }
+
                 phSum*=h.getShape()->getDiffCoeff();
+                phrSum*=h.getShape()->getTranslucencyCoeff();
             }
 
             ltSum*=h.getShape()->getDiffCoeff();
+            ltrSum*=h.getShape()->getTranslucencyCoeff();
             glSum*=h.getShape()->getSpecCoeff();
-            cl+=(h.getShape()->getColor(h)*(ltSum+phSum))+glSum;
+            cl+=(h.getShape()->getColor(h)*(ltSum+ltrSum+phSum+phrSum))+glSum;
         }
 
         cc._add(cl);
@@ -254,7 +259,7 @@ void Renderer::computeBeerColor(Color& c,const Hit& h)const
             if(sc->getShape(i)->isInside(p1)&&sc->getShape(i)->isInside(p2))
             {
                 double bc=1.0-(1.0/exp(pow(dst/sc->getShape(i)->getBeerSizeCoeff(),sc->getShape(i)->getBeerSizeExp())));
-                c*=sc->getShape(i)->getBeerColor().beer(bc);
+                c*=sc->getShape(i)->getBeerColor().beer(bc)*(sc->getShape(i)->isBeerFading()?1.0-bc:1.0);
             }
         }
     }

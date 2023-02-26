@@ -11,7 +11,7 @@
 #define PHOTON_REF 5
 #define NB_PHOTON_IT 500000
 #define NB_PHOTON_LIGHT 9
-#define PHOTON_EXP 4.0
+#define PHOTON_EXP 1.0
 #define RADIANCE_PHOTON_EXP 0.1
 
 #ifdef SCENE
@@ -41,6 +41,7 @@ void buildScene(Scene& world)
     t->setGlareCoeff(1000);
     t->setReflectCoeff(0.15);
     t->setRefractCoeff(0.8);
+    t->setTranslucencyCoeff(0.05);
     t->setDensity(1.58);
     t->setBeer(200,2,RUBY);
     world.addShape(t);
