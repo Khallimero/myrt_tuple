@@ -164,7 +164,7 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                     if(sc->getLight(k)->getBox()==NULL||!sc->getLight(k)->getBox()->getHit(Ray(h.getPoint(),w)).isNull())
                     {
                         rc._add(Ray(p,w));
-                        if(h.getShape()->getRefractCoeff()>0)
+                        if(h.getShape()->getRefractCoeff()>0&&h.getShape()->getTranslucencyCoeff()>0)
                             rrc._add(Ray(pr,w));
                     }
                 }
@@ -190,7 +190,7 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                     if(hDst<0||(lDst>0&&hDst>0&&lDst<hDst))
                     {
                         double d=fabs(rrc[i].getVector().cosAngle(h.getNormal()));
-                        ltrCol+=sc->getLight(k)->getColor()*mtg*d*h.getShape()->getRefractCoeff();
+                        ltrCol+=sc->getLight(k)->getColor()*mtg*d;
                     }
                 }
 
@@ -199,8 +199,9 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                 glSum+=glCol/(double)it->getActualSteps();
             }
 
-            ltSum+=sc->getAmbiant()*(0.5+fabs(h.getNormal().cosAngle(h.getThNormal()))/2.0)*(0.5+fabs(h.getNormal().cosAngle(h.getIncident().getVector()))/2.0);
-            ltrSum+=sc->getAmbiant()*h.getShape()->getRefractCoeff();
+            double ltCoeff=(0.5+fabs(h.getNormal().cosAngle(h.getThNormal()))/2.0)*(0.5+fabs(h.getNormal().cosAngle(h.getIncident().getVector()))/2.0);
+            ltSum+=sc->getAmbiant()*ltCoeff;
+            ltrSum+=sc->getAmbiant()*ltCoeff;
 
             if(sc->getPhotonBoxIn()!=NULL)
             {
@@ -212,7 +213,9 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                 {
                     ObjCollection<PhotonHit>* phc=photonMap.getPhotonHitCollection(h.getShape()->getId(),PhotonBox(pbIt.getTuple()));
                     if(phc!=NULL)
+                    {
                         for(int ph=0; ph<phc->_count(); ph++)
+                        {
                             if(h.getPoint().dist((*phc)[ph].getPoint())<PHOTON_RAD)
                             {
                                 const Color& clp=(*phc)[ph].getColor();
@@ -224,18 +227,19 @@ ObjCollection<Color> Renderer::computeColors(const ObjCollection<Hit>& hc,int nb
                                 Color phCol=clp*fabs(rp.cosAngle(h.getNormal()));
                                 if(rp.cosAngle(h.getIncident().getVector())>0)
                                     phSum+=phCol;
-                                else if(h.getShape()->getRefractCoeff()>0)
-                                    phrSum+=phCol*h.getShape()->getRefractCoeff();
+                                else phrSum+=phCol;
                             }
+                        }
+                    }
                 }
-
-                phSum*=h.getShape()->getDiffCoeff();
-                phrSum*=h.getShape()->getTranslucencyCoeff();
             }
 
             ltSum*=h.getShape()->getDiffCoeff();
-            ltrSum*=h.getShape()->getTranslucencyCoeff();
+            ltrSum*=h.getShape()->getRefractCoeff()*h.getShape()->getTranslucencyCoeff();
             glSum*=h.getShape()->getSpecCoeff();
+            phSum*=h.getShape()->getDiffCoeff();
+            phrSum*=h.getShape()->getRefractCoeff()*h.getShape()->getTranslucencyCoeff();
+
             cl+=(h.getShape()->getColor(h)*(ltSum+ltrSum+phSum+phrSum))+glSum;
         }
 
