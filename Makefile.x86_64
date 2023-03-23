@@ -1,5 +1,5 @@
 CXX           = g++
-DEFINES       = -DNB_THREAD=$(NB_THREAD) -DOPENCL_QUEUE=$(OPENCL_QUEUE) -DOpenCL
+DEFINES       = -DNB_THREAD=$(NB_THREAD) -DOpenCL
 CXXFLAGS      = -m64 -mtune=native -march=native -O3 -Wall -ffast-math -pthread $(DEFINES)
 INCDIR        = -I.
 LINKLIBS      = -lstdc++ -lm -lpthread -lOpenCL

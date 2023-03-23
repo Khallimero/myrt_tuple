@@ -12,6 +12,8 @@ SOURCES       =	BoxedCollectionShape.cpp \
 		MobiusStrip.cpp \
 		MobiusTore.cpp \
 		PLYShape.cpp \
+		PLYShapeBoxKernel.cpp \
+		PLYShapeHitKernel.cpp \
 		ParametricIsoSurface.cpp \
 		ParametricPrimitive.cpp \
 		ParametricSurfacePrimitive.cpp \

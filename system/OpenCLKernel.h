@@ -13,7 +13,7 @@ public:
 
 public:
     bool setArg(int index, void *buffer)const;
-    bool runKernel(size_t nb)const;
+    bool runKernel(size_t nb,cl_command_queue queue=NULL)const;
 
 protected:
     size_t getWorkSize(size_t size)const

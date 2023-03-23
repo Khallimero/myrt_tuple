@@ -15,4 +15,3 @@ OBJ           = $(join $(addsuffix ./$(OBJDIR)/, $(dir $(SOURCES))), $(notdir $(
 	$(CXX) $(CXXFLAGS) $(INCDIR) $(INCPATH) -c $< -o $@
 
 NB_THREAD     = `$(NPROC)`
-OPENCL_QUEUE  = `expr \`$(NPROC)\` '/' 4`

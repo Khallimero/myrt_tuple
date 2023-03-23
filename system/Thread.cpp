@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 int Thread::_nb_thread=-1;
 
@@ -81,7 +83,13 @@ int Thread::nbThread()
         //fflush(stdout);
 #endif
     }
+
     return _nb_thread;
+}
+
+int Thread::threadId()
+{
+    return (int)gettid();
 }
 
 void Thread::run(void*(*fct)(void*),void* arg,int nb_thread)

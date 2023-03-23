@@ -36,11 +36,12 @@ bool OpenCLKernel::setArg(int index, void *buffer)const
     return ret==CL_SUCCESS;
 }
 
-bool OpenCLKernel::runKernel(size_t nb)const
+bool OpenCLKernel::runKernel(size_t nb,cl_command_queue queue)const
 {
     size_t size=(int)getWorkSize(nb);
     size_t workSize=(int)this->workgroupSizeMultiple;
-    cl_int ret=clEnqueueNDRangeKernel(OpenCLContext::openCLcontext->getCommandQueue(), kernel, 1, NULL, &size, &workSize, 0, NULL, NULL);
+    if(queue==NULL)queue=OpenCLContext::openCLcontext->getCommandQueue();
+    cl_int ret=clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &size, &workSize, 0, NULL, NULL);
     OpenCLContext::printError("clEnqueueNDRangeKernel",ret);
     return ret==CL_SUCCESS;
 }

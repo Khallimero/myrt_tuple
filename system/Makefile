@@ -4,6 +4,8 @@ include ../myrt.mk
 TARGET        = ../$(LIBDIR)/libsystem.a
 
 SOURCES       =	AutoLock.cpp \
+		ConcurrentOpenCLKernel.cpp \
+		ConcurrentOpenCLKernelCollection.cpp \
 		Lockable.cpp \
 		OpenCLContext.cpp \
 		OpenCLKernel.cpp \
