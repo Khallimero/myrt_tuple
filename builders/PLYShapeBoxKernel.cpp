@@ -48,5 +48,8 @@ __kernel void adj_primitive(\
 }
 
 PLYShapeBoxKernel::~PLYShapeBoxKernel()
-{}
+{
+    for(int i=0; i<4; i++)
+        OpenCLContext::openCLcontext->releaseBuffer(buffId[i]);
+}
 #endif

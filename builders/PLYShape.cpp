@@ -474,6 +474,7 @@ void PLYShape::buildBoxes(bool flgBox)
 #ifdef OpenCL
         for(int i=0; i<2; i++)
             OpenCLContext::openCLcontext->releaseBuffer(box_buffId[i]);
+        boxKernels.clear();
 #endif
     }
 
