@@ -7,8 +7,8 @@
 PLYShapeBoxKernel::PLYShapeBoxKernel(int* buffer, int ht, int cnt)
     :ConcurrentOpenCLKernel(true)
 {
-    this->kernel=new OpenCLKernel("adj_primitive", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
-__kernel void adj_primitive(\
+    this->kernel=new OpenCLKernel("primitive_box", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
+__kernel void primitive_box(\
     __global const double *prm,\
     __global const int *cnt_prm,\
     __global const double *ht,\
