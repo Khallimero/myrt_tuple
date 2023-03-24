@@ -11,7 +11,7 @@
 #include <CL/cl.h>
 
 #define OPENCL_QUEUE (NB_THREAD/4)
-#define OPENCL_CONCURRENTLOCK (4)
+#define OPENCL_LOCK (4)
 
 class OpenCLContext:public Lockable
 {
@@ -53,7 +53,7 @@ public:
 public:
     static SmartPointer<OpenCLContext> openCLcontext;
     static LockQueue<OPENCL_QUEUE> openCLQueue;
-    static ConcurrentLock<OPENCL_CONCURRENTLOCK> concurrentLock;
+    static ConcurrentLock<OPENCL_LOCK> concurrentLock;
 
 protected:
     cl_device_id device_id;

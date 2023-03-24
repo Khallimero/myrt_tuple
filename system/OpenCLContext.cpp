@@ -31,7 +31,7 @@ OpenCLContext::OpenCLContext()
     command_queue = createCommandQueue();
 
     fprintf(stdout, "OpenCL queue length : %d\n", OPENCL_QUEUE);
-    fprintf(stdout, "OpenCL concurrent kernels : %d\n", OPENCL_CONCURRENTLOCK);
+    fprintf(stdout, "OpenCL concurrent kernels : %d\n", OPENCL_LOCK);
     fflush(stdout);
 }
 
@@ -173,5 +173,5 @@ void OpenCLContext::printError(const char* fct, cl_int ret)
 
 SmartPointer<OpenCLContext> OpenCLContext::openCLcontext=new OpenCLContext();
 LockQueue<OPENCL_QUEUE> OpenCLContext::openCLQueue(OpenCLContext::openCLcontext);
-ConcurrentLock<OPENCL_CONCURRENTLOCK> OpenCLContext::concurrentLock;
+ConcurrentLock<OPENCL_LOCK> OpenCLContext::concurrentLock;
 #endif

@@ -145,8 +145,8 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
         }
 
 #ifdef OpenCL
-        const Lockable *concurrentLock=NULL;
-        if((nbShapes>>3)>(this->shapes._count()/this->boxes._count())&&(concurrentLock=OpenCLContext::concurrentLock.tryLock())!=NULL)
+        const Lockable *clLock=NULL;
+        if((nbShapes>>3)>(this->shapes._count()/this->boxes._count())&&(clLock=OpenCLContext::concurrentLock.tryLock())!=NULL)
         {
             bCnt[bCnt[0]+1]=r._count();
             double *k_r=(double*)malloc(r._count()*2*TREBLE_SIZE*sizeof(double));
@@ -169,7 +169,8 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
             OpenCLContext::openCLcontext->writeBuffer(hitKernel->getBuffId()[1],r._count()*2*TREBLE_SIZE,sizeof(double),k_r,hitKernel->getCommandQueue());
             free(k_r);
 
-            _runHitKernel(hitKernel,nbShapes,r,hc,bCnt.getPointer(),p,b,concurrentLock);
+            _runHitKernel(hitKernel,nbShapes,r,hc,bCnt.getPointer(),p,b);
+            clLock->unlock();
         }
         else
 #endif
@@ -205,7 +206,7 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
 }
 
 #ifdef OpenCL
-void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,int* bCnt,const PLYPrimitive*** p,const PLYBox*** b,const Lockable* lock)const
+void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,int* bCnt,const PLYPrimitive*** p,const PLYBox*** b)const
 {
     int nb=0;
     bCnt[bCnt[0]+2]=kernel->getNbHit();
@@ -218,13 +219,12 @@ void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCo
     if(nb>kernel->getNbHit())
     {
         kernel->setNbHit(nb);
-        _runHitKernel(kernel,nbShapes,r,hc,bCnt,p,b,lock);
+        _runHitKernel(kernel,nbShapes,r,hc,bCnt,p,b);
     }
     else if(nb>0)
     {
         LocalPointer<int> ind=(int*)malloc((1+(nb*2))*sizeof(int));
         OpenCLContext::openCLcontext->readBuffer(kernel->getBuffId()[2],1+(nb*2),sizeof(int),ind,kernel->getCommandQueue());
-        lock->unlock();
 
         for(int n=0; n<nb; n++)
         {
@@ -252,10 +252,6 @@ void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCo
                 else id-=largeBoxes[i]->cntHt;
             }
         }
-    }
-    else
-    {
-        lock->unlock();
     }
 }
 #endif
@@ -528,8 +524,8 @@ void* boxThread(void* d)
     while(s->getNextBox(&i))
     {
 #ifdef OpenCL
-        const Lockable *concurrentLock=NULL;
-        if((concurrentLock=OpenCLContext::concurrentLock.tryLock())!=NULL)
+        const Lockable *clLock=NULL;
+        if((clLock=OpenCLContext::openCLQueue.tryEnqueueLock())!=NULL)
         {
             double *pt=(double*)malloc(s->boxes[i].ht._count()*3*TREBLE_SIZE*sizeof(double));
             for(int j=0; j<s->boxes[i].ht._count(); j++)
@@ -555,21 +551,18 @@ void* boxThread(void* d)
             OpenCLContext::openCLcontext->writeBuffer(boxKernel->getBuffId()[3],1,sizeof(int),&nb,boxKernel->getCommandQueue());
             free(pt);
 
+            OpenCLContext::openCLQueue.waitLock(clLock);
             boxKernel->runKernel(s->shapes._count());
+            OpenCLContext::openCLQueue.unlock();
 
             OpenCLContext::openCLcontext->readBuffer(boxKernel->getBuffId()[3],1,sizeof(int),&nb,boxKernel->getCommandQueue());
             if(nb>0)
             {
                 LocalPointer<int> ind=(int*)malloc((1+nb)*sizeof(int));
                 OpenCLContext::openCLcontext->readBuffer(boxKernel->getBuffId()[3],1+nb,sizeof(int),ind,boxKernel->getCommandQueue());
-                concurrentLock->unlock();
 
                 for(int j=1; j<=nb; j++)
                     s->boxes.getTab()[i].prm._add(&s->shapes[ind[j]]);
-            }
-            else
-            {
-                concurrentLock->unlock();
             }
         }
         else

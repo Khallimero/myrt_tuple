@@ -28,7 +28,7 @@ public:
             }
             return NULL;
         }
-        
+
         for(int i=N; i>0; i--)
             if(lckTab[i-1].trylock()==0)
                 return &lckTab[i-1];
@@ -54,7 +54,7 @@ public:
                 }
             }
         }
-        
+
         lock();
     }
 
