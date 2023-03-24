@@ -3,7 +3,6 @@
 #include "Thread.h"
 #include "AutoLock.h"
 #include "OpenCLContext.h"
-#include "PLYShapeBoxKernel.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -38,10 +37,6 @@ PLYShape::~PLYShape()
     {
         delete boxes[i].box;
     }
-
-#ifdef OpenCL
-    OpenCLContext::openCLcontext->releaseBuffer(hit_buffId);
-#endif
 }
 
 ObjCollection<Hit> PLYShape::getHit(const ObjCollection<Ray>& r)const
@@ -156,14 +151,7 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
                 memcpy(&k_r[((i*2)+1)*TREBLE_SIZE],r[i].getVector()._getTab(),TREBLE_SIZE*sizeof(double));
             }
 
-            AutoLock autolock(&this->hitKernels);
             PLYShapeHitKernel *hitKernel=(PLYShapeHitKernel*)this->hitKernels.findKernel();
-            if(hitKernel==NULL)
-            {
-                hitKernel=new PLYShapeHitKernel(hit_buffId, boxes._count());
-                this->hitKernels.insert(hitKernel);
-            }
-            autolock.unlock();
 
             if(r._count()>hitKernel->getNbRay())hitKernel->setNbRay(r._count());
             OpenCLContext::openCLcontext->writeBuffer(hitKernel->getBuffId()[1],r._count()*2*TREBLE_SIZE,sizeof(double),k_r,hitKernel->getCommandQueue());
@@ -446,20 +434,20 @@ void PLYShape::buildBoxes(bool flgBox)
     {
 #ifdef OpenCL
         int cnt=this->shapes._count();
-        box_buffId[0]=OpenCLContext::openCLcontext->createBuffer(cnt*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-        box_buffId[1]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+        boxKernels.buffId[0]=OpenCLContext::openCLcontext->createBuffer(cnt*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+        boxKernels.buffId[1]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
 
         double *pt=(double*)malloc(cnt*3*TREBLE_SIZE*sizeof(double));
         for(int i=0; i<cnt; i++)
             for(int j=0; j<3; j++)
                 memcpy(&pt[((i*3)+j)*TREBLE_SIZE],this->shapes[i].pt[j]._getTab(),TREBLE_SIZE*sizeof(double));
-        OpenCLContext::openCLcontext->writeBuffer(box_buffId[0],cnt*3*TREBLE_SIZE,sizeof(double),pt);
-        OpenCLContext::openCLcontext->writeBuffer(box_buffId[1],1,sizeof(int),&cnt);
+        OpenCLContext::openCLcontext->writeBuffer(boxKernels.buffId[0],cnt*3*TREBLE_SIZE,sizeof(double),pt);
+        OpenCLContext::openCLcontext->writeBuffer(boxKernels.buffId[1],1,sizeof(int),&cnt);
         free(pt);
 
-        maxHt=0;
+        boxKernels.cnt=shapes._count();
         for(int i=0; i<boxes._count(); i++)
-            maxHt=MAX(maxHt,this->boxes[i].ht._count());
+            boxKernels.ht=MAX(boxKernels.ht,this->boxes[i].ht._count());
 #endif
 
         nb_box=0;
@@ -468,14 +456,13 @@ void PLYShape::buildBoxes(bool flgBox)
         fflush(stdout);
 
 #ifdef OpenCL
-        for(int i=0; i<2; i++)
-            OpenCLContext::openCLcontext->releaseBuffer(box_buffId[i]);
-        boxKernels.clear();
+        boxKernels.releaseBuffers();
 #endif
     }
 
 #ifdef OpenCL
-    hit_buffId=OpenCLContext::openCLcontext->createBuffer(shapes._count()*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+    hitKernels.cnt=boxes._count();
+    hitKernels.buffId=OpenCLContext::openCLcontext->createBuffer(shapes._count()*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
     int nbShapes=0;
     double *pt=(double*)malloc(shapes._count()*3*TREBLE_SIZE*sizeof(double));
     for(int i=0; i<largeBoxes._count(); i++)
@@ -483,7 +470,7 @@ void PLYShape::buildBoxes(bool flgBox)
             for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++,nbShapes++)
                 for(int l=0; l<3; l++)
                     memcpy(&pt[((nbShapes*3)+l)*TREBLE_SIZE],Vector(largeBoxes[i]->boxes[j]->ht[k]->pt[l]-(l==0?Point::null:largeBoxes[i]->boxes[j]->ht[k]->pt[0]))._getTab(),TREBLE_SIZE*sizeof(double));
-    OpenCLContext::openCLcontext->writeBuffer(hit_buffId,shapes._count()*3*TREBLE_SIZE,sizeof(double),pt);
+    OpenCLContext::openCLcontext->writeBuffer(hitKernels.buffId,shapes._count()*3*TREBLE_SIZE,sizeof(double),pt);
     free(pt);
 #endif
 }
@@ -536,14 +523,7 @@ void* boxThread(void* d)
             memcpy(bx,s->boxes[i].box->getMark().getOrig()._getTab(),TREBLE_SIZE*sizeof(double));
             bx[TREBLE_SIZE]=s->boxes[i].box->getRadius();
 
-            AutoLock autolock(&s->boxKernels);
             PLYShapeBoxKernel *boxKernel=(PLYShapeBoxKernel*)s->boxKernels.findKernel();
-            if(boxKernel==NULL)
-            {
-                boxKernel=new PLYShapeBoxKernel(s->box_buffId, s->maxHt, s->shapes._count());
-                s->boxKernels.insert(boxKernel);
-            }
-            autolock.unlock();
 
             OpenCLContext::openCLcontext->writeBuffer(boxKernel->getBuffId()[0],s->boxes[i].ht._count()*3*TREBLE_SIZE,sizeof(double),pt,boxKernel->getCommandQueue());
             OpenCLContext::openCLcontext->writeBuffer(boxKernel->getBuffId()[1],1,sizeof(int),&cnt,boxKernel->getCommandQueue());

@@ -11,7 +11,10 @@ public:
     virtual ~ConcurrentOpenCLKernelCollection();
 
 public:
-    ConcurrentOpenCLKernel* findKernel()const;
+    ConcurrentOpenCLKernel* findKernel();
+
+protected:
+    virtual ConcurrentOpenCLKernel* createKernel()const=0;
 
 public:
     virtual int compareItems(const ConcurrentOpenCLKernel* k1,const ConcurrentOpenCLKernel* k2)const;

@@ -1,5 +1,7 @@
 #include "ConcurrentOpenCLKernelCollection.h"
 
+#include "AutoLock.h"
+
 #ifdef OpenCL
 ConcurrentOpenCLKernelCollection::ConcurrentOpenCLKernelCollection()
     :BinaryTree<ConcurrentOpenCLKernel>()
@@ -9,10 +11,19 @@ ConcurrentOpenCLKernelCollection::ConcurrentOpenCLKernelCollection()
 
 ConcurrentOpenCLKernelCollection::~ConcurrentOpenCLKernelCollection() {}
 
-ConcurrentOpenCLKernel* ConcurrentOpenCLKernelCollection::findKernel()const
+ConcurrentOpenCLKernel* ConcurrentOpenCLKernelCollection::findKernel()
 {
+    AutoLock autolock(this);
+
     ConcurrentOpenCLKernel kernelId;
-    return cfind(&kernelId);
+    ConcurrentOpenCLKernel* kernel=cfind(&kernelId);
+    if(kernel==NULL)
+    {
+        kernel=createKernel();
+        insert(kernel);
+    }
+
+    return kernel;
 }
 
 int ConcurrentOpenCLKernelCollection::compareItems(const ConcurrentOpenCLKernel* k1,const ConcurrentOpenCLKernel* k2)const

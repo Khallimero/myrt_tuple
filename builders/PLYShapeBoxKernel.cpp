@@ -4,7 +4,7 @@
 #include "core.h"
 #include "OpenCLContext.h"
 
-PLYShapeBoxKernel::PLYShapeBoxKernel(int* buffer, int ht, int cnt)
+PLYShapeBoxKernel::PLYShapeBoxKernel(const int* buffer, int ht, int cnt)
     :ConcurrentOpenCLKernel(true)
 {
     this->kernel=new OpenCLKernel("primitive_box", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\

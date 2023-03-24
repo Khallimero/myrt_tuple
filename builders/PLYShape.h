@@ -8,10 +8,60 @@
 #include "Ray.h"
 #include "Lockable.h"
 #include "ShapeBuilder.h"
+#include "PLYShapeBoxKernel.h"
 #include "PLYShapeHitKernel.h"
 #include "ConcurrentOpenCLKernelCollection.h"
 
 void* boxThread(void*);
+
+#ifdef OpenCL
+class BoxKernelCollection:public ConcurrentOpenCLKernelCollection
+{
+public:
+    BoxKernelCollection()
+        :ht(0),cnt(0)
+    {}
+    virtual ~BoxKernelCollection() {}
+
+public:
+    virtual ConcurrentOpenCLKernel* createKernel()const
+    {
+        return new PLYShapeBoxKernel(buffId, ht, cnt);
+    }
+
+    void releaseBuffers()
+    {
+        for(int i=0; i<2; i++)
+            OpenCLContext::openCLcontext->releaseBuffer(buffId[i]);
+        clear();
+    }
+
+public:
+    int buffId[2];
+    int ht,cnt;
+};
+
+class HitKernelCollection:public ConcurrentOpenCLKernelCollection
+{
+public:
+    HitKernelCollection()
+        :cnt(0)
+    {}
+    virtual ~HitKernelCollection()
+    {
+        OpenCLContext::openCLcontext->releaseBuffer(buffId);
+    }
+
+public:
+    virtual ConcurrentOpenCLKernel* createKernel()const
+    {
+        return new PLYShapeHitKernel(buffId, cnt);
+    }
+
+public:
+    int buffId, cnt;
+};
+#endif
 
 class PLYShape:public Shape,public Lockable
 {
@@ -94,8 +144,8 @@ protected:
     ObjCollection<PLYPrimitive> shapes;
 
 #ifdef OpenCL
-    int box_buffId[2],hit_buffId,maxHt;
-    mutable ConcurrentOpenCLKernelCollection boxKernels,hitKernels;
+    mutable BoxKernelCollection boxKernels;
+    mutable HitKernelCollection hitKernels;
 #endif
 
     ObjCollection<PLYBox> boxes;

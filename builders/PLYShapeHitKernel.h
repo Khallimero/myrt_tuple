@@ -6,7 +6,7 @@
 class PLYShapeHitKernel : public ConcurrentOpenCLKernel
 {
 public:
-    PLYShapeHitKernel(int buffer,int boxes);
+    PLYShapeHitKernel(int buffer,int cnt);
     virtual ~PLYShapeHitKernel();
 
 public:

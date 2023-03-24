@@ -6,7 +6,7 @@
 class PLYShapeBoxKernel : public ConcurrentOpenCLKernel
 {
 public:
-    PLYShapeBoxKernel(int* buffer, int ht, int cnt);
+    PLYShapeBoxKernel(const int* buffer, int ht, int cnt);
     virtual ~PLYShapeBoxKernel();
 
 public:

@@ -4,7 +4,7 @@
 #include "core.h"
 #include "OpenCLContext.h"
 
-PLYShapeHitKernel::PLYShapeHitKernel(int buffer,int boxes)
+PLYShapeHitKernel::PLYShapeHitKernel(int buffer,int cnt)
     :ConcurrentOpenCLKernel(true)
 {
     this->kernel=new OpenCLKernel("primitive_hit", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
@@ -44,7 +44,7 @@ __kernel void primitive_hit(\
     this->kernel->setArg(0, OpenCLContext::openCLcontext->getBuffer(buffer));
 
     nb_ray=1,nb_hit=0;
-    buffId[0]=OpenCLContext::openCLcontext->createBuffer(1+boxes+2,sizeof(int),CL_MEM_READ_ONLY);
+    buffId[0]=OpenCLContext::openCLcontext->createBuffer(1+cnt+2,sizeof(int),CL_MEM_READ_ONLY);
     buffId[1]=OpenCLContext::openCLcontext->createBuffer(nb_ray*2*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
     buffId[2]=OpenCLContext::openCLcontext->createBuffer(1+(nb_hit*2),sizeof(int),CL_MEM_READ_WRITE);
 
