@@ -556,16 +556,20 @@ void* boxThread(void* d)
             free(pt);
 
             boxKernel->runKernel(s->shapes._count());
-            concurrentLock->unlock();
 
             OpenCLContext::openCLcontext->readBuffer(boxKernel->getBuffId()[3],1,sizeof(int),&nb,boxKernel->getCommandQueue());
             if(nb>0)
             {
                 LocalPointer<int> ind=(int*)malloc((1+nb)*sizeof(int));
                 OpenCLContext::openCLcontext->readBuffer(boxKernel->getBuffId()[3],1+nb,sizeof(int),ind,boxKernel->getCommandQueue());
+                concurrentLock->unlock();
 
                 for(int j=1; j<=nb; j++)
                     s->boxes.getTab()[i].prm._add(&s->shapes[ind[j]]);
+            }
+            else
+            {
+                concurrentLock->unlock();
             }
         }
         else
