@@ -525,15 +525,15 @@ void* boxThread(void* d)
 
             PLYShapeBoxKernel *boxKernel=(PLYShapeBoxKernel*)s->boxKernels.findKernel();
 
+            OpenCLContext::openCLQueue.waitLock(clLock);
+
             OpenCLContext::openCLcontext->writeBuffer(boxKernel->getBuffId()[0],s->boxes[i].ht._count()*3*TREBLE_SIZE,sizeof(double),pt,boxKernel->getCommandQueue());
             OpenCLContext::openCLcontext->writeBuffer(boxKernel->getBuffId()[1],1,sizeof(int),&cnt,boxKernel->getCommandQueue());
             OpenCLContext::openCLcontext->writeBuffer(boxKernel->getBuffId()[2],TREBLE_SIZE+1,sizeof(double),bx,boxKernel->getCommandQueue());
             OpenCLContext::openCLcontext->writeBuffer(boxKernel->getBuffId()[3],1,sizeof(int),&nb,boxKernel->getCommandQueue());
             free(pt);
 
-            OpenCLContext::openCLQueue.waitLock(clLock);
             boxKernel->runKernel(s->shapes._count());
-            OpenCLContext::openCLQueue.unlock();
 
             OpenCLContext::openCLcontext->readBuffer(boxKernel->getBuffId()[3],1,sizeof(int),&nb,boxKernel->getCommandQueue());
             if(nb>0)
@@ -544,6 +544,8 @@ void* boxThread(void* d)
                 for(int j=1; j<=nb; j++)
                     s->boxes.getTab()[i].prm._add(&s->shapes[ind[j]]);
             }
+
+            OpenCLContext::openCLQueue.unlock();
         }
         else
 #endif
