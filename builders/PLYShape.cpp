@@ -65,7 +65,7 @@ ObjCollection<Hit> PLYShape::_getHit(const ObjCollection<Ray>& r)const
             {
                 Vector n=Vector::null;
                 double dst=EPSILON;
-                CollectionUnion<const PLYPrimitive*> prmUnion=CollectionUnion<const PLYPrimitive*>(2,&b[l]->ht,&b[l]->prm);
+                CollectionUnion<const PLYPrimitive*,2> prmUnion=CollectionUnion<const PLYPrimitive*,2>(&b[l]->ht,&b[l]->prm);
                 Collection<int> cTab;
                 for(int i=0; i<prmUnion._count(); i++)
                 {

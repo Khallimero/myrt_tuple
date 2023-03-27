@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 
 template <typename T> class ICollection:public Lockable
 {
@@ -289,60 +288,35 @@ private:
     }
 };
 
-template <typename T> class CollectionUnion
+template <typename T,int N> class CollectionUnion
 {
 public:
-    CollectionUnion(int n,...)
+    template <typename... C>
+    CollectionUnion(C... args)
     {
-        this->tab=NULL;
-        _resize(n);
-        va_list vl;
-        va_start(vl,n);
-        for(int i=0; i<=n; i++)
-            this->tab[i]=va_arg(vl,ICollection<T>*);
-        va_end(vl);
+        _init(0, args...);
     }
 
-    CollectionUnion(const CollectionUnion& that)
-    {
-        this->tab=NULL;
-        *this=that;
-    }
-
-    CollectionUnion& operator=(const CollectionUnion& that)
-    {
-        _resize(that.nb);
-        memcpy(this->tab,that.tab,this->nb*sizeof(ICollection<T>*));
-        return *this;
-    }
-
-    virtual ~CollectionUnion()
-    {
-        _free();
-    }
+    virtual ~CollectionUnion() {}
 
 private:
-    virtual void _free()
+    template <typename... C>
+    void _init(int i, const ICollection<T>* c, C... args)
     {
-        if(this->tab)
-        {
-            free(this->tab);
-            this->tab=NULL;
-        }
-        this->nb=0;
+        _init(i, c);
+        _init(i+1, args...);
     }
 
-    virtual void _resize(int s)
+    void _init(int i, const ICollection<T>* c)
     {
-        this->tab=(ICollection<T>**)realloc(this->tab,s*sizeof(ICollection<T>*));
-        this->nb=s;
+        if(i<N) tab[i]=c;
     }
 
 public:
     int count()const
     {
         int cnt=0;
-        for(int i=0; i<this->nb; i++)
+        for(int i=0; i<N; i++)
             cnt+=this->tab[i]->count();
         return cnt;
     }
@@ -350,14 +324,14 @@ public:
     const int _count()const
     {
         int cnt=0;
-        for(int i=0; i<this->nb; i++)
+        for(int i=0; i<N; i++)
             cnt+=this->tab[i]->_count();
         return cnt;
     }
 
     const T& get(int i)const
     {
-        for(int j=0; j<this->nb; j++)
+        for(int j=0; j<N; j++)
         {
             if(i<this->tab[j]->_count())
                 return this->tab[j]->get(i);
@@ -372,6 +346,5 @@ public:
     }
 
 protected:
-    ICollection<T>** tab;
-    int nb;
+    const ICollection<T>* tab[N];
 };
