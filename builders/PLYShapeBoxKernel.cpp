@@ -4,8 +4,7 @@
 #include "core.h"
 #include "OpenCLContext.h"
 
-PLYShapeBoxKernel::PLYShapeBoxKernel(const int* buffer, int ht, int cnt)
-    :ConcurrentOpenCLKernel(true)
+PLYShapeBoxKernel::PLYShapeBoxKernel(int ht, int cnt)
 {
     this->kernel=new OpenCLKernel("primitive_box", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
 __kernel void primitive_box(\
@@ -35,21 +34,25 @@ __kernel void primitive_box(\
         }\
 }");
 
-    for(int i=0; i<2; i++)
-        this->kernel->setArg(i, OpenCLContext::openCLcontext->getBuffer(buffer[i]));
-
-    buffId[0]=OpenCLContext::openCLcontext->createBuffer(ht*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+    buffId[0]=OpenCLContext::openCLcontext->createBuffer(cnt*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
     buffId[1]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
-    buffId[2]=OpenCLContext::openCLcontext->createBuffer(TREBLE_SIZE+1,sizeof(double),CL_MEM_READ_ONLY);
-    buffId[3]=OpenCLContext::openCLcontext->createBuffer(cnt,sizeof(int),CL_MEM_READ_WRITE);
+    buffId[2]=OpenCLContext::openCLcontext->createBuffer(ht*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+    buffId[3]=OpenCLContext::openCLcontext->createBuffer(1,sizeof(int),CL_MEM_READ_ONLY);
+    buffId[4]=OpenCLContext::openCLcontext->createBuffer(TREBLE_SIZE+1,sizeof(double),CL_MEM_READ_ONLY);
+    buffId[5]=OpenCLContext::openCLcontext->createBuffer(cnt,sizeof(int),CL_MEM_READ_WRITE);
 
-    for(int i=0; i<4; i++)
-        this->kernel->setArg(i+2, OpenCLContext::openCLcontext->getBuffer(buffId[i]));
+    for(int i=0; i<6; i++)
+        this->kernel->setArg(i, OpenCLContext::openCLcontext->getBuffer(buffId[i]));
 }
 
 PLYShapeBoxKernel::~PLYShapeBoxKernel()
 {
-    for(int i=0; i<4; i++)
+    for(int i=0; i<6; i++)
         OpenCLContext::openCLcontext->releaseBuffer(buffId[i]);
+}
+
+void PLYShapeBoxKernel::runKernel(int nb)
+{
+    kernel->runKernel(nb);
 }
 #endif

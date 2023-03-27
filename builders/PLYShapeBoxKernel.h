@@ -1,12 +1,13 @@
 #pragma once
 
 #ifdef OpenCL
-#include "ConcurrentOpenCLKernel.h"
+#include "SmartPointer.h"
+#include "OpenCLKernel.h"
 
-class PLYShapeBoxKernel : public ConcurrentOpenCLKernel
+class PLYShapeBoxKernel
 {
 public:
-    PLYShapeBoxKernel(const int* buffer, int ht, int cnt);
+    PLYShapeBoxKernel(int ht, int cnt);
     virtual ~PLYShapeBoxKernel();
 
 public:
@@ -15,7 +16,10 @@ public:
         return buffId;
     }
 
+    void runKernel(int nb);
+
 protected:
-    int buffId[4];
+    SmartPointer<OpenCLKernel> kernel;
+    int buffId[6];
 };
 #endif

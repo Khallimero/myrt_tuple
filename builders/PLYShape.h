@@ -8,6 +8,7 @@
 #include "Ray.h"
 #include "Lockable.h"
 #include "ShapeBuilder.h"
+#include "SmartPointer.h"
 #include "PLYShapeBoxKernel.h"
 #include "PLYShapeHitKernel.h"
 #include "ConcurrentOpenCLKernelCollection.h"
@@ -15,32 +16,6 @@
 void* boxThread(void*);
 
 #ifdef OpenCL
-class BoxKernelCollection:public ConcurrentOpenCLKernelCollection
-{
-public:
-    BoxKernelCollection()
-        :ht(0),cnt(0)
-    {}
-    virtual ~BoxKernelCollection() {}
-
-public:
-    virtual ConcurrentOpenCLKernel* createKernel()const
-    {
-        return new PLYShapeBoxKernel(buffId, ht, cnt);
-    }
-
-    void releaseBuffers()
-    {
-        for(int i=0; i<2; i++)
-            OpenCLContext::openCLcontext->releaseBuffer(buffId[i]);
-        clear();
-    }
-
-public:
-    int buffId[2];
-    int ht,cnt;
-};
-
 class HitKernelCollection:public ConcurrentOpenCLKernelCollection
 {
 public:
@@ -144,7 +119,7 @@ protected:
     ObjCollection<PLYPrimitive> shapes;
 
 #ifdef OpenCL
-    mutable BoxKernelCollection boxKernels;
+    mutable SmartPointer<PLYShapeBoxKernel> boxKernel;
     mutable HitKernelCollection hitKernels;
 #endif
 
