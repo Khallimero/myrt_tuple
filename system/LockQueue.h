@@ -8,13 +8,9 @@ public:
     LockQueue(const Lockable* l)
     {
         this->lockable=l;
-        this->locked=false;
     }
 
-    virtual ~LockQueue()
-    {
-        this->unlock();
-    }
+    virtual ~LockQueue() {}
 
 public:
     const Lockable* tryEnqueueLock()
@@ -22,16 +18,15 @@ public:
         if(N==0)
         {
             if(lockable->trylock()==0)
-            {
-                locked=true;
                 return lockable;
-            }
-            return NULL;
+        }
+        else
+        {
+            for(int i=N; i>0; i--)
+                if(lckTab[i-1].trylock()==0)
+                    return &lckTab[i-1];
         }
 
-        for(int i=N; i>0; i--)
-            if(lckTab[i-1].trylock()==0)
-                return &lckTab[i-1];
         return NULL;
     }
 
@@ -54,23 +49,16 @@ public:
                 }
             }
         }
-
-        lock();
     }
 
     void lock()
     {
         lockable->lock();
-        locked=true;
     }
 
     void unlock()
     {
-        if(locked)
-        {
-            locked=false;
-            lockable->unlock();
-        }
+        lockable->unlock();
     }
 
 protected:

@@ -10,8 +10,8 @@
 #define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
 
-#define OPENCL_QUEUE (NB_THREAD/4)
-#define OPENCL_LOCK (4)
+#define OPENCL_QUEUE 2
+#define OPENCL_LOCK 4
 
 class OpenCLContext:public Lockable
 {
