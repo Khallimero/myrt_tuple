@@ -18,7 +18,7 @@ public:
 protected:
     size_t getWorkSize(size_t size)const
     {
-        return (size_t)((int)size)+(((int)this->workgroupSizeMultiple)-((int)size)%((int)this->workgroupSizeMultiple));
+        return (size_t)((int)size-1)+(((int)this->workgroupSizeMultiple)-((int)size-1)%((int)this->workgroupSizeMultiple));
     }
 
 private:
