@@ -80,6 +80,7 @@ Hit Shape::tamperHit(Hit& h, const Ray& r)const
             h.setNormal(n);
         }
     }
+
     return h;
 }
 

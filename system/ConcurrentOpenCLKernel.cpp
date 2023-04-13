@@ -14,9 +14,4 @@ ConcurrentOpenCLKernel::~ConcurrentOpenCLKernel()
 {
     if(command_queue!=NULL) clReleaseCommandQueue(command_queue);
 }
-
-void ConcurrentOpenCLKernel::runKernel(int nb)
-{
-    kernel->runKernel(nb, command_queue);
-}
 #endif

@@ -1,7 +1,6 @@
 #include "OpenCLKernel.h"
 
 #ifdef OpenCL
-#include "OpenCLContext.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -33,16 +32,6 @@ bool OpenCLKernel::setArg(int index, void *buffer)const
 {
     cl_int ret=clSetKernelArg(kernel, index, sizeof(cl_mem), buffer);
     OpenCLContext::printError("clSetKernelArg",ret);
-    return ret==CL_SUCCESS;
-}
-
-bool OpenCLKernel::runKernel(size_t nb,cl_command_queue queue)const
-{
-    size_t size=(int)getWorkSize(nb);
-    size_t workSize=(int)this->workgroupSizeMultiple;
-    if(queue==NULL)queue=OpenCLContext::openCLcontext->getCommandQueue();
-    cl_int ret=clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &size, &workSize, 0, NULL, NULL);
-    OpenCLContext::printError("clEnqueueNDRangeKernel",ret);
     return ret==CL_SUCCESS;
 }
 

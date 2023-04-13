@@ -5,7 +5,7 @@
 #include "OpenCLContext.h"
 
 PLYShapeHitKernel::PLYShapeHitKernel(int buffer,int cnt)
-    :ConcurrentOpenCLKernel(true)
+    :ConcurrentOpenCLKernel(true),nb_ray(0),nb_hit(0)
 {
     this->kernel=new OpenCLKernel("primitive_hit", "#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
 __kernel void primitive_hit(\
@@ -43,34 +43,47 @@ __kernel void primitive_hit(\
 
     this->kernel->setArg(0, OpenCLContext::openCLcontext->getBuffer(buffer));
 
-    nb_ray=1,nb_hit=0;
     buffId[0]=OpenCLContext::openCLcontext->createBuffer(1+cnt+2,sizeof(int),CL_MEM_READ_ONLY);
-    buffId[1]=OpenCLContext::openCLcontext->createBuffer(nb_ray*2*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-    buffId[2]=OpenCLContext::openCLcontext->createBuffer(1+(nb_hit*2),sizeof(int),CL_MEM_READ_WRITE);
+    setKernelArg(0);
 
-    for(int i=0; i<3; i++)
-        this->kernel->setArg(i+1, OpenCLContext::openCLcontext->getBuffer(buffId[i]));
+    setNbRay(1),setNbHit(1);
 }
 
 PLYShapeHitKernel::~PLYShapeHitKernel()
 {
     for(int i=0; i<3; i++)
-        OpenCLContext::openCLcontext->releaseBuffer(buffId[i]);
+        releaseBuffer(i);
+}
+
+void PLYShapeHitKernel::setKernelArg(int b)
+{
+    this->kernel->setArg(b+1, OpenCLContext::openCLcontext->getBuffer(buffId[b]));
+}
+
+void PLYShapeHitKernel::releaseBuffer(int b)
+{
+    OpenCLContext::openCLcontext->releaseBuffer(buffId[b]);
 }
 
 void PLYShapeHitKernel::setNbRay(int nb)
 {
-    nb_ray=nb;
-    OpenCLContext::openCLcontext->releaseBuffer(buffId[1]);
-    buffId[1]=OpenCLContext::openCLcontext->createBuffer(nb_ray*2*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
-    this->kernel->setArg(2, OpenCLContext::openCLcontext->getBuffer(buffId[1]));
+    if(nb>nb_ray)
+    {
+        if(nb_ray>0)releaseBuffer(1);
+        nb_ray=nb;
+        buffId[1]=OpenCLContext::openCLcontext->createBuffer(nb_ray*2*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
+        setKernelArg(1);
+    }
 }
 
 void PLYShapeHitKernel::setNbHit(int nb)
 {
-    nb_hit=nb;
-    OpenCLContext::openCLcontext->releaseBuffer(buffId[2]);
-    buffId[2]=OpenCLContext::openCLcontext->createBuffer(1+(nb_hit*2),sizeof(int),CL_MEM_READ_WRITE);
-    this->kernel->setArg(3, OpenCLContext::openCLcontext->getBuffer(buffId[2]));
+    if(nb>nb_hit)
+    {
+        if(nb_hit>0)releaseBuffer(2);
+        nb_hit=nb;
+        buffId[2]=OpenCLContext::openCLcontext->createBuffer(1+(nb_hit*2),sizeof(int),CL_MEM_READ_WRITE);
+        setKernelArg(2);
+    }
 }
 #endif

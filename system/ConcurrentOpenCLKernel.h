@@ -21,7 +21,10 @@ public:
         return command_queue;
     }
 
-    void runKernel(int nb);
+    template <int N> void runKernel(const int *nb)
+    {
+        kernel->runKernel<N>(nb, command_queue);
+    }
 
 protected:
     int threadId;

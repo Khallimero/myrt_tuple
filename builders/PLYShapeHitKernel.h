@@ -15,11 +15,6 @@ public:
         return buffId;
     }
 
-    int getNbRay()const
-    {
-        return nb_ray;
-    }
-
     int getNbHit()const
     {
         return nb_hit;
@@ -27,6 +22,10 @@ public:
 
     void setNbRay(int nb);
     void setNbHit(int nb);
+
+protected:
+    void releaseBuffer(int b);
+    void setKernelArg(int b);
 
 protected:
     int buffId[3];

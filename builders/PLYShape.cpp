@@ -144,7 +144,7 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
         if((nbShapes>>3)>(this->shapes._count()/this->boxes._count())&&(clLock=OpenCLContext::concurrentLock.tryLock())!=NULL)
         {
             bCnt[bCnt[0]+1]=r._count();
-            double *k_r=(double*)malloc(r._count()*2*TREBLE_SIZE*sizeof(double));
+            LocalPointer<double> k_r=(double*)malloc(r._count()*2*TREBLE_SIZE*sizeof(double));
             for(int i=0; i<r._count(); i++)
             {
                 memcpy(&k_r[i*2*TREBLE_SIZE],r[i].getPoint()._getTab(),TREBLE_SIZE*sizeof(double));
@@ -153,9 +153,8 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
 
             PLYShapeHitKernel *hitKernel=(PLYShapeHitKernel*)this->hitKernels.findKernel();
 
-            if(r._count()>hitKernel->getNbRay())hitKernel->setNbRay(r._count());
+            hitKernel->setNbRay(r._count());
             OpenCLContext::openCLcontext->writeBuffer(hitKernel->getBuffId()[1],r._count()*2*TREBLE_SIZE,sizeof(double),k_r,hitKernel->getCommandQueue());
-            free(k_r);
 
             _runHitKernel(hitKernel,nbShapes,r,hc,bCnt.getPointer(),p,b);
             clLock->unlock();
@@ -178,9 +177,10 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
                         for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
                         {
                             if(bCnt[id]>0)
-                                for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++)
-                                    for(int l=0; l<r._count(); l++)
-                                        _addHit(r,hc,l,largeBoxes[i]->boxes[j],k,p,b);
+                                for(int l=0; l<r._count(); l++)
+                                    if(largeBoxes[i]->boxes[j]->box->intersect(r[l]))
+                                        for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++)
+                                            _addHit(r,hc,l,largeBoxes[i]->boxes[j],k,p,b);
                             bCnt[id]-=largeBoxes[i]->boxes[j]->ht._count()*SIGN(bCnt[id]);
                             if(bCnt[id]==0)id++;
                         }
@@ -201,7 +201,7 @@ void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCo
     OpenCLContext::openCLcontext->writeBuffer(kernel->getBuffId()[0],1+bCnt[0]+2,sizeof(int),bCnt,kernel->getCommandQueue());
     OpenCLContext::openCLcontext->writeBuffer(kernel->getBuffId()[2],1,sizeof(int),&nb,kernel->getCommandQueue());
 
-    kernel->runKernel(nbShapes);
+    kernel->runKernel<1>(&nbShapes);
 
     OpenCLContext::openCLcontext->readBuffer(kernel->getBuffId()[2],1,sizeof(int),&nb,kernel->getCommandQueue());
     if(nb>kernel->getNbHit())
@@ -216,8 +216,8 @@ void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCo
 
         for(int n=0; n<nb; n++)
         {
-            int shapeId=ind[1+(n*2)+1];
-            for(int i=0,id=shapeId; id>=0&&i<largeBoxes._count(); i++)
+            int id=ind[1+(n*2)+1];
+            for(int i=0; id>=0&&i<largeBoxes._count(); i++)
             {
                 if(id<largeBoxes[i]->cntHt)
                 {
@@ -225,16 +225,10 @@ void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCo
                     {
                         if(id<largeBoxes[i]->boxes[j]->ht._count())
                         {
-                            for(int k=n; k<nb; k++)
-                            {
-                                if(shapeId==ind[1+(k*2)+1])
-                                {
-                                    _addHit(r,hc,ind[1+(k*2)],largeBoxes[i]->boxes[j],id,p,b);
-                                    ind[1+(k*2)+1]=-1;
-                                }
-                            }
+                            _addHit(r,hc,ind[1+(n*2)],largeBoxes[i]->boxes[j],id,p,b);
+                            id=-1;
                         }
-                        id-=largeBoxes[i]->boxes[j]->ht._count();
+                        else id-=largeBoxes[i]->boxes[j]->ht._count();
                     }
                 }
                 else id-=largeBoxes[i]->cntHt;
@@ -286,6 +280,7 @@ bool PLYShape::isInside(const Point& p,double e)const
 
         return (n%2)!=0;
     }
+
     return false;
 }
 

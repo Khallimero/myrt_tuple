@@ -53,6 +53,6 @@ PLYShapeBoxKernel::~PLYShapeBoxKernel()
 
 void PLYShapeBoxKernel::runKernel(int nb)
 {
-    kernel->runKernel(nb);
+    kernel->runKernel<1>(&nb);
 }
 #endif

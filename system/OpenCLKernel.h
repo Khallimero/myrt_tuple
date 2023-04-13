@@ -5,6 +5,8 @@
 #define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>
 
+#include "OpenCLContext.h"
+
 class OpenCLKernel
 {
 public:
@@ -13,7 +15,20 @@ public:
 
 public:
     bool setArg(int index, void *buffer)const;
-    bool runKernel(size_t nb,cl_command_queue queue=NULL)const;
+
+    template <int N> bool runKernel(const int* nb,cl_command_queue queue=NULL)const
+    {
+        size_t size[N],workSize[N];
+        for(int n=0; n<N; n++)
+        {
+            size[n]=(size_t)getWorkSize(nb[n]);
+            workSize[n]=(size_t)this->workgroupSizeMultiple;
+        }
+        if(queue==NULL)queue=OpenCLContext::openCLcontext->getCommandQueue();
+        cl_int ret=clEnqueueNDRangeKernel(queue, kernel, N, NULL, size, workSize, 0, NULL, NULL);
+        OpenCLContext::printError("clEnqueueNDRangeKernel",ret);
+        return ret==CL_SUCCESS;
+    }
 
 protected:
     size_t getWorkSize(size_t size)const
