@@ -39,9 +39,9 @@ PLYShape::~PLYShape()
     }
 }
 
-ObjCollection<Hit> PLYShape::getHit(const ObjCollection<Ray>& r)const
+ObjCollection<Hit> PLYShape::getHit(const ObjCollection<Ray>& rc)const
 {
-    return _getHit(r);
+    return _getHit(rc);
 }
 
 Hit PLYShape::_getHit(const Ray& r)const
@@ -51,61 +51,58 @@ Hit PLYShape::_getHit(const Ray& r)const
     return _getHit(rc)[0];
 }
 
-ObjCollection<Hit> PLYShape::_getHit(const ObjCollection<Ray>& r)const
+ObjCollection<Hit> PLYShape::_getHit(const ObjCollection<Ray>& rc)const
 {
-    const PLYPrimitive** p=smoothNormal?(const PLYPrimitive**)malloc(r._count()*sizeof(const PLYPrimitive*)):NULL;
-    const PLYBox** b=smoothNormal?(const PLYBox**)malloc(r._count()*sizeof(const PLYBox*)):NULL;
-    ObjCollection<Hit> h=__getHit(r,smoothNormal?&p:NULL,smoothNormal?&b:NULL);
+    LocalPointer<const PLYPrimitive*> p=smoothNormal?(const PLYPrimitive**)malloc(rc._count()*sizeof(const PLYPrimitive*)):NULL;
+    LocalPointer<const PLYBox*> b=smoothNormal?(const PLYBox**)malloc(rc._count()*sizeof(const PLYBox*)):NULL;
+    ObjCollection<Hit> h=__getHit(rc,smoothNormal?p.getPointer():NULL,smoothNormal?b.getPointer():NULL);
 
     if(smoothNormal)
     {
-        for(int l=0; l<r._count(); l++)
+        for(int l=0; l<rc._count(); l++)
         {
             if(!(h[l].isNull()))
             {
                 Vector n=Vector::null;
                 double dst=EPSILON;
-                CollectionUnion<const PLYPrimitive*,2> prmUnion=CollectionUnion<const PLYPrimitive*,2>(&b[l]->ht,&b[l]->prm);
+                CollectionUnion<const PLYPrimitive*,2> prmUnion=CollectionUnion<const PLYPrimitive*,2>(&(*b)[l].ht,&(*b)[l].prm);
                 Collection<int> cTab;
                 for(int i=0; i<prmUnion._count(); i++)
                 {
                     bool flg=false;
                     for(int j=0; !flg&&j<3; j++)
                         for(int k=j; !flg&&k<3; k++)
-                            flg|=Point(prmUnion[i]->pt[j])==Point(p[l]->pt[k]);
+                            flg|=Point(prmUnion[i]->pt[j])==Point((*p)[l].pt[k]);
                     if(flg)
                     {
                         cTab._add(i);
-                        dst=MAX(dst,p[l]->b.dist(prmUnion[i]->b));
+                        dst=MAX(dst,(*p)[l].b.dist(prmUnion[i]->b));
                     }
                 }
                 for(int i=0; i<cTab._count(); i++)
                 {
                     Vector w=prmUnion[cTab[i]]->n;
-                    if(p[l]->n.angle(w)>M_PI/2.0)w=-w;
-                    if(p[l]->n.angle(w)<M_PI/4.0)
+                    if((*p)[l].n.angle(w)>M_PI/2.0)w=-w;
+                    if((*p)[l].n.angle(w)<M_PI/4.0)
                         n+=w*SQ(1.0-h[l].getPoint().dist(prmUnion[cTab[i]]->b)/dst);
                 }
 
-                h.getTab()[l].setThNormal(n.isNull()?p[l]->n:n.norm());
+                h.getTab()[l].setThNormal(n.isNull()?(*p)[l].n:n.norm());
             }
         }
     }
 
-    if(p!=NULL)free(p);
-    if(b!=NULL)free(b);
-
     return h;
 }
 
-ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimitive*** p,const PLYBox*** b)const
+ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& rc,const PLYPrimitive** p,const PLYBox** b)const
 {
-    ObjCollection<Hit> hc(r._count());
+    ObjCollection<Hit> hc(rc._count());
     bool flgInter=(box==NULL);
-    for(int i=0; i<r._count(); i++)
+    for(int i=0; i<rc._count(); i++)
     {
         hc._add(Hit::null);
-        if(!flgInter)flgInter|=box->intersect(r[i]);
+        if(!flgInter)flgInter|=box->intersect(rc[i]);
     }
 
     if(flgInter)
@@ -116,16 +113,16 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
         for(int i=0; i<largeBoxes._count(); i++)
         {
             flgInter=false;
-            for(int j=0; !flgInter&&j<r._count(); j++)
-                flgInter|=largeBoxes[i]->box->intersect(r[j]);
+            for(int j=0; !flgInter&&j<rc._count(); j++)
+                flgInter|=largeBoxes[i]->box->intersect(rc[j]);
             if(flgInter)
             {
                 for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
                 {
                     int cnt=largeBoxes[i]->boxes[j]->ht._count();
                     flgInter=false;
-                    for(int k=0; !flgInter&&k<r._count(); k++)
-                        flgInter|=largeBoxes[i]->boxes[j]->box->intersect(r[k]);
+                    for(int k=0; !flgInter&&k<rc._count(); k++)
+                        flgInter|=largeBoxes[i]->boxes[j]->box->intersect(rc[k]);
                     if(flgInter)nbShapes+=cnt;
                     else cnt*=-1;
                     if(ZSIGN(bCnt[bCnt[0]])!=ZSIGN(cnt))bCnt[++bCnt[0]]=0;
@@ -143,20 +140,20 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
         const Lockable *clLock=NULL;
         if((nbShapes>>3)>(this->shapes._count()/this->boxes._count())&&(clLock=OpenCLContext::concurrentLock.tryLock())!=NULL)
         {
-            bCnt[bCnt[0]+1]=r._count();
-            LocalPointer<double> k_r=(double*)malloc(r._count()*2*TREBLE_SIZE*sizeof(double));
-            for(int i=0; i<r._count(); i++)
+            bCnt[bCnt[0]+1]=rc._count();
+            LocalPointer<double> k_r=(double*)malloc(rc._count()*2*TREBLE_SIZE*sizeof(double));
+            for(int i=0; i<rc._count(); i++)
             {
-                memcpy(&k_r[i*2*TREBLE_SIZE],r[i].getPoint()._getTab(),TREBLE_SIZE*sizeof(double));
-                memcpy(&k_r[((i*2)+1)*TREBLE_SIZE],r[i].getVector()._getTab(),TREBLE_SIZE*sizeof(double));
+                memcpy(&k_r[i*2*TREBLE_SIZE],rc[i].getPoint()._getTab(),TREBLE_SIZE*sizeof(double));
+                memcpy(&k_r[((i*2)+1)*TREBLE_SIZE],rc[i].getVector()._getTab(),TREBLE_SIZE*sizeof(double));
             }
 
             PLYShapeHitKernel *hitKernel=(PLYShapeHitKernel*)this->hitKernels.findKernel();
 
-            hitKernel->setNbRay(r._count());
-            OpenCLContext::openCLcontext->writeBuffer(hitKernel->getBuffId()[1],r._count()*2*TREBLE_SIZE,sizeof(double),k_r,hitKernel->getCommandQueue());
+            hitKernel->setNbRay(rc._count());
+            OpenCLContext::openCLcontext->writeBuffer(hitKernel->getBuffId()[1],rc._count()*2*TREBLE_SIZE,sizeof(double),k_r,hitKernel->getCommandQueue());
 
-            _runHitKernel(hitKernel,nbShapes,r,hc,bCnt.getPointer(),p,b);
+            _runHitKernel(hitKernel,nbShapes,rc,hc,bCnt.getPointer(),p,b);
             clLock->unlock();
         }
         else
@@ -177,10 +174,10 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
                         for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
                         {
                             if(bCnt[id]>0)
-                                for(int l=0; l<r._count(); l++)
-                                    if(largeBoxes[i]->boxes[j]->box->intersect(r[l]))
+                                for(int l=0; l<rc._count(); l++)
+                                    if(largeBoxes[i]->boxes[j]->box->intersect(rc[l]))
                                         for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++)
-                                            _addHit(r,hc,l,largeBoxes[i]->boxes[j],k,p,b);
+                                            _addHit(rc,hc,l,largeBoxes[i]->boxes[j],k,p,b);
                             bCnt[id]-=largeBoxes[i]->boxes[j]->ht._count()*SIGN(bCnt[id]);
                             if(bCnt[id]==0)id++;
                         }
@@ -194,7 +191,7 @@ ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& r,const PLYPrimi
 }
 
 #ifdef OpenCL
-void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,int* bCnt,const PLYPrimitive*** p,const PLYBox*** b)const
+void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCollection<Ray>& rc,ObjCollection<Hit>& hc,int* bCnt,const PLYPrimitive** p,const PLYBox** b)const
 {
     int nb=0;
     bCnt[bCnt[0]+2]=kernel->getNbHit();
@@ -207,7 +204,7 @@ void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCo
     if(nb>kernel->getNbHit())
     {
         kernel->setNbHit(nb);
-        _runHitKernel(kernel,nbShapes,r,hc,bCnt,p,b);
+        _runHitKernel(kernel,nbShapes,rc,hc,bCnt,p,b);
     }
     else if(nb>0)
     {
@@ -225,7 +222,7 @@ void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCo
                     {
                         if(id<largeBoxes[i]->boxes[j]->ht._count())
                         {
-                            _addHit(r,hc,ind[1+(n*2)],largeBoxes[i]->boxes[j],id,p,b);
+                            _addHit(rc,hc,ind[1+(n*2)],largeBoxes[i]->boxes[j],id,p,b);
                             id=-1;
                         }
                         else id-=largeBoxes[i]->boxes[j]->ht._count();
@@ -238,25 +235,25 @@ void PLYShape::_runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCo
 }
 #endif
 
-void PLYShape::_addHit(const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,int k,const PLYBox* box,int id,const PLYPrimitive*** p,const PLYBox*** b)const
+void PLYShape::_addHit(const ObjCollection<Ray>& rc,ObjCollection<Hit>& hc,int k,const PLYBox* box,int id,const PLYPrimitive** p,const PLYBox** b)const
 {
-    Hit h=Triangle::getTriangleHit(r[k],this,box->ht[id]->pt);
-    Hit ht=tamperHit(h,r[k]);
+    Hit h=Triangle::getTriangleHit(rc[k],this,box->ht[id]->pt);
+    Hit ht=tamperHit(h,rc[k]);
     if(!(ht.isNull()))
     {
-        if((hc[k].isNull())||(r[k].getPoint().dist(ht.getPoint())<r[k].getPoint().dist(hc[k].getPoint())))
+        if((hc[k].isNull())||(rc[k].getPoint().dist(ht.getPoint())<rc[k].getPoint().dist(hc[k].getPoint())))
         {
             ht.setId(id);
-            if(p!=NULL)(*p)[k]=box->ht[id];
-            if(b!=NULL)(*b)[k]=box;
+            if(p!=NULL)p[k]=box->ht[id];
+            if(b!=NULL)b[k]=box;
             hc.getTab()[k]=ht;
         }
     }
 }
 
-ObjCollection<Hit> PLYShape::getIntersect(const ObjCollection<Ray>& r)const
+ObjCollection<Hit> PLYShape::getIntersect(const ObjCollection<Ray>& rc)const
 {
-    return __getHit(r);
+    return __getHit(rc);
 }
 
 bool PLYShape::isInside(const Point& p,double e)const
@@ -433,13 +430,12 @@ void PLYShape::buildBoxes(bool flgBox)
             maxHt=MAX(maxHt,this->boxes[i].ht._count());
         this->boxKernel=new PLYShapeBoxKernel(maxHt,cnt);
 
-        double *pt=(double*)malloc(cnt*3*TREBLE_SIZE*sizeof(double));
+        LocalPointer<double> pt=(double*)malloc(cnt*3*TREBLE_SIZE*sizeof(double));
         for(int i=0; i<cnt; i++)
             for(int j=0; j<3; j++)
                 memcpy(&pt[((i*3)+j)*TREBLE_SIZE],this->shapes[i].pt[j]._getTab(),TREBLE_SIZE*sizeof(double));
         OpenCLContext::openCLcontext->writeBuffer(this->boxKernel->getBuffId()[0],cnt*3*TREBLE_SIZE,sizeof(double),pt);
         OpenCLContext::openCLcontext->writeBuffer(this->boxKernel->getBuffId()[1],1,sizeof(int),&cnt);
-        free(pt);
 #endif
 
         nb_box=0;
@@ -456,14 +452,13 @@ void PLYShape::buildBoxes(bool flgBox)
     hitKernels.cnt=boxes._count();
     hitKernels.buffId=OpenCLContext::openCLcontext->createBuffer(shapes._count()*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
     int nbShapes=0;
-    double *pt=(double*)malloc(shapes._count()*3*TREBLE_SIZE*sizeof(double));
+    LocalPointer<double> pt=(double*)malloc(shapes._count()*3*TREBLE_SIZE*sizeof(double));
     for(int i=0; i<largeBoxes._count(); i++)
         for(int j=0; j<largeBoxes[i]->boxes._count(); j++)
             for(int k=0; k<largeBoxes[i]->boxes[j]->ht._count(); k++,nbShapes++)
                 for(int l=0; l<3; l++)
                     memcpy(&pt[((nbShapes*3)+l)*TREBLE_SIZE],Vector(largeBoxes[i]->boxes[j]->ht[k]->pt[l]-(l==0?Point::null:largeBoxes[i]->boxes[j]->ht[k]->pt[0]))._getTab(),TREBLE_SIZE*sizeof(double));
     OpenCLContext::openCLcontext->writeBuffer(hitKernels.buffId,shapes._count()*3*TREBLE_SIZE,sizeof(double),pt);
-    free(pt);
 #endif
 }
 
@@ -506,7 +501,7 @@ void* boxThread(void* d)
         const Lockable *clLock=NULL;
         if((clLock=OpenCLContext::openCLQueue.tryEnqueueLock())!=NULL)
         {
-            double *pt=(double*)malloc(s->boxes[i].ht._count()*3*TREBLE_SIZE*sizeof(double));
+            LocalPointer<double> pt=(double*)malloc(s->boxes[i].ht._count()*3*TREBLE_SIZE*sizeof(double));
             for(int j=0; j<s->boxes[i].ht._count(); j++)
                 for(int k=0; k<3; k++)
                     memcpy(&pt[((j*3)+k)*TREBLE_SIZE],s->boxes[i].ht[j]->pt[k]._getTab(),TREBLE_SIZE*sizeof(double));
@@ -521,7 +516,6 @@ void* boxThread(void* d)
             OpenCLContext::openCLcontext->writeBuffer(s->boxKernel->getBuffId()[3],1,sizeof(int),&cnt);
             OpenCLContext::openCLcontext->writeBuffer(s->boxKernel->getBuffId()[4],TREBLE_SIZE+1,sizeof(double),bx);
             OpenCLContext::openCLcontext->writeBuffer(s->boxKernel->getBuffId()[5],1,sizeof(int),&nb);
-            free(pt);
 
             s->boxKernel->runKernel(s->shapes._count());
 

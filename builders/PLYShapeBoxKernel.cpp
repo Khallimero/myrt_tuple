@@ -18,6 +18,7 @@ __kernel void primitive_box(\
     int id=get_global_id(0);\
     if(id>=(*cnt_prm))return;\
     for(int i=0;i<3;i++)\
+    {\
         if(length(vload3(0,box)-vload3((id*3)+i,prm))<=box[3])\
         {\
             int nb=0;\
@@ -32,6 +33,7 @@ __kernel void primitive_box(\
             if(nb>0&&nb<3)h[1+atomic_inc(h)]=id;\
             return;\
         }\
+    }\
 }");
 
     buffId[0]=OpenCLContext::openCLcontext->createBuffer(cnt*3*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);

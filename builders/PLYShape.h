@@ -50,8 +50,8 @@ public:
 
 public:
     virtual bool isInside(const Point& p,double e=0.0)const;
-    virtual ObjCollection<Hit> getHit(const ObjCollection<Ray>& r)const;
-    virtual ObjCollection<Hit> getIntersect(const ObjCollection<Ray>& r)const;
+    virtual ObjCollection<Hit> getHit(const ObjCollection<Ray>& rc)const;
+    virtual ObjCollection<Hit> getIntersect(const ObjCollection<Ray>& rc)const;
 
 protected:
     struct PLYPrimitive
@@ -85,11 +85,11 @@ protected:
 
 protected:
     virtual Hit _getHit(const Ray& r)const;
-    ObjCollection<Hit> _getHit(const ObjCollection<Ray>& r)const;
-    ObjCollection<Hit> __getHit(const ObjCollection<Ray>& r,const PLYPrimitive*** p=NULL,const PLYBox*** b=NULL)const;
-    void _addHit(const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,int k,const PLYBox* box,int id,const PLYPrimitive*** p=NULL,const PLYBox*** b=NULL)const;
+    ObjCollection<Hit> _getHit(const ObjCollection<Ray>& rc)const;
+    ObjCollection<Hit> __getHit(const ObjCollection<Ray>& rc,const PLYPrimitive** p=NULL,const PLYBox** b=NULL)const;
+    void _addHit(const ObjCollection<Ray>& rc,ObjCollection<Hit>& hc,int k,const PLYBox* box,int id,const PLYPrimitive** p=NULL,const PLYBox** b=NULL)const;
 #ifdef OpenCL
-    void _runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCollection<Ray>& r,ObjCollection<Hit>& hc,int* bCnt,const PLYPrimitive*** p,const PLYBox*** b)const;
+    void _runHitKernel(PLYShapeHitKernel* kernel,int nbShapes, const ObjCollection<Ray>& rc,ObjCollection<Hit>& hc,int* bCnt,const PLYPrimitive** p,const PLYBox** b)const;
 #endif
 
 protected:
