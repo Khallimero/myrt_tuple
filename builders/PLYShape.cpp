@@ -55,7 +55,7 @@ ObjCollection<Hit> PLYShape::_getHit(const ObjCollection<Ray>& rc)const
 {
     LocalPointer<const PLYPrimitive*> p=smoothNormal?(const PLYPrimitive**)malloc(rc._count()*sizeof(const PLYPrimitive*)):NULL;
     LocalPointer<const PLYBox*> b=smoothNormal?(const PLYBox**)malloc(rc._count()*sizeof(const PLYBox*)):NULL;
-    ObjCollection<Hit> h=__getHit(rc,smoothNormal?p.getPointer():NULL,smoothNormal?b.getPointer():NULL);
+    ObjCollection<Hit> h=__getHit(rc,p.getPointer(),b.getPointer());
 
     if(smoothNormal)
     {
