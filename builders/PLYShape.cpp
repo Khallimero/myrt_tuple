@@ -259,26 +259,16 @@ ObjCollection<Hit> PLYShape::getIntersect(const ObjCollection<Ray>& rc)const
 bool PLYShape::isInside(const Point& p,double e)const
 {
     if(box==NULL||box->isInside(p,e))
-    {
-        int n=0;
-        Ray r=Ray(p,getMark().getOrig().getVectorTo(p).norm());
-        Hit h=Hit::null;
-        do
-        {
-            h=_getHit(r);
-
-            if(!h.isNull())
-            {
-                r=Ray(h.getPoint()+(r.getVector()*EPSILON),r.getVector());
-                n++;
-            }
-        }
-        while(!h.isNull());
-
-        return (n%2)!=0;
-    }
+        return (_isInside(Ray(p,getMark().getOrig().getVectorTo(p).norm()))%2)!=0;
 
     return false;
+}
+
+int PLYShape::_isInside(const Ray& r)const
+{
+    Hit h=_getHit(r);
+
+    return h.isNull()?0:1+_isInside(Ray(h.getPoint()+(r.getVector()*EPSILON),r.getVector()));
 }
 
 Point PLYShape::PLYtoRef(const Point& pt)const

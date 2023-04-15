@@ -84,6 +84,7 @@ protected:
     };
 
 protected:
+    int _isInside(const Ray& r)const;
     virtual Hit _getHit(const Ray& r)const;
     ObjCollection<Hit> _getHit(const ObjCollection<Ray>& rc)const;
     ObjCollection<Hit> __getHit(const ObjCollection<Ray>& rc,const PLYPrimitive** p=NULL,const PLYBox** b=NULL)const;
