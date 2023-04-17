@@ -16,7 +16,7 @@ __kernel void primitive_hit(\
 {\
     int id=get_global_id(0),sid=0;\
     for(int i=1;i<=cnt[0]&&sid<=id;sid+=abs(cnt[i++]))\
-        if(cnt[i]<0)id+=abs(cnt[i]);\
+        if(cnt[i]<0)id-=cnt[i];\
     if(id>=sid)return;\
     double3 t_o=vload3(id*3,prm);\
     double3 t_v1=vload3((id*3)+1,prm);\
@@ -46,7 +46,7 @@ __kernel void primitive_hit(\
     buffId[0]=OpenCLContext::openCLcontext->createBuffer(1+cnt+2,sizeof(int),CL_MEM_READ_ONLY);
     setKernelArg(0);
 
-    setNbRay(1),setNbHit(1);
+    setNbRay(1);
 }
 
 PLYShapeHitKernel::~PLYShapeHitKernel()
@@ -74,6 +74,7 @@ void PLYShapeHitKernel::setNbRay(int nb)
         buffId[1]=OpenCLContext::openCLcontext->createBuffer(nb_ray*2*TREBLE_SIZE,sizeof(double),CL_MEM_READ_ONLY);
         setKernelArg(1);
     }
+    setNbHit(2*nb_ray);
 }
 
 void PLYShapeHitKernel::setNbHit(int nb)
