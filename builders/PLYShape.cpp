@@ -65,29 +65,29 @@ ObjCollection<Hit> PLYShape::_getHit(const ObjCollection<Ray>& rc)const
             {
                 Vector n=Vector::null;
                 double dst=EPSILON;
-                CollectionUnion<const PLYPrimitive*,2> prmUnion=CollectionUnion<const PLYPrimitive*,2>(&(*b)[l].ht,&(*b)[l].prm);
+                CollectionUnion<const PLYPrimitive*,2> prmUnion=CollectionUnion<const PLYPrimitive*,2>(&(b.getPointer()[l])->ht,&(b.getPointer()[l])->prm);
                 Collection<int> cTab;
                 for(int i=0; i<prmUnion._count(); i++)
                 {
                     bool flg=false;
                     for(int j=0; !flg&&j<3; j++)
                         for(int k=j; !flg&&k<3; k++)
-                            flg|=Point(prmUnion[i]->pt[j])==Point((*p)[l].pt[k]);
+                            flg|=Point(prmUnion[i]->pt[j])==Point((p.getPointer()[l])->pt[k]);
                     if(flg)
                     {
                         cTab._add(i);
-                        dst=MAX(dst,(*p)[l].b.dist(prmUnion[i]->b));
+                        dst=MAX(dst,(p.getPointer()[l])->b.dist(prmUnion[i]->b));
                     }
                 }
                 for(int i=0; i<cTab._count(); i++)
                 {
                     Vector w=prmUnion[cTab[i]]->n;
-                    if((*p)[l].n.angle(w)>M_PI/2.0)w=-w;
-                    if((*p)[l].n.angle(w)<M_PI/4.0)
+                    if((p.getPointer()[l])->n.angle(w)>M_PI/2.0)w=-w;
+                    if((p.getPointer()[l])->n.angle(w)<M_PI/4.0)
                         n+=w*SQ(1.0-h[l].getPoint().dist(prmUnion[cTab[i]]->b)/dst);
                 }
 
-                h.getTab()[l].setThNormal(n.isNull()?(*p)[l].n:n.norm());
+                h.getTab()[l].setThNormal(n.isNull()?(p.getPointer()[l])->n:n.norm());
             }
         }
     }
