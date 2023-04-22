@@ -21,8 +21,8 @@ public:
         size_t size[N],workSize[N];
         for(int n=0; n<N; n++)
         {
-            size[n]=(size_t)getWorkSize(nb[n]);
-            workSize[n]=(size_t)this->workgroupSizeMultiple;
+            size[n]=(n==0?getWorkSize(nb[n]):nb[n]);
+            workSize[n]=(n==0?this->workgroupSizeMultiple:1);
         }
         if(queue==NULL)queue=OpenCLContext::openCLcontext->getCommandQueue();
         cl_int ret=clEnqueueNDRangeKernel(queue, kernel, N, NULL, size, workSize, 0, NULL, NULL);
