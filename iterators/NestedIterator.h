@@ -96,8 +96,7 @@ protected:
     void _init(const Iterator<T>& that,int n=1)
     {
         nbIt=0,nb=0;
-        while(n>0)
-            add(that,(--n)==0);
+        while(n>0)add(that,(--n)==0);
     }
 };
 
@@ -105,16 +104,17 @@ template <typename T,int N> class NestedIterator:public ITNestedIterator<T>
 {
 public:
     NestedIterator() {}
-    NestedIterator(const Iterator<T>& that,int n=1)
+    NestedIterator(const Iterator<T>& that,int n=N)
     {
         this->_init(that,n);
     }
     virtual ~NestedIterator() {}
 
 public:
+    [[gnu::noinline]]
     void add(const Iterator<T>& that,bool rst=true)
     {
-        if(this->nbIt<N)it[this->nbIt++]=that;
+        if(this->nbIt<N)this->it[this->nbIt++]=that;
         if(rst)this->reset();
     }
 

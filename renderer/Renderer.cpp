@@ -346,7 +346,7 @@ Color Renderer::renderPoint(const Vector& vct)const
     Color col=Color::Black;
     Point p0=this->cam.getOrig()+(this->cam.getDir()+vct);
     ObjCollection<Ray> rc;
-    NestedIterator<double,2> aa(Iterator<double>(this->quality.getAliasing(),1.0/(double)this->quality.getAliasing()),2);
+    NestedIterator<double,2> aa(Iterator<double>(this->quality.getAliasing(),1.0/(double)this->quality.getAliasing()));
     while(aa.next())
     {
         Point pa=p0+(this->cam.getVaX().getElem()*aa[0])+(this->cam.getVaY().getElem()*aa[1]);
@@ -397,7 +397,7 @@ void Renderer::setLightIterator(int n)
     nestedItTab=(NestedIterator<double,2>**)malloc((sc->getNbLights()+1)*sizeof(NestedIterator<double,2>*));
     for(int i=0; i<sc->getNbLights(); i++)
         nestedItTab[i]=sc->getLight(i)->getIterator(n);
-    nestedItTab[sc->getNbLights()]=new NestedIterator<double,2>(Iterator<double>(1,0),2);
+    nestedItTab[sc->getNbLights()]=new NestedIterator<double,2>(Iterator<double>(1,0));
 }
 
 void* renderThread(void* d)

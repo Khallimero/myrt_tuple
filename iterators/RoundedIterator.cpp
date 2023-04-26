@@ -7,7 +7,7 @@ RoundedIterator::RoundedIterator()
 }
 
 RoundedIterator::RoundedIterator(const Iterator<double>& it)
-    :NestedIterator<double,2>(it,2)
+    :NestedIterator<double,2>(it)
 {
     this->r=it.maxVal();
 }
