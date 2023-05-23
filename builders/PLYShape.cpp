@@ -55,18 +55,19 @@ ObjCollection<Hit> PLYShape::_getHit(const ObjCollection<Ray>& rc)const
 {
     LocalPointer<const PLYPrimitive*> p=smoothNormal?(const PLYPrimitive**)malloc(rc._count()*sizeof(const PLYPrimitive*)):NULL;
     LocalPointer<const PLYBox*> b=smoothNormal?(const PLYBox**)malloc(rc._count()*sizeof(const PLYBox*)):NULL;
-    ObjCollection<Hit> h=__getHit(rc,p.getPointer(),b.getPointer());
+    ObjCollection<Hit> hc=__getHit(rc,p.getPointer(),b.getPointer());
 
-    if(smoothNormal)
+    for(int l=0; l<rc._count(); l++)
     {
-        for(int l=0; l<rc._count(); l++)
+        if(!(hc[l].isNull()))
         {
-            if(!(h[l].isNull()))
+            if(smoothNormal)
             {
                 Vector n=Vector::null;
                 double dst=EPSILON;
                 CollectionUnion<const PLYPrimitive*,2> prmUnion=CollectionUnion<const PLYPrimitive*,2>(&(b.getPointer()[l])->ht,&(b.getPointer()[l])->prm);
                 Collection<int> cTab;
+
                 for(int i=0; i<prmUnion._count(); i++)
                 {
                     bool flg=false;
@@ -79,20 +80,23 @@ ObjCollection<Hit> PLYShape::_getHit(const ObjCollection<Ray>& rc)const
                         dst=MAX(dst,(p.getPointer()[l])->b.dist(prmUnion[i]->b));
                     }
                 }
+
                 for(int i=0; i<cTab._count(); i++)
                 {
                     Vector w=prmUnion[cTab[i]]->n;
                     if((p.getPointer()[l])->n.angle(w)>M_PI/2.0)w=-w;
                     if((p.getPointer()[l])->n.angle(w)<M_PI/4.0)
-                        n+=w*SQ(1.0-h[l].getPoint().dist(prmUnion[cTab[i]]->b)/dst);
+                        n+=w*SQ(1.0-hc[l].getPoint().dist(prmUnion[cTab[i]]->b)/dst);
                 }
 
-                h.getTab()[l].setThNormal(n.isNull()?(p.getPointer()[l])->n:n.norm());
+                hc.getTab()[l].setThNormal(n.isNull()?(p.getPointer()[l])->n:n.norm());
             }
+
+            tamperHit(hc.getTab()[l],rc[l]);
         }
     }
 
-    return h;
+    return hc;
 }
 
 ObjCollection<Hit> PLYShape::__getHit(const ObjCollection<Ray>& rc,const PLYPrimitive** p,const PLYBox** b)const
