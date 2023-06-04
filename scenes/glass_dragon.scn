@@ -9,9 +9,9 @@
 #define PHOTON_BOX_FCT 0.5
 #define PHOTON_RAD 0.005
 #define PHOTON_REF 5
-#define NB_PHOTON_IT (10*1000*1000)
+#define NB_PHOTON_IT (12*1000*1000)
 #define NB_PHOTON_LIGHT 100
-#define PHOTON_EXP 1.5
+#define PHOTON_EXP 1.75
 #define RADIANCE_PHOTON_EXP 0
 
 #ifdef SCENE
@@ -20,31 +20,29 @@
 #include "Plan.h"
 #include "PointLight.h"
 #include "SphericLight.h"
-#include "CustomPerlinPattern.h"
+#include "PerlinBumpMap.h"
 #include "Cylinder.h"
 #include "SubShape.h"
 #include "Point.h"
 #include "Vector.h"
 
 #define ORANGE Color("DFAF7B")
-#define JADE Color("B6D4B4")
+#define GREEN Color("012B09")
 
 void buildScene(Scene& world)
 {
     Shape* dragon=new PLYShape("../ply/dragon.ply",true,100,
                                Mark(Point(0,0,1000),Rotation(0,-M_PI/10.0,0)));
     dragon->setTexture(new BasicTexture(Color::White));
-    /*dragon->setTexture(new CustomPerlinPattern(new BasicTexture(JADE*1.3),
-                       new BasicTexture(JADE),
-                       4,3,2,2),Volumic);*/
-    dragon->setDiffCoeff(0.15);
-    dragon->setSpecCoeff(0.4);
+    dragon->setBumpMap(new PerlinBumpMap(0.15),Volumic,Vector::Unit*20.0);
+    dragon->setDiffCoeff(0.4);
+    dragon->setSpecCoeff(0.5);
     dragon->setGlareCoeff(100);
     dragon->setReflectCoeff(0.07);
     dragon->setRefractCoeff(0.9);
     dragon->setTranslucencyCoeff(0.35);
     dragon->setDensity(1.546);
-    dragon->setBeer(2.0,0.5,Color("012B09"),false);
+    dragon->setBeer(2.0,0.5,GREEN,false);
     world.addShape(dragon);
 
     Shape* plan=new Plan(-5.272950+EPSILON,Point(0,0,0),
