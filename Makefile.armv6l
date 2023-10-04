@@ -10,3 +10,4 @@ MKDIR         = mkdir -p
 FORMAT        = astyle -A1
 TAR           = tar
 COMPRESS      = gzip -9f
+NPROC         = nproc
