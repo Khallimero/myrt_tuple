@@ -17,7 +17,7 @@ Complex::~Complex() {}
 Complex csqrt(double d)
 {
     double r=sqrt(fabs(d));
-    return d<0?Complex(0,r):Complex(r);
+    return d<0.0?Complex(0,r):Complex(r);
 }
 
 Complex csqrt(const Complex& c)

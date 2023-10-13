@@ -18,7 +18,7 @@ struct _unary_idx_op2:public unary_idx_op<double,TREBLE_SIZE>
     _unary_idx_op2(const Point& p):_p(p) {}
     virtual double operator()(const tuple_idx<TREBLE_SIZE>& i)const
     {
-        return _p(i+2)-1.;
+        return _p(i+2)-1.0;
     }
     Point _p;
 };
@@ -40,7 +40,7 @@ struct _unary_idx_op:public unary_idx_op<double,TREBLE_SIZE>
 };
 
 DecoCube::DecoCube(double c1,double c2,double size,const Mark& mk)
-    :IsoSurface(size,SmartPointer<const Shape>(new SubShape(new Sphere(3.),new Sphere(2.))),mk)
+    :IsoSurface(size,SmartPointer<const Shape>(new SubShape(new Sphere(3.0),new Sphere(2.0))),mk)
 {
     this->c1=SQ(c1),this->c2=c2;
 }

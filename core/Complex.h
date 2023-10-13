@@ -106,7 +106,7 @@ public:
 
     double arg()const
     {
-        return getReal()<0?getImg()<0?
+        return getReal()<0.0?getImg()<0.0?
                atan(getImg()/getReal())-M_PI:
                M_PI-atan(-getImg()/getReal()):
                atan(getImg()/getReal());

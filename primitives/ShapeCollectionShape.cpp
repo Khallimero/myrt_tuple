@@ -32,7 +32,7 @@ Point ShapeCollectionShape::getRelativePoint(const Hit& h,Mapping mp)const
         Point p=Ray(o1,u).proj(ok);
         double x=ok.getVectorTo(h.getPoint()).angle(ok.getVectorTo(p))/(2.0*M_PI);
         Vector v=u.prodVect(ok.getVectorTo(p));
-        if(v.cosAngle(ok.getVectorTo(h.getPoint()))<0)x=-x;
+        if(v.cosAngle(ok.getVectorTo(h.getPoint()))<0.0)x=-x;
         double g=u.prodScal(o1.getVectorTo(h.getPoint()))/o1.dist(o2);
         double y=((double)(k-1)/(double)n)*(1.0-g)+((double)(k+1)/(double)n)*(g);
         double z=ok.dist(h.getPoint());

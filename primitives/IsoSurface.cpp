@@ -43,7 +43,7 @@ Hit IsoSurface::_getHit(const Ray& r)const
                 Vector n=Vector(mark.toRef(getNormal(p))).norm();
                 return Hit(r,this,mark.toRef((Point)(p*size)),n);
             }
-            if(v0*v<0)u/=-2.0,l/=2.0,v0=v;
+            if(v0*v<0.0)u/=-2.0,l/=2.0,v0=v;
         }
         while(box->isInside(p));
     }

@@ -34,7 +34,7 @@ Rotation::Rotation(const Vector& v)
         if(v1.prodVect(Vector::UnitY).prodScal(Vector::UnitX)>0)alpha*=-1.0;
         Vector v2=Vector(Point(Vector::UnitY).axialRotate(Vector::UnitX,Mark::Ref.getOrig(),alpha));
         double beta=v.angle(v2);
-        if(v.prodVect(v2).prodScal(Point(Vector::UnitZ).axialRotate(Vector::UnitX,Mark::Ref.getOrig(),alpha))>0)beta*=-1;
+        if(v.prodVect(v2).prodScal(Point(Vector::UnitZ).axialRotate(Vector::UnitX,Mark::Ref.getOrig(),alpha))>0)beta*=-1.0;
 
         *this=Rotation(alpha,0,beta);
     }

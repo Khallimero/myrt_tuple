@@ -170,7 +170,7 @@ public:
     {
         for(int i=0; i<=ORDER; i++)
         {
-            coeffs[i]=0;
+            coeffs[i]=0.0;
             for(int j=0; j<=i; j++)
                 coeffs[i]+=p1->get(j)*p2->get(i-j);
         }

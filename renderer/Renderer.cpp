@@ -352,7 +352,7 @@ Color Renderer::renderPoint(const Vector& vct)const
         Point pa=p0+(this->cam.getVaX().getElem()*aa[0])+(this->cam.getVaY().getElem()*aa[1]);
         Point f(this->cam.getOrig()+this->cam.getOrig().getVectorTo(pa).norm()*this->cam.getFocusDist());
 
-        RoundedIterator it=(this->cam.getLenSize()<0?
+        RoundedIterator it=(this->cam.getLenSize()<0.0?
                             RoundedIterator(Iterator<double>(1,0)):
                             RoundedIterator(Iterator<double>(this->quality.getFocus(),this->cam.getLenSize()/(double)this->quality.getFocus())));
         while(it.next())

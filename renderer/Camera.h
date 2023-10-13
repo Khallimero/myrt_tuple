@@ -13,7 +13,7 @@ public:
     virtual ~Camera();
 
 public:
-    void setFocus(double d,double l=-1.)
+    void setFocus(double d,double l=-1.0)
     {
         this->fcsDst=d,this->lenSize=l;
     }

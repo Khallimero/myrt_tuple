@@ -69,7 +69,7 @@ Vector Vector::refract(const Vector& normal,double n1,double n2)const
     double a2=1.0-SQ(r)*(1.0-SQ(a1));
     if(a2<0)return Vector::null;
 
-    return v1*r+v2*(r*a1+::sqrt(a2)*(a1>=0?-1:1));
+    return v1*r+v2*(r*a1+::sqrt(a2)*(a1>=0.0?-1.0:1.0));
 }
 
 Vector Vector::getOrtho()const

@@ -78,7 +78,7 @@ PolyRoot Poly::solveQuadratic(bool collect)const
     {
         r.addRoot(-get(1)/(2.0*get(2)));
     }
-    else if(d>0)
+    else if(d>0.0)
     {
         r.addRoot((-sqrt(d)-get(1))/(2.0*get(2)));
         r.addRoot((sqrt(d)-get(1))/(2.0*get(2)));
@@ -100,7 +100,7 @@ PolyRoot Poly::solveCubic(bool collect)const
     double d=Q3-R2;
     double an=p.get(2)/3.0;
 
-    if(d>=0)
+    if(d>=0.0)
     {
         d=R/sqrt(Q3);
         double t=acos(d)/3.0;
@@ -157,7 +157,7 @@ PolyRoot Poly::solveQuartic(bool collect)const
 
     p=q1-4.0*(z-d2);
     if(p==0.0)rt.addRoot(-d1/2.0-q2);
-    else if(p>0)
+    else if(p>0.0)
     {
         p=sqrt(p);
         rt.addRoot(-(d1+p)/2.0+q2);
@@ -166,7 +166,7 @@ PolyRoot Poly::solveQuartic(bool collect)const
 
     p=q1-4.0*(z+d2);
     if(p==0.0)rt.addRoot(d1/2.0-q2);
-    else if(p>0)
+    else if(p>0.0)
     {
         p=sqrt(p);
         rt.addRoot((d1+p)/2.0+q2);
@@ -208,7 +208,7 @@ PolyRoot Poly::solveGeneric(bool collect)const
 
 double Poly::maxValue(const Complex* c,int n)const
 {
-    double m=0;
+    double m=0.0;
     for(int i=0; i<n; i++)
         m=MAX(m,abs(eval(c[i])));
     return m;

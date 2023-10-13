@@ -34,7 +34,7 @@ double OrthoCircles::getValue(const Point& p)const
         Point _p;
     } _tuple_idx_fct(p);
 
-    return _tuple_idx_fct.tamper()-SQ(c1)*(1+c2*sum(_tuple_idx_fct.getPoint()));
+    return _tuple_idx_fct.tamper()-SQ(c1)*(1.0+c2*sum(_tuple_idx_fct.getPoint()));
 }
 
 Vector OrthoCircles::getNormal(const Point& p)const
@@ -47,7 +47,7 @@ Vector OrthoCircles::getNormal(const Point& p)const
             {
                 virtual double operator()(const volatile double& t)const
                 {
-                    return t-1;
+                    return t-1.0;
                 }
             } _unary_op;
 
