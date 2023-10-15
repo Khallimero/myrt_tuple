@@ -343,6 +343,7 @@ Shape* Board(const Mark& mk,double size=1.0)
     edge->setDiffCoeff(0.75);
     edge->setSpecCoeff(1.25);
     edge->setGlareCoeff(100);
+    edge->setReflectCoeff(0.05);
 
     Plan *p=new Plan(Vector(0,1,0),Mark(mk.getOrig()+Point(Point(0,-4+EPSILON,0)*size),Rotation(0,M_PI/4.0,0)));
     p->setTexture(new ChequeredPattern(new MarblePattern(new BasicTexture(Color("150B03")*1.2),new BasicTexture(Color("150B03")),50),
