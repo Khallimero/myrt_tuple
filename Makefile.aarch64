@@ -1,0 +1,13 @@
+CXX           = g++
+DEFINES       = -DNB_THREAD=$(NB_THREAD)
+CXXFLAGS      = -mtune=native -march=native -O3 -Wall -ffast-math -pthread $(DEFINES)
+INCDIR        = -I.
+LINKLIBS      = -lstdc++ -lm -lpthread
+STRIP         = strip
+AR            = ar rcs
+DEL           = rm -rf
+MKDIR         = mkdir -p
+FORMAT        = astyle -A1
+TAR           = tar
+COMPRESS      = gzip -9f
+NPROC         = nproc
