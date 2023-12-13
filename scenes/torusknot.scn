@@ -35,7 +35,7 @@ void buildScene(Scene& world)
 
     Shape* t=new Tore(600,180,Mark(ct,Rotation(-M_PI/2.0,0,0)));
     t->setTexture(new BasicTexture(RUBY),Undefined);
-    t->setBumpMap(new PerlinBumpMap(.2),Volumic,Vector::Unit/20.0);
+    t->setBumpMap(new PerlinBumpMap(0.2),Volumic,Vector::Unit/20.0);
     t->setDiffCoeff(0.05);
     t->setSpecCoeff(0.5);
     t->setGlareCoeff(1000);
