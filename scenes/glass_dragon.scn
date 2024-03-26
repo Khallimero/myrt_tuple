@@ -4,12 +4,12 @@
 #define ISO_THRESHOLD (0.00000001)
 #define NB_REF 3
 #define MAX_REF_SS 3
-#define PHOTON_EQ_DST 0.001
+#define PHOTON_EQ_DST 0.005
 #define PHOTON_EQ_ANG (M_PI/100.0)
 #define PHOTON_BOX_FCT 0.1
-#define PHOTON_RAD 0.005
+#define PHOTON_RAD 0.01
 #define PHOTON_REF 5
-#define NB_PHOTON_IT (10*1000*1000)
+#define NB_PHOTON_IT (36*1000*1000)
 #define NB_PHOTON_LIGHT 100
 #define PHOTON_EXP 1.75
 #define RADIANCE_PHOTON_EXP 0
@@ -68,7 +68,7 @@ void buildScene(Scene& world)
     world.addShape(ls);
 
     //world.setPhotonBoxIn(new Sphere(15,Mark(Point(0,-5,1000))));
-    //world.setPhotonBoxOut(new Sphere(50.,Mark(Point(0,-5,1000))));
+    //world.setPhotonBoxOut(new Sphere(30.,Mark(Point(0,-5,1000))));
 }
 
 void setCamera(Camera& cam)
