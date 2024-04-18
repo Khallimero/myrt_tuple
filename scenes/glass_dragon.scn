@@ -7,7 +7,7 @@
 #define PHOTON_EQ_DST 0.005
 #define PHOTON_EQ_ANG (M_PI/100.0)
 #define PHOTON_BOX_FCT 0.1
-#define PHOTON_RAD 0.02
+#define PHOTON_RAD 0.05
 #define PHOTON_REF 5
 #define NB_PHOTON_IT (16*1000*1000)
 #define NB_PHOTON_LIGHT 100
