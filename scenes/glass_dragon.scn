@@ -7,9 +7,9 @@
 #define PHOTON_EQ_DST 0.005
 #define PHOTON_EQ_ANG (M_PI/100.0)
 #define PHOTON_BOX_FCT 0.1
-#define PHOTON_RAD 0.01
+#define PHOTON_RAD 0.02
 #define PHOTON_REF 5
-#define NB_PHOTON_IT (36*1000*1000)
+#define NB_PHOTON_IT (16*1000*1000)
 #define NB_PHOTON_LIGHT 100
 #define PHOTON_EXP 1.75
 #define RADIANCE_PHOTON_EXP 0
@@ -34,7 +34,7 @@ void buildScene(Scene& world)
     Shape* dragon=new PLYShape("../ply/dragon.ply",true,100,
                                Mark(Point(0,0,1000),Rotation(0,-M_PI/10.0,0)));
     dragon->setTexture(new BasicTexture(Color::White));
-    //dragon->setBumpMap(new PerlinBumpMap(0.15),Volumic,Vector::Unit*20.0);
+    dragon->setBumpMap(new PerlinBumpMap(0.15),Volumic,Vector::Unit*35.0);
     dragon->setDiffCoeff(0.35);
     dragon->setSpecCoeff(0.5);
     dragon->setGlareCoeff(100);
