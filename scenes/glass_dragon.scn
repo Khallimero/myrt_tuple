@@ -59,7 +59,7 @@ void buildScene(Scene& world)
     SphericLight *light=new SphericLight(20,lc+vct*0.25,Color::White);
     light->setMitigation(light->dist(sc));
     world.addLight(light);
-    world.setAmbiant(Color::White*0.1);
+    world.setAmbiant(Color::White*0.075);
 
     Shape *cyl=new Cylinder(20,Mark(sc,Rotation(vct.norm())));
     Shape *lp=new Plan(vct.norm()*-1,Mark(sc+vct*0.2));
