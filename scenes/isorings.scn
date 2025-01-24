@@ -68,7 +68,7 @@ void buildScene(Scene& world)
                                    new Tore(1.5,0.5),
                                    Mark(ct,Rotation(-M_PI/2.0,0,0)));
     r1->setTexture(new BasicTexture(Color::White*0.9),Undefined);
-    r1->setBumpMap(new TextureBumpMap(new MarblePattern(new BasicTexture(Color::White*0.9),
+    r1->setBumpMap(new TextureBumpMap(new MarblePattern(new BasicTexture(Color::White),
                                       new BasicTexture(Color::Black),50),1.2),
                    Volumic);
     r1->setDiffCoeff(0.5);
