@@ -79,7 +79,7 @@ void buildScene(Scene& world)
                                    Mark(ct,Rotation(M_PI/2.0,0,0)));
     r2->setTexture(new BasicTexture(Color::White),Undefined);
     r2->setDiffCoeff(0.05);
-    r2->setSpecCoeff(0.2);
+    r2->setSpecCoeff(0.4);
     r2->setGlareCoeff(1000);
     r2->setReflectCoeff(0.1);
     r2->setRefractCoeff(0.9);
