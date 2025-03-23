@@ -31,7 +31,7 @@ strip: all
 $(TARGET): $(LIB)
 	@$(MKDIR) $(dir $@)
 	$(eval $(REVERSELIB))
-	$(CXX) $(CXXFLAGS) $(INCPATH) $(addprefix -I./,$(LIBLIST)) $(SOURCE) -o $(TARGET) -L$(LIBDIR) $(LINKLIBS) $(addprefix -l,$(LIBORDER))
+	$(CXX) $(CXXFLAGS) $(INCPATH) $(addprefix -I./,$(LIBLIST)) $(SOURCE) -o $(TARGET) -L$(LIBDIR) $(addprefix -l,$(LIBORDER)) $(LINKLIBS)
 
 $(LIBDIR)/%.a:
 	cd $(subst lib,,$(notdir $(@:.a=))) && $(MAKE)
